@@ -1,0 +1,161 @@
+# [SEQUENCE: 1] Alert rules for game server monitoring
+groups:
+  # [SEQUENCE: 2] Server health alerts
+  - name: game_server_health
+    interval: 30s
+    rules:
+      - alert: GameServerDown
+        expr: up{job="game-servers"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: game-server
+        annotations:
+          summary: "Game server {{ $labels.instance }} is down"
+          description: "Game server {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="game-servers"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: game-server
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% on {{ $labels.instance }} for more than 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="game-servers"} / 1024 / 1024 / 1024) > 3.5
+        for: 5m
+        labels:
+          severity: warning
+          component: game-server
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 3.5GB on {{ $labels.instance }}."
+
+  # [SEQUENCE: 3] Game metrics alerts
+  - name: game_metrics
+    interval: 30s
+    rules:
+      - alert: HighPlayerCount
+        expr: game_server_players_online > 900
+        for: 5m
+        labels:
+          severity: warning
+          component: game-server
+        annotations:
+          summary: "Server {{ $labels.instance }} approaching player limit"
+          description: "Server {{ $labels.instance }} has {{ $value }} players online (limit: 1000)."
+
+      - alert: HighTickLatency
+        expr: game_server_tick_duration_seconds{quantile="0.99"} > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: game-server
+        annotations:
+          summary: "High tick latency on {{ $labels.instance }}"
+          description: "99th percentile tick duration is {{ $value }}s (target: 33ms)."
+
+      - alert: HighNetworkLatency
+        expr: game_server_network_latency_seconds{quantile="0.95"} > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: game-server
+        annotations:
+          summary: "High network latency on {{ $labels.instance }}"
+          description: "95th percentile network latency is {{ $value }}s."
+
+  # [SEQUENCE: 4] Database alerts
+  - name: database_health
+    interval: 30s
+    rules:
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database has been down for more than 1 minute."
+
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends{datname="gamedb"} > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High number of database connections"
+          description: "Database has {{ $value }} active connections (limit: 100)."
+
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time_seconds[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query execution time is {{ $value }}s."
+
+  # [SEQUENCE: 5] Redis alerts
+  - name: redis_health
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute."
+
+      - alert: HighRedisMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory."
+
+      - alert: RedisRejectedConnections
+        expr: rate(redis_rejected_connections_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis is rejecting connections"
+          description: "Redis has rejected {{ $value }} connections in the last 5 minutes."
+
+  # [SEQUENCE: 6] PvP system alerts
+  - name: pvp_health
+    interval: 30s
+    rules:
+      - alert: LongMatchmakingQueue
+        expr: game_server_matchmaking_queue_size > 50
+        for: 5m
+        labels:
+          severity: warning
+          component: pvp
+        annotations:
+          summary: "Long matchmaking queue on {{ $labels.instance }}"
+          description: "{{ $value }} players waiting in matchmaking queue."
+
+      - alert: ArenaInstancesExhausted
+        expr: game_server_arena_instances_available == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: pvp
+        annotations:
+          summary: "No arena instances available"
+          description: "All arena instances are in use on {{ $labels.instance }}."

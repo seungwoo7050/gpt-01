@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package mmorpg.proto;
+
+// [SEQUENCE: MVP1-41] packet.proto: 모든 메시지를 감싸는 최상위 Packet 래퍼를 정의합니다. 여기에는 메시지 타입, 크기, 순서 번호 등의 메타데이터가 포함됩니다.
+enum PacketType {
+    PACKET_UNKNOWN = 0;
+    
+    // Authentication packets (1000-1099)
+    PACKET_LOGIN_REQUEST = 1000;
+    PACKET_LOGIN_RESPONSE = 1001;
+    PACKET_LOGOUT_REQUEST = 1002;
+    PACKET_LOGOUT_RESPONSE = 1003;
+    PACKET_HEARTBEAT_REQUEST = 1004;
+    PACKET_HEARTBEAT_RESPONSE = 1005;
+    
+    // Game packets (2000-2999)
+    PACKET_ENTER_WORLD_REQUEST = 2000;
+    PACKET_ENTER_WORLD_RESPONSE = 2001;
+    PACKET_MOVEMENT_UPDATE = 2002;
+    PACKET_ENTITY_UPDATE = 2003;
+    PACKET_COMBAT_ACTION = 2004;
+    PACKET_COMBAT_RESULT = 2005;
+    PACKET_CHAT_MESSAGE = 2006;
+    
+    // Guild packets (3000-3099)
+    PACKET_GUILD_CREATE_REQUEST = 3000;
+    PACKET_GUILD_CREATE_RESPONSE = 3001;
+    PACKET_GUILD_INVITE_REQUEST = 3002;
+    PACKET_GUILD_INVITE_RESPONSE = 3003;
+    PACKET_GUILD_WAR_REQUEST = 3004;
+    PACKET_GUILD_WAR_RESPONSE = 3005;
+}
+
+message PacketHeader {
+    PacketType type = 1;
+    uint32 size = 2;
+    uint64 sequence = 3;
+    uint64 timestamp = 4;
+    bool is_compressed = 5;
+}
+
+message Packet {
+    PacketHeader header = 1;
+    bytes payload = 2; // Serialized message data
+}

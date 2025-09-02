@@ -1,0 +1,54 @@
+# [SEQUENCE: MVP6-6] Production overlay for Kubernetes deployment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# [SEQUENCE: MVP6-20] Base resources
+bases:
+  - ../../base
+
+namespace: mmorpg-prod
+
+nameSuffix: -prod
+
+commonLabels:
+  environment: production
+  app.kubernetes.io/version: "1.0.0"
+
+# [SEQUENCE: MVP6-21] Production patches
+patchesStrategicMerge:
+  - deployment-patch.yaml
+  - service-patch.yaml
+
+configMapGenerator:
+  - name: game-server-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=info
+      - MAX_PLAYERS=2000
+      - ENABLE_METRICS=true
+
+secretGenerator:
+  - name: db-credentials
+    literals:
+      - username=produser
+      - password=prodpass123
+  - name: rabbitmq-credentials
+    literals:
+      - url=amqp://prod:prodpass@rabbitmq-prod:5672/
+
+# [SEQUENCE: MVP6-22] Production replicas
+replicas:
+  - name: game-server
+    count: 5
+
+# [SEQUENCE: MVP6-23] Image overrides
+images:
+  - name: mmorpg/game-server
+    newName: your-registry.com/mmorpg/game-server
+    newTag: 1.0.0
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml

@@ -1,0 +1,53 @@
+// [SEQUENCE: MVP1-42] auth.proto: 로그인, 로그아웃, 서버 목록 등 인증 관련 메시지를 정의합니다.
+syntax = "proto3";
+
+package mmorpg.proto;
+
+import "common.proto";
+
+
+message LoginRequest {
+    string username = 1;
+    string password_hash = 2;
+    string client_version = 3;
+    string device_id = 4;
+}
+
+message LoginResponse {
+    bool success = 1;
+    ErrorCode error_code = 2;
+    string error_message = 3;
+    string session_token = 4;
+    uint64 player_id = 5;
+    repeated ServerInfo game_servers = 6;
+}
+
+message ServerInfo {
+    uint32 server_id = 1;
+    string server_name = 2;
+    string ip_address = 3;
+    uint32 port = 4;
+    uint32 current_players = 5;
+    uint32 max_players = 6;
+    float load_percentage = 7;
+}
+
+message LogoutRequest {
+    uint64 player_id = 1;
+    string session_token = 2;
+}
+
+message LogoutResponse {
+    bool success = 1;
+    ErrorCode error_code = 2;
+}
+
+message HeartbeatRequest {
+    uint64 player_id = 1;
+    uint64 timestamp = 2;
+}
+
+message HeartbeatResponse {
+    uint64 server_timestamp = 1;
+    uint32 latency_ms = 2;
+}

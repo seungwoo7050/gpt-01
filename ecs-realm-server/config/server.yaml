@@ -1,0 +1,71 @@
+# MMORPG Server Configuration
+
+# Server settings
+server:
+  address: "0.0.0.0"
+  port: 8080
+  tick_rate: 30
+  max_connections: 5000
+  worker_threads: 8
+  io_context_pool_size: 4
+
+# Network settings
+network:
+  tcp_no_delay: true
+  reuse_address: true
+  accept_backlog: 100
+  packet_size_limit: 1048576  # 1MB
+  
+# Database configuration (MVP2+)
+database:
+  mysql:
+    host: "mysql"
+    port: 3306
+    username: "gameserver"
+    password: "${MYSQL_PASSWORD}"
+    database: "mmorpg"
+    pool_size: 20
+    
+  redis:
+    host: "redis"
+    port: 6379
+    pool_size: 100
+    password: ""
+
+# Monitoring settings
+monitoring:
+  enabled: true
+  metrics_port: 9091
+  update_interval_ms: 1000
+  
+# Logging configuration
+logging:
+  level: "info"  # debug, info, warn, error
+  file:
+    enabled: true
+    path: "logs/server.log"
+    max_size_mb: 10
+    max_files: 5
+  console:
+    enabled: true
+    colored: true
+    
+# Security settings
+security:
+  session_timeout_minutes: 30
+  max_login_attempts: 5
+  lockout_duration_minutes: 15
+  
+# Game settings (MVP2+)
+game:
+  world:
+    tick_rate: 30
+    view_distance: 100
+    max_entities_per_chunk: 1000
+  combat:
+    pvp_enabled: true
+    skill_global_cooldown_ms: 1000
+  player:
+    starting_level: 1
+    starting_gold: 1000
+    max_level: 100

@@ -1,0 +1,83 @@
+#pragma once
+
+#include <vector>
+#include <unordered_set>
+#include <array>
+#include <mutex>
+#include "core/ecs/types.h"
+#include "core/utils/vector3.h"
+
+#pragma once
+
+#include <vector>
+#include <unordered_set>
+#include <array>
+#include <mutex>
+#include "core/ecs/types.h"
+#include "game/world/ispatial_index.h"
+#include "core/utils/vector3.h"
+
+// [SEQUENCE: MVP3-4] world_grid.h: Grid-based spatial partitioning for 2D worlds
+class WorldGrid : public ISpatialIndex {
+public:
+    // [SEQUENCE: MVP3-5] world_grid.h: Configuration
+    struct Config {
+        float cell_size = 100.0f;          // Size of each grid cell
+        int grid_width = 100;              // Number of cells horizontally
+        int grid_height = 100;             // Number of cells vertically
+        float world_min_x = 0.0f;          // World boundaries
+        float world_min_y = 0.0f;
+        bool wrap_around = false;          // Wrap at world edges
+    };
+    
+    // [SEQUENCE: MVP3-6] world_grid.h: Constructor with configuration
+    explicit WorldGrid(const Config& config);
+    ~WorldGrid() = default;
+    
+    // [SEQUENCE: MVP3-7] world_grid.h: Entity management (Add, Remove, Update)
+    void AddEntity(core::ecs::EntityId entity, const core::utils::Vector3& position);
+    void RemoveEntity(core::ecs::EntityId entity);
+    void UpdateEntity(core::ecs::EntityId entity, const core::utils::Vector3& old_pos, 
+                     const core::utils::Vector3& new_pos);
+    
+    // [SEQUENCE: MVP3-8] world_grid.h: Spatial queries (GetEntitiesInRadius, GetEntitiesInBox)
+    std::vector<core::ecs::EntityId> GetEntitiesInRadius(
+        const core::utils::Vector3& center, float radius) const;
+    
+    std::vector<core::ecs::EntityId> GetEntitiesInBox(
+        const core::utils::Vector3& min, const core::utils::Vector3& max) const;
+    
+    std::vector<core::ecs::EntityId> GetEntitiesInCell(int x, int y) const;
+    
+    std::vector<core::ecs::EntityId> GetEntitiesInAdjacentCells(
+        const core::utils::Vector3& position, int range = 1) const;
+    
+    std::pair<int, int> GetCellCoordinates(const core::utils::Vector3& position) const;
+    bool IsValidCell(int x, int y) const;
+    size_t GetEntityCount() const;
+    size_t GetOccupiedCellCount() const;
+    
+    
+    void GetCellBounds(int x, int y, core::utils::Vector3& min, core::utils::Vector3& max) const;
+    std::vector<std::pair<int, int>> GetOccupiedCells() const;
+    
+private:
+    struct GridCell {
+        std::unordered_set<core::ecs::EntityId> entities;
+        mutable std::mutex mutex;  // Per-cell locking for thread safety
+    };
+    
+    Config config_;
+    std::vector<std::vector<GridCell>> grid_;
+    
+    std::unordered_map<core::ecs::EntityId, std::pair<int, int>> entity_cells_;
+    mutable std::mutex entity_map_mutex_;
+    
+    int GetCellIndex(float world_coord, float world_min, int grid_size, float cell_size) const;
+    void GetCellsInRadius(const core::utils::Vector3& center, float radius, 
+                         std::vector<std::pair<int, int>>& cells) const;
+    float DistanceSquaredToCell(const core::utils::Vector3& point, int cell_x, int cell_y) const;
+};
+
+} // namespace mmorpg::game::world::grid
+} // namespace mmorpg::game::world::gride::world::gridpg::game::world::grid

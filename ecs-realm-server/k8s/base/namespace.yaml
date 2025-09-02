@@ -1,0 +1,8 @@
+# [SEQUENCE: 1] Namespace for game server deployment
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mmorpg-game
+  labels:
+    app.kubernetes.io/name: mmorpg
+    app.kubernetes.io/part-of: game-platform

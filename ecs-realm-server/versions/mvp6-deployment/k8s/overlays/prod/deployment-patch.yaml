@@ -1,0 +1,79 @@
+# [SEQUENCE: 1] Production deployment patches
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-server
+spec:
+  # [SEQUENCE: 2] Production replicas
+  replicas: 5
+  
+  # [SEQUENCE: 3] Production update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  
+  template:
+    spec:
+      # [SEQUENCE: 4] Production node affinity
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - game-server
+            topologyKey: kubernetes.io/hostname
+      
+      # [SEQUENCE: 5] Production tolerations
+      tolerations:
+      - key: "game-server"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      
+      containers:
+      - name: game-server
+        # [SEQUENCE: 6] Production image
+        image: your-registry.com/mmorpg/game-server:1.0.0
+        imagePullPolicy: Always
+        
+        # [SEQUENCE: 7] Production resources
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        
+        # [SEQUENCE: 8] Production environment
+        env:
+        - name: DEPLOYMENT_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: ENABLE_PROFILING
+          value: "false"
+        
+        # [SEQUENCE: 9] Production probes
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: health
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

@@ -1,0 +1,89 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+.cache/
+
+# Dependencies
+vcpkg_installed/
+conan/
+.conan/
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vs/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Test outputs
+test_results/
+coverage/
+*.gcda
+*.gcno
+
+# Documentation
+docs/html/
+docs/latex/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Database files
+*.db
+*.sqlite
+
+# Core dumps
+core
+*.core
+*.dmp
+
+# Python cache (for build scripts)
+__pycache__/
+*.pyc
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Protocol Buffers generated files
+generated/
+*.pb.h
+*.pb.cc
+
+# Package files
+*.tar.gz
+*.zip
+*.rpm
+*.deb
+
+# Environment files
+.env
+.env.local
+.env.*.local

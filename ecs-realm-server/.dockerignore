@@ -1,0 +1,35 @@
+# Build artifacts
+build/
+cmake-build-*/
+.cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Test data
+test_data/
+benchmarks/
+
+# Dependencies
+vcpkg/
+conan/

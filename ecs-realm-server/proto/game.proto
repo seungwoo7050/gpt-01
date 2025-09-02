@@ -1,0 +1,94 @@
+// [SEQUENCE: MVP1-44] game.proto: 게임 월드 진입, 캐릭터 이동 등 핵심 게임플레이 관련 메시지를 정의합니다.
+syntax = "proto3";
+
+package mmorpg.proto;
+
+import "common.proto";
+
+message EnterWorldRequest {
+    uint64 character_id = 1;
+    uint32 channel_id = 2;
+    string session_token = 3;
+}
+
+message EnterWorldResponse {
+    bool success = 1;
+    ErrorCode error_code = 2;
+    Vector3 spawn_position = 3;
+    uint32 map_id = 4;
+}
+
+message MovementUpdate {
+    uint64 entity_id = 1;
+    Vector3 position = 2;
+    Vector3 velocity = 3;
+    Vector3 rotation = 4;
+    float timestamp = 5;
+    uint32 sequence_number = 6;
+}
+
+message EntityUpdate {
+    uint64 entity_id = 1;
+    oneof update_type {
+        MovementUpdate movement = 2;
+        HealthUpdate health = 3;
+        StatusUpdate status = 4;
+    }
+}
+
+message HealthUpdate {
+    float current_hp = 1;
+    float max_hp = 2;
+    float shield = 3;
+}
+
+message StatusUpdate {
+    repeated uint32 buff_ids = 1;
+    repeated uint32 debuff_ids = 2;
+    bool is_stunned = 3;
+    bool is_silenced = 4;
+}
+
+message CombatAction {
+    uint64 attacker_id = 1;
+    uint64 target_id = 2;
+    uint32 skill_id = 3;
+    Vector3 target_position = 4;
+    float cast_time = 5;
+    uint32 action_sequence = 6;
+}
+
+message CombatResult {
+    uint64 attacker_id = 1;
+    uint64 target_id = 2;
+    uint32 skill_id = 3;
+    float damage = 4;
+    bool is_critical = 5;
+    bool is_dodged = 6;
+    bool is_blocked = 7;
+    repeated StatusEffect applied_effects = 8;
+}
+
+message StatusEffect {
+    uint32 effect_id = 1;
+    float duration = 2;
+    float value = 3;
+}
+
+message ChatMessage {
+    enum Channel {
+        CHANNEL_GLOBAL = 0;
+        CHANNEL_AREA = 1;
+        CHANNEL_GUILD = 2;
+        CHANNEL_PARTY = 3;
+        CHANNEL_WHISPER = 4;
+        CHANNEL_TRADE = 5;
+    }
+    
+    uint64 sender_id = 1;
+    string sender_name = 2;
+    Channel channel = 3;
+    string message = 4;
+    uint64 timestamp = 5;
+    uint64 recipient_id = 6; // For whispers
+}

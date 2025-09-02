@@ -1,0 +1,15 @@
+# [SEQUENCE: 1] Dashboard provisioning configuration
+apiVersion: 1
+
+providers:
+  # [SEQUENCE: 2] File provider for JSON dashboards
+  - name: 'Game Server Dashboards'
+    orgId: 1
+    folder: 'MMORPG'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true

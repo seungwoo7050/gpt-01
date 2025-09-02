@@ -1,0 +1,30 @@
+// [SEQUENCE: MVP1-43] common.proto: Vector3, 에러 코드 등 여러 메시지에서 공통으로 사용되는 데이터 구조를 정의합니다.
+syntax = "proto3";
+
+package mmorpg.proto;
+
+
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Vector2 {
+    float x = 1;
+    float y = 2;
+}
+
+enum ErrorCode {
+    ERROR_NONE = 0;
+    ERROR_INVALID_CREDENTIALS = 1;
+    ERROR_SERVER_FULL = 2;
+    ERROR_VERSION_MISMATCH = 3;
+    ERROR_BANNED = 4;
+    ERROR_MAINTENANCE = 5;
+    ERROR_INTERNAL = 6;
+    ERROR_TIMEOUT = 7;
+    ERROR_DUPLICATE_LOGIN = 8;
+    ERROR_INVALID_PACKET = 9;
+    ERROR_RATE_LIMITED = 10;
+}
