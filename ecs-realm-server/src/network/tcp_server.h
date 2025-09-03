@@ -46,6 +46,9 @@ public:
     void SetPacketHandler(std::shared_ptr<IPacketHandler> handler) { m_packetHandler = std::move(handler); }
     std::shared_ptr<IPacketHandler> GetPacketHandler() const { return m_packetHandler; }
 
+    // [SEQUENCE: MVP6-21] Expose SessionManager for UdpServer to use.
+    std::shared_ptr<SessionManager> GetSessionManager() const { return m_sessionManager; }
+
     void Broadcast(const google::protobuf::Message& message);
 
 private:

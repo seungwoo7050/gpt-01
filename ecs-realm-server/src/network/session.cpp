@@ -77,6 +77,15 @@ void Session::Authenticate() {
     SetAuthenticated(true);
 }
 
+// [SEQUENCE: MVP6-18] Methods for UDP endpoint management.
+void Session::SetUdpEndpoint(const udp::endpoint& endpoint) {
+    m_udp_endpoint = endpoint;
+}
+
+std::optional<udp::endpoint> Session::GetUdpEndpoint() const {
+    return m_udp_endpoint;
+}
+
 // [SEQUENCE: MVP1-16] `Session::DoReadHeader()`: 패킷의 고정 크기 헤더를 비동기적으로 읽습니다.
 void Session::DoReadHeader() {
     m_readBuffer.assign(4, std::byte{0});

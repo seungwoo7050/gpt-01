@@ -2,12 +2,14 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <memory>
 #include <vector>
 #include <deque>
 #include <atomic>
 #include <string>
 #include <cstdint>
+#include <optional>
 
 #include "proto/packet.pb.h"
 
@@ -22,6 +24,7 @@ class IPacketHandler;
 namespace mmorpg::network {
 
 using boost::asio::ip::tcp;
+using boost::asio::ip::udp;
 
 enum class SessionState {
     Connecting,
@@ -37,9 +40,7 @@ public:
     Session(std::shared_ptr<boost::asio::ssl::stream<tcp::socket>> ssl_stream, uint32_t session_id, std::shared_ptr<IPacketHandler> handler);
     ~Session();
 
-    // [SEQUENCE: MVP1-14] `Session::Start()`: 세션을 시작하고 클라이언트로부터 데이터 수신을 대기합니다.
     void Start();
-    // [SEQUENCE: MVP1-15] `Session::Stop()`: 세션을 종료하고 소켓을 닫습니다.
     void Disconnect();
     void Send(const google::protobuf::Message& message);
 
@@ -53,13 +54,14 @@ public:
     void SetAuthenticated(bool authenticated) { m_isAuthenticated = authenticated; }
     void Authenticate();
 
+    // [SEQUENCE: MVP6-18] Methods for UDP endpoint management.
+    void SetUdpEndpoint(const udp::endpoint& endpoint);
+    std::optional<udp::endpoint> GetUdpEndpoint() const;
+
 private:
-    // [SEQUENCE: MVP1-16] `Session::DoReadHeader()`: 패킷의 고정 크기 헤더를 비동기적으로 읽습니다.
     void DoReadHeader();
-    // [SEQUENCE: MVP1-17] `Session::DoReadBody()`: 헤더에서 파악한 크기만큼 패킷의 본문을 비동기적으로 읽습니다.
     void DoReadBody(uint32_t body_size);
     void ProcessPacket(std::vector<std::byte>&& buffer);
-    // [SEQUENCE: MVP1-18] `Session::DoWrite()`: 클라이언트에게 패킷을 비동기적으로 전송합니다.
     void DoWrite();
     void HandleError(const boost::system::error_code& ec);
 
@@ -73,6 +75,9 @@ private:
     std::deque<std::vector<std::byte>> m_writeQueue;
 
     std::atomic<bool> m_isAuthenticated;
+
+    // [SEQUENCE: MVP6-19] Stores the associated UDP endpoint for this session.
+    std::optional<udp::endpoint> m_udp_endpoint;
 };
 
 }

@@ -73,9 +73,11 @@ add_library(mmorpg_core STATIC
 
     # Networking
     src/network/tcp_server.cpp
+    src/network/udp_server.cpp
     src/network/session.cpp
     src/network/session_manager.cpp
     src/network/packet_handler.cpp
+    src/network/udp_packet_handler.cpp
     src/network/packet_serializer.cpp
     
     # [SEQUENCE: MVP2-18] Build System (`CMakeLists.txt`)
@@ -179,6 +181,7 @@ if(GTest_FOUND AND BUILD_TESTS)
         tests/unit/test_combat_system.cpp
         tests/unit/test_guild_system.cpp
         tests/unit/test_pvp_system.cpp
+        tests/unit/test_lock_free_queue.cpp
         # tests/unit/test_networking.cpp
     )
     

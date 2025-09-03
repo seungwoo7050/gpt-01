@@ -6,27 +6,31 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP1-20] `SessionManager::Register()`: 새로운 세션을 등록합니다.
 void SessionManager::Register(const std::shared_ptr<Session>& session) {
     if (!session) return;
     std::unique_lock lock(m_mutex);
     m_sessions[session->GetSessionId()] = session;
 }
 
-// [SEQUENCE: MVP1-21] `SessionManager::Unregister()`: 세션을 등록 해제합니다.
+// [SEQUENCE: MVP6-20] Modified to also clean up UDP endpoint mappings.
 void SessionManager::Unregister(uint32_t session_id) {
     std::unique_lock lock(m_mutex);
-    m_sessions.erase(session_id);
+    auto it = m_sessions.find(session_id);
+    if (it != m_sessions.end()) {
+        if (auto udp_endpoint = it->second->GetUdpEndpoint(); udp_endpoint) {
+            m_udp_endpoint_to_session_id.erase(*udp_endpoint);
+        }
+        m_sessions.erase(it);
+    }
+    m_session_to_player_id.erase(session_id);
 }
 
-// [SEQUENCE: MVP1-22] `SessionManager::GetSession()`: 특정 ID의 세션을 찾습니다.
 std::shared_ptr<Session> SessionManager::GetSession(uint32_t session_id) const {
     std::shared_lock lock(m_mutex);
     auto it = m_sessions.find(session_id);
     return (it != m_sessions.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP1-23] `SessionManager::Broadcast()`: 모든 세션에 패킷을 전송합니다.
 void SessionManager::Broadcast(const google::protobuf::Message& message) {
     std::shared_lock lock(m_mutex);
     for (const auto& [id, session] : m_sessions) {
@@ -44,21 +48,38 @@ void SessionManager::SendToSession(uint32_t session_id, const google::protobuf::
 }
 
 size_t SessionManager::GetSessionCount() const {
-    std::shared_lock lock(m_mutex);    
+    std::shared_lock lock(m_mutex);
     return m_sessions.size();
 }
 
-// [SEQUENCE: MVP5-24] The SessionManager was updated to track the mapping between session IDs and player IDs, enabling handlers to identify the player associated with a session.
 void SessionManager::SetPlayerIdForSession(uint32_t session_id, uint64_t player_id) {
     std::unique_lock lock(m_mutex);
     m_session_to_player_id[session_id] = player_id;
 }
 
-// [SEQUENCE: MVP5-24] The SessionManager was updated to track the mapping between session IDs and player IDs, enabling handlers to identify the player associated with a session.
 uint64_t SessionManager::GetPlayerIdForSession(uint32_t session_id) const {
     std::shared_lock lock(m_mutex);
     auto it = m_session_to_player_id.find(session_id);
     return (it != m_session_to_player_id.end()) ? it->second : 0;
+}
+
+// [SEQUENCE: MVP6-16] Methods for UDP endpoint management.
+void SessionManager::RegisterUdpEndpoint(uint32_t session_id, const boost::asio::ip::udp::endpoint& endpoint) {
+    std::unique_lock lock(m_mutex);
+    auto it = m_sessions.find(session_id);
+    if (it != m_sessions.end()) {
+        it->second->SetUdpEndpoint(endpoint);
+        m_udp_endpoint_to_session_id[endpoint] = session_id;
+    }
+}
+
+std::shared_ptr<Session> SessionManager::GetSessionByUdpEndpoint(const boost::asio::ip::udp::endpoint& endpoint) const {
+    std::shared_lock lock(m_mutex);
+    auto it = m_udp_endpoint_to_session_id.find(endpoint);
+    if (it != m_udp_endpoint_to_session_id.end()) {
+        return GetSession(it->second);
+    }
+    return nullptr;
 }
 
 }
