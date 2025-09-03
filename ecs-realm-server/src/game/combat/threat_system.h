@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP4-41] Threat/Aggro system for enemy AI targeting
 #pragma once
 
 #include <unordered_map>
@@ -10,6 +9,10 @@
 
 namespace mmorpg::game::combat {
 
+// [SEQUENCE: 1696] Threat/Aggro system for enemy AI targeting
+// 위협도/어그로 시스템으로 적 AI 타겟팅 관리
+
+// [SEQUENCE: 1697] Threat modifier types
 enum class ThreatModifierType {
     DAMAGE_DEALT,       // Direct damage
     HEALING_DONE,       // Healing generates threat
@@ -21,6 +24,7 @@ enum class ThreatModifierType {
     SPECIAL_ABILITY     // Ability-specific threat
 };
 
+// [SEQUENCE: 1698] Threat event
 struct ThreatEvent {
     uint64_t source_id;         // Who generated threat
     ThreatModifierType type;
@@ -31,6 +35,7 @@ struct ThreatEvent {
     std::chrono::system_clock::time_point timestamp;
 };
 
+// [SEQUENCE: 1699] Threat entry for a single target
 struct ThreatEntry {
     uint64_t entity_id;         // Player/NPC ID
     float threat_value = 0.0f;  // Current threat
@@ -51,6 +56,7 @@ struct ThreatEntry {
     // Last update
     std::chrono::system_clock::time_point last_update;
     
+    // [SEQUENCE: 1700] Calculate effective threat
     float GetEffectiveThreat() const {
         if (is_taunted) {
             return std::numeric_limits<float>::max();  // Taunted = max threat
@@ -66,10 +72,12 @@ struct ThreatEntry {
     }
 };
 
+// [SEQUENCE: 1701] Threat table for an NPC
 class ThreatTable {
 public:
     ThreatTable(uint64_t owner_id) : owner_id_(owner_id) {}
     
+    // [SEQUENCE: 1702] Add threat
     void AddThreat(uint64_t entity_id, float amount, ThreatModifierType type) {
         if (amount < 0) {
             spdlog::warn("Negative threat amount: {}", amount);
@@ -113,6 +121,7 @@ public:
         UpdateThreatPercentages();
     }
     
+    // [SEQUENCE: 1703] Reduce threat
     void ReduceThreat(uint64_t entity_id, float amount) {
         auto it = threat_entries_.find(entity_id);
         if (it == threat_entries_.end()) {
@@ -125,6 +134,7 @@ public:
         UpdateThreatPercentages();
     }
     
+    // [SEQUENCE: 1704] Multiply threat
     void MultiplyThreat(uint64_t entity_id, float multiplier) {
         auto it = threat_entries_.find(entity_id);
         if (it == threat_entries_.end()) {
@@ -137,6 +147,7 @@ public:
         UpdateThreatPercentages();
     }
     
+    // [SEQUENCE: 1705] Set threat
     void SetThreat(uint64_t entity_id, float value) {
         auto& entry = GetOrCreateEntry(entity_id);
         entry.threat_value = std::max(0.0f, value);
@@ -145,6 +156,7 @@ public:
         UpdateThreatPercentages();
     }
     
+    // [SEQUENCE: 1706] Apply taunt
     void ApplyTaunt(uint64_t entity_id, std::chrono::seconds duration = std::chrono::seconds(3)) {
         auto& entry = GetOrCreateEntry(entity_id);
         entry.is_taunted = true;
@@ -160,6 +172,7 @@ public:
                     entity_id, owner_id_, duration.count());
     }
     
+    // [SEQUENCE: 1707] Apply fade (temporary threat reduction)
     void ApplyFade(uint64_t entity_id, float amount, std::chrono::seconds duration) {
         auto it = threat_entries_.find(entity_id);
         if (it == threat_entries_.end()) {
@@ -171,16 +184,19 @@ public:
         it->second.fade_end_time = std::chrono::system_clock::now() + duration;
     }
     
+    // [SEQUENCE: 1708] Set threat modifier
     void SetThreatModifier(uint64_t entity_id, float modifier) {
         auto& entry = GetOrCreateEntry(entity_id);
         entry.threat_multiplier = modifier;
     }
     
+    // [SEQUENCE: 1709] Set temporary modifier
     void SetTemporaryModifier(uint64_t entity_id, float modifier) {
         auto& entry = GetOrCreateEntry(entity_id);
         entry.temporary_multiplier = modifier;
     }
     
+    // [SEQUENCE: 1710] Get current target
     uint64_t GetCurrentTarget() {
         UpdateExpiredEffects();
         
@@ -199,6 +215,7 @@ public:
         return target;
     }
     
+    // [SEQUENCE: 1711] Get threat list
     std::vector<std::pair<uint64_t, float>> GetThreatList() {
         UpdateExpiredEffects();
         UpdateThreatPercentages();
@@ -220,16 +237,19 @@ public:
         return list;
     }
     
+    // [SEQUENCE: 1712] Remove entity
     void RemoveEntity(uint64_t entity_id) {
         threat_entries_.erase(entity_id);
         UpdateThreatPercentages();
     }
     
+    // [SEQUENCE: 1713] Clear all threat
     void ClearThreat() {
         threat_entries_.clear();
         spdlog::info("Threat table cleared for NPC {}", owner_id_);
     }
     
+    // [SEQUENCE: 1714] Drop threat out of combat
     void DropOutOfCombatThreat() {
         // Remove entries with no recent activity
         auto cutoff_time = std::chrono::system_clock::now() - std::chrono::seconds(10);
@@ -263,6 +283,7 @@ private:
     uint64_t owner_id_;  // NPC that owns this threat table
     std::unordered_map<uint64_t, ThreatEntry> threat_entries_;
     
+    // [SEQUENCE: 1715] Get or create threat entry
     ThreatEntry& GetOrCreateEntry(uint64_t entity_id) {
         auto it = threat_entries_.find(entity_id);
         if (it == threat_entries_.end()) {
@@ -275,6 +296,7 @@ private:
         return it->second;
     }
     
+    // [SEQUENCE: 1716] Update expired effects
     void UpdateExpiredEffects() {
         auto now = std::chrono::system_clock::now();
         
@@ -292,6 +314,7 @@ private:
         }
     }
     
+    // [SEQUENCE: 1717] Update threat percentages
     void UpdateThreatPercentages() {
         float total_threat = 0.0f;
         
@@ -312,6 +335,7 @@ private:
         }
     }
     
+    // [SEQUENCE: 1718] Get highest threat value
     float GetHighestThreat() const {
         float highest = 0.0f;
         for (const auto& [entity_id, entry] : threat_entries_) {
@@ -321,6 +345,7 @@ private:
     }
 };
 
+// [SEQUENCE: 1719] Threat manager for all NPCs
 class ThreatManager {
 public:
     static ThreatManager& Instance() {
@@ -328,6 +353,7 @@ public:
         return instance;
     }
     
+    // [SEQUENCE: 1720] Get or create threat table
     std::shared_ptr<ThreatTable> GetThreatTable(uint64_t npc_id) {
         auto it = threat_tables_.find(npc_id);
         if (it == threat_tables_.end()) {
@@ -338,10 +364,12 @@ public:
         return it->second;
     }
     
+    // [SEQUENCE: 1721] Remove threat table
     void RemoveThreatTable(uint64_t npc_id) {
         threat_tables_.erase(npc_id);
     }
     
+    // [SEQUENCE: 1722] Handle damage threat
     void AddDamageThreat(uint64_t npc_id, uint64_t attacker_id, float damage) {
         auto table = GetThreatTable(npc_id);
         
@@ -351,6 +379,7 @@ public:
         table->AddThreat(attacker_id, threat, ThreatModifierType::DAMAGE_DEALT);
     }
     
+    // [SEQUENCE: 1723] Handle healing threat
     void AddHealingThreat(uint64_t healer_id, uint64_t target_id, float healing) {
         // Healing generates threat on all enemies attacking the target
         for (const auto& [npc_id, table] : threat_tables_) {
@@ -360,12 +389,14 @@ public:
         }
     }
     
+    // [SEQUENCE: 1724] Handle ability threat
     void AddAbilityThreat(uint64_t npc_id, uint64_t caster_id, 
                          float base_threat, ThreatModifierType type) {
         auto table = GetThreatTable(npc_id);
         table->AddThreat(caster_id, base_threat, type);
     }
     
+    // [SEQUENCE: 1725] Transfer threat
     void TransferThreat(uint64_t npc_id, uint64_t from_id, uint64_t to_id, float percent) {
         auto table = GetThreatTable(npc_id);
         
@@ -376,6 +407,7 @@ public:
         table->AddThreat(to_id, transfer_amount, ThreatModifierType::SPECIAL_ABILITY);
     }
     
+    // [SEQUENCE: 1726] Clean up inactive tables
     void CleanupInactiveTables() {
         std::vector<uint64_t> to_remove;
         
@@ -397,6 +429,7 @@ private:
     
     std::unordered_map<uint64_t, std::shared_ptr<ThreatTable>> threat_tables_;
     
+    // [SEQUENCE: 1727] Get damage threat modifier
     float GetDamageThreatModifier(uint64_t entity_id) {
         // TODO: Get class-based threat modifier
         // Tank classes: 2.0x
@@ -406,6 +439,7 @@ private:
     }
 };
 
+// [SEQUENCE: 1728] Threat utilities
 class ThreatUtils {
 public:
     // Calculate threat reduction needed to not pull aggro

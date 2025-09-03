@@ -12,10 +12,10 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-167] Chat system for player communication
+// [SEQUENCE: 1559] Chat system for player communication
 // 채팅 시스템으로 플레이어 간 커뮤니케이션 관리
 
-// [SEQUENCE: MVP11-168] Chat channel types
+// [SEQUENCE: 1560] Chat channel types
 enum class ChatChannelType {
     SAY,            // Nearby players only
     YELL,           // Larger radius
@@ -30,7 +30,7 @@ enum class ChatChannelType {
     CUSTOM          // Custom channels
 };
 
-// [SEQUENCE: MVP11-169] Chat message
+// [SEQUENCE: 1561] Chat message
 struct ChatMessage {
     uint64_t sender_id;
     std::string sender_name;
@@ -50,7 +50,7 @@ struct ChatMessage {
     bool is_filtered = false;
 };
 
-// [SEQUENCE: MVP11-170] Chat filter settings
+// [SEQUENCE: 1562] Chat filter settings
 struct ChatFilterSettings {
     bool enable_profanity_filter = true;
     bool enable_spam_filter = true;
@@ -71,7 +71,7 @@ struct ChatFilterSettings {
     std::unordered_set<uint64_t> ignored_players;
 };
 
-// [SEQUENCE: MVP11-171] Chat channel configuration
+// [SEQUENCE: 1563] Chat channel configuration
 struct ChatChannelConfig {
     std::string channel_name;
     ChatChannelType type;
@@ -87,12 +87,12 @@ struct ChatChannelConfig {
     std::vector<std::string> banned_words;
 };
 
-// [SEQUENCE: MVP11-172] Chat history
+// [SEQUENCE: 1564] Chat history
 class ChatHistory {
 public:
     ChatHistory(size_t max_messages = 100) : max_messages_(max_messages) {}
     
-    // [SEQUENCE: MVP11-173] Add message to history
+    // [SEQUENCE: 1565] Add message to history
     void AddMessage(const ChatMessage& message) {
         messages_.push_back(message);
         
@@ -111,7 +111,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-174] Get recent messages
+    // [SEQUENCE: 1566] Get recent messages
     std::vector<ChatMessage> GetRecentMessages(size_t count = 50) const {
         std::vector<ChatMessage> result;
         size_t start = messages_.size() > count ? messages_.size() - count : 0;
@@ -123,7 +123,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP11-175] Get messages by channel
+    // [SEQUENCE: 1567] Get messages by channel
     std::vector<ChatMessage> GetChannelMessages(ChatChannelType channel, 
                                                size_t count = 50) const {
         auto it = channel_messages_.find(channel);
@@ -142,7 +142,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP11-176] Search messages
+    // [SEQUENCE: 1568] Search messages
     std::vector<ChatMessage> SearchMessages(const std::string& query) const {
         std::vector<ChatMessage> result;
         std::regex search_regex(query, std::regex_constants::icase);
@@ -163,13 +163,13 @@ private:
     std::unordered_map<ChatChannelType, std::deque<ChatMessage>> channel_messages_;
 };
 
-// [SEQUENCE: MVP11-177] Chat participant
+// [SEQUENCE: 1569] Chat participant
 class ChatParticipant {
 public:
     ChatParticipant(uint64_t player_id) 
         : player_id_(player_id), chat_history_(200) {}
     
-    // [SEQUENCE: MVP11-178] Send message
+    // [SEQUENCE: 1570] Send message
     bool CanSendMessage(ChatChannelType channel) {
         auto now = std::chrono::steady_clock::now();
         
@@ -194,7 +194,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-179] Receive message
+    // [SEQUENCE: 1571] Receive message
     void ReceiveMessage(const ChatMessage& message) {
         // Check if sender is ignored
         if (filter_settings_.ignored_players.find(message.sender_id) != 
@@ -217,7 +217,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-180] Mute player
+    // [SEQUENCE: 1572] Mute player
     void Mute(std::chrono::seconds duration) {
         is_muted_ = true;
         mute_end_time_ = std::chrono::steady_clock::now() + duration;
@@ -227,7 +227,7 @@ public:
         is_muted_ = false;
     }
     
-    // [SEQUENCE: MVP11-181] Ignore player
+    // [SEQUENCE: 1573] Ignore player
     void IgnorePlayer(uint64_t player_id) {
         filter_settings_.ignored_players.insert(player_id);
     }
@@ -236,7 +236,7 @@ public:
         filter_settings_.ignored_players.erase(player_id);
     }
     
-    // [SEQUENCE: MVP11-182] Toggle channel
+    // [SEQUENCE: 1574] Toggle channel
     void EnableChannel(ChatChannelType channel) {
         filter_settings_.enabled_channels.insert(channel);
     }
@@ -270,7 +270,7 @@ private:
     // Callback for new messages
     std::function<void(const ChatMessage&)> message_callback_;
     
-    // [SEQUENCE: MVP11-183] Get channel cooldown
+    // [SEQUENCE: 1575] Get channel cooldown
     uint32_t GetChannelCooldown(ChatChannelType channel) {
         switch (channel) {
             case ChatChannelType::WORLD:
@@ -285,10 +285,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-184] Chat moderation
+// [SEQUENCE: 1576] Chat moderation
 class ChatModerator {
 public:
-    // [SEQUENCE: MVP11-185] Filter message
+    // [SEQUENCE: 1577] Filter message
     static bool FilterMessage(std::string& message, const ChatFilterSettings& settings) {
         bool modified = false;
         
@@ -307,7 +307,7 @@ public:
         return modified;
     }
     
-    // [SEQUENCE: MVP11-186] Check for spam
+    // [SEQUENCE: 1578] Check for spam
     static bool IsSpam(const std::string& message, 
                       const std::vector<std::string>& recent_messages) {
         // Check for repeated messages
@@ -321,12 +321,12 @@ public:
         return similar_count >= 3;
     }
     
-    // [SEQUENCE: MVP11-187] Check for gold seller patterns
+    // [SEQUENCE: 1579] Check for gold seller patterns
     static bool IsGoldSellerMessage(const std::string& message) {
         static const std::vector<std::regex> patterns = {
             std::regex("(www|http|\\.).*gold", std::regex_constants::icase),
             std::regex("cheap.*gold.*delivery", std::regex_constants::icase),
-            std::regex("\\$\d+.*=.*\\d+k", std::regex_constants::icase),
+            std::regex("\\$\\d+.*=.*\\d+k", std::regex_constants::icase),
             std::regex("gold.*stock.*fast", std::regex_constants::icase)
         };
         
@@ -340,7 +340,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP11-188] Filter profanity
+    // [SEQUENCE: 1580] Filter profanity
     static bool FilterProfanity(std::string& message) {
         static const std::vector<std::string> bad_words = {
             // Add actual bad words in production
@@ -360,7 +360,7 @@ private:
         return found;
     }
     
-    // [SEQUENCE: MVP11-189] Filter excessive caps
+    // [SEQUENCE: 1581] Filter excessive caps
     static bool FilterExcessiveCaps(std::string& message) {
         if (message.length() < 10) return false;
         
@@ -387,16 +387,16 @@ private:
         return false;
     }
     
-    // [SEQUENCE: MVP11-190] Filter links
+    // [SEQUENCE: 1582] Filter links
     static bool FilterLinks(std::string& message) {
         static const std::regex url_pattern(
-            R"((https?:\\/\\/)?([\\da-z\\.-]+)\\.(.a-z\\.){2,6})([\\/\\w \\.-]*)*\\/?)"
+            R"((https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?)"
         );
         
         return std::regex_replace(message, url_pattern, "[LINK REMOVED]") != message;
     }
     
-    // [SEQUENCE: MVP11-191] Calculate message similarity
+    // [SEQUENCE: 1583] Calculate message similarity
     static float GetSimilarity(const std::string& str1, const std::string& str2) {
         if (str1.empty() || str2.empty()) return 0.0f;
         
@@ -415,7 +415,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-192] Chat manager
+// [SEQUENCE: 1584] Chat manager
 class ChatManager {
 public:
     static ChatManager& Instance() {
@@ -423,13 +423,13 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-193] Initialize system
+    // [SEQUENCE: 1585] Initialize system
     void Initialize() {
         InitializeChannels();
         spdlog::info("Chat system initialized");
     }
     
-    // [SEQUENCE: MVP11-194] Send message
+    // [SEQUENCE: 1586] Send message
     bool SendMessage(uint64_t sender_id, const std::string& sender_name,
                     const std::string& message, ChatChannelType channel,
                     uint64_t target_id = 0) {
@@ -480,7 +480,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-195] Send whisper
+    // [SEQUENCE: 1587] Send whisper
     bool SendWhisper(uint64_t sender_id, const std::string& sender_name,
                      uint64_t target_id, const std::string& target_name,
                      const std::string& message) {
@@ -504,14 +504,14 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-196] Join custom channel
+    // [SEQUENCE: 1588] Join custom channel
     void JoinChannel(uint64_t player_id, const std::string& channel_name) {
         custom_channels_[channel_name].insert(player_id);
         
         spdlog::info("Player {} joined channel {}", player_id, channel_name);
     }
     
-    // [SEQUENCE: MVP11-197] Leave custom channel
+    // [SEQUENCE: 1589] Leave custom channel
     void LeaveChannel(uint64_t player_id, const std::string& channel_name) {
         auto it = custom_channels_.find(channel_name);
         if (it != custom_channels_.end()) {
@@ -524,7 +524,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-198] Get participant
+    // [SEQUENCE: 1590] Get participant
     std::shared_ptr<ChatParticipant> GetOrCreateParticipant(uint64_t player_id) {
         auto it = participants_.find(player_id);
         if (it == participants_.end()) {
@@ -535,7 +535,7 @@ public:
         return it->second;
     }
     
-    // [SEQUENCE: MVP11-199] Mute player (admin command)
+    // [SEQUENCE: 1591] Mute player (admin command)
     void MutePlayer(uint64_t player_id, std::chrono::seconds duration) {
         auto participant = GetOrCreateParticipant(player_id);
         participant->Mute(duration);
@@ -553,7 +553,7 @@ private:
     // Spam tracking
     std::unordered_map<uint64_t, std::deque<std::string>> recent_messages_;
     
-    // [SEQUENCE: MVP11-200] Initialize channels
+    // [SEQUENCE: 1592] Initialize channels
     void InitializeChannels() {
         // Say channel
         ChatChannelConfig say_config;
@@ -580,7 +580,7 @@ private:
         channel_configs_[ChatChannelType::WORLD] = world_config;
     }
     
-    // [SEQUENCE: MVP11-201] Route message to recipients
+    // [SEQUENCE: 1593] Route message to recipients
     void RouteMessage(const ChatMessage& message) {
         switch (message.channel) {
             case ChatChannelType::SAY:
@@ -611,7 +611,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP11-202] Route proximity-based message
+    // [SEQUENCE: 1594] Route proximity-based message
     void RouteProximityMessage(const ChatMessage& message) {
         auto config_it = channel_configs_.find(message.channel);
         if (config_it == channel_configs_.end()) return;
@@ -624,26 +624,26 @@ private:
                      message.sender_id, range);
     }
     
-    // [SEQUENCE: MVP11-203] Route party message
+    // [SEQUENCE: 1595] Route party message
     void RoutePartyMessage(const ChatMessage& message) {
         // TODO: Get party members and send to each
         spdlog::debug("Party message from {}", message.sender_id);
     }
     
-    // [SEQUENCE: MVP11-204] Route guild message
+    // [SEQUENCE: 1596] Route guild message
     void RouteGuildMessage(const ChatMessage& message) {
         // TODO: Get guild members and send to each
         spdlog::debug("Guild message from {}", message.sender_id);
     }
     
-    // [SEQUENCE: MVP11-205] Route zone-wide message
+    // [SEQUENCE: 1597] Route zone-wide message
     void RouteZoneMessage(const ChatMessage& message) {
         // TODO: Get all players in zone/world and send
         spdlog::debug("Zone message from {} on channel {}", 
                      message.sender_id, static_cast<int>(message.channel));
     }
     
-    // [SEQUENCE: MVP11-206] Check for spam
+    // [SEQUENCE: 1598] Check for spam
     bool CheckSpam(uint64_t player_id, const std::string& message) {
         auto& recent = recent_messages_[player_id];
         
@@ -653,7 +653,7 @@ private:
         return ChatModerator::IsSpam(message, recent_vec);
     }
     
-    // [SEQUENCE: MVP11-207] Add to recent messages
+    // [SEQUENCE: 1599] Add to recent messages
     void AddToRecentMessages(uint64_t player_id, const std::string& message) {
         auto& recent = recent_messages_[player_id];
         recent.push_back(message);
@@ -664,3 +664,5 @@ private:
         }
     }
 };
+
+} // namespace mmorpg::game::social

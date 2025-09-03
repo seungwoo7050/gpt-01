@@ -10,8 +10,8 @@
 *   **Library Definitions:** `mmorpg_core`, `mmorpg_game`, `mmorpg_database`와 같은 여러 정적 라이브러리와 최종 서버 실행 파일(`mmorpg_server`)을 정의하여 코드를 모듈식으로 구성합니다.
 *   **Dependency Linking:** 각 라이브러리와 실행 파일이 필요로 하는 의존성을 명확히 연결합니다.
 
-```cpp
-// [SEQUENCE: MVP0-4] CMake build system setup
+```cmake
+# [SEQUENCE: MVP0-4] CMake build system setup
 cmake_minimum_required(VERSION 3.20)
 project(mmorpg-server-engine VERSION 1.0.0 LANGUAGES CXX)
 
@@ -50,23 +50,22 @@ target_link_libraries(mmorpg_server PRIVATE
 C++ 라이브러리 의존성은 Conan을 통해 관리됩니다. `conanfile.txt`는 Boost, Protobuf, spdlog 등 프로젝트에 필요한 모든 외부 라이브러리를 선언하여, 어떤 개발자든 동일한 빌드 환경을 쉽게 구성할 수 있도록 보장합니다.
 
 ```ini
-// [SEQUENCE: MVP0-6] Conan dependency management
+# [SEQUENCE: MVP0-6] Conan dependency management
 [requires]
 boost/1.82.0
 protobuf/3.21.12
 spdlog/1.12.0
 gtest/1.14.0
+nlohmann_json/3.11.3
+benchmark/1.8.3
 
 [generators]
-cmake
+CMakeDeps
+CMakeToolchain
 
 [options]
-boost:shared=False
+boost/*:shared=False
 # ... (other options)
-
-[imports]
-bin, *.dll -> ./bin
-lib, *.dylib* -> ./bin
 ```
 
 ## [SEQUENCE: MVP0-7] Containerization with Docker
@@ -76,7 +75,7 @@ lib, *.dylib* -> ./bin
 *   **Runtime Stage:** 빌드된 바이너리와 최소한의 런타임 의존성만 포함하는 경량 이미지입니다. 또한, 보안을 위해 non-root 사용자로 서버를 실행합니다.
 
 ```dockerfile
-// [SEQUENCE: MVP0-8] Docker containerization setup
+# [SEQUENCE: MVP0-8] Docker containerization setup
 # Build stage
 FROM ubuntu:22.04 AS builder
 # ... (build dependencies installation)

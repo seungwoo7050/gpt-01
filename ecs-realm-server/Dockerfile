@@ -1,4 +1,5 @@
-# [SEQUENCE: MVP6-4] Docker containerization setup
+# [SEQUENCE: MVP0-8] Docker containerization setup
+# [SEQUENCE: MVP6-4] A multi-stage Dockerfile for creating optimized runtime images.
 # [SEQUENCE: 1] Multi-stage build for production MMORPG server
 FROM ubuntu:22.04 AS builder
 

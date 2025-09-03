@@ -4,10 +4,10 @@
 
 namespace mmorpg::matchmaking {
 
-
+// [SEQUENCE: 2657] Matchmaking service integration examples
 class MatchmakingIntegration {
 public:
-    // [SEQUENCE: MVP13-29] Initialize matchmaking with game server
+    // [SEQUENCE: 2658] Initialize matchmaking with game server
     static void InitializeWithGameServer(GameServer* server, 
                                        MatchmakingService* matchmaking) {
         // 매치 생성 시 게임 서버에 알림
@@ -36,7 +36,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP13-30] Create match instance on server
+    // [SEQUENCE: 2659] Create match instance on server
     static void CreateMatchInstance(GameServer* server, const MatchGroup& match) {
         // 매치 타입에 따른 맵 선택
         std::string map_name = SelectMapForMatchType(match.match_type);
@@ -58,7 +58,7 @@ private:
                     match.match_id, map_name);
     }
     
-    // [SEQUENCE: MVP13-31] Notify players about match
+    // [SEQUENCE: 2660] Notify players about match
     static void NotifyMatchFound(GameServer* server, uint64_t player_id, 
                                 const MatchGroup& match) {
         MatchFoundPacket packet;
@@ -92,7 +92,7 @@ private:
         server->SendPacket(player_id, packet);
     }
     
-    // [SEQUENCE: MVP13-32] Select appropriate map
+    // [SEQUENCE: 2661] Select appropriate map
     static std::string SelectMapForMatchType(MatchType type) {
         static const std::unordered_map<MatchType, std::vector<std::string>> maps = {
             {MatchType::ARENA_1V1, {"arena_ring", "arena_pillars", "arena_bridge"}},
@@ -114,7 +114,7 @@ private:
         return "default_arena";
     }
     
-    // [SEQUENCE: MVP13-33] Configure match rules
+    // [SEQUENCE: 2662] Configure match rules
     static void ConfigureMatchRules(MatchInstance* instance, const MatchGroup& match) {
         // 기본 규칙 설정
         instance->SetTimeLimit(GetMatchDuration(match.match_type));
@@ -177,7 +177,7 @@ private:
                type == MatchType::RANKED_TEAM;
     }
     
-    // [SEQUENCE: MVP13-34] Apply compensation for long queue times
+    // [SEQUENCE: 2663] Apply compensation for long queue times
     static void ApplyQueueCompensation(GameServer* server, uint64_t player_id) {
         // 경험치 부스트 버프 (1시간)
         BuffData buff;
@@ -194,7 +194,7 @@ private:
         spdlog::info("Queue compensation applied to player {}", player_id);
     }
     
-    // [SEQUENCE: MVP13-35] Start countdown timer
+    // [SEQUENCE: 2664] Start countdown timer
     static void StartMatchCountdown(GameServer* server, const std::string& match_id) {
         // 30초 카운트다운 시작
         server->ScheduleTask(std::chrono::seconds(30), [server, match_id]() {
@@ -228,10 +228,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-36] Rating calculation system (ELO)
+// [SEQUENCE: 2665] Rating calculation system (ELO)
 class RatingCalculator {
 public:
-    // [SEQUENCE: MVP13-37] Calculate new ratings after match
+    // [SEQUENCE: 2666] Calculate new ratings after match
     static void CalculateNewRatings(
         const std::vector<MatchmakingProfile>& winners,
         const std::vector<MatchmakingProfile>& losers,
@@ -267,7 +267,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP13-38] Calculate average team rating
+    // [SEQUENCE: 2667] Calculate average team rating
     static double CalculateAverageRating(
         const std::vector<MatchmakingProfile>& team,
         MatchType match_type) {
@@ -287,12 +287,12 @@ private:
         return total / team.size();
     }
     
-    // [SEQUENCE: MVP13-39] ELO expected score formula
+    // [SEQUENCE: 2668] ELO expected score formula
     static double CalculateExpectedScore(double rating_a, double rating_b) {
         return 1.0 / (1.0 + std::pow(10.0, (rating_b - rating_a) / 400.0));
     }
     
-    // [SEQUENCE: MVP13-40] Get K-factor based on match type
+    // [SEQUENCE: 2669] Get K-factor based on match type
     static double GetKFactor(MatchType match_type) {
         switch (match_type) {
             case MatchType::RANKED_SOLO:
@@ -309,7 +309,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-41] Apply individual performance adjustments
+    // [SEQUENCE: 2670] Apply individual performance adjustments
     static void ApplyPerformanceAdjustments(
         std::unordered_map<uint64_t, int32_t>& rating_changes,
         MatchType match_type) {
@@ -337,10 +337,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-42] Matchmaking algorithm improvements
+// [SEQUENCE: 2671] Matchmaking algorithm improvements
 class AdvancedMatchmaking {
 public:
-    // [SEQUENCE: MVP13-43] Role-based team composition
+    // [SEQUENCE: 2672] Role-based team composition
     struct RoleRequirements {
         int tanks{1};
         int healers{1};
@@ -363,7 +363,7 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP13-44] Premade group handling
+    // [SEQUENCE: 2673] Premade group handling
     static bool CanMatchPremadeGroups(
         const std::vector<uint64_t>& group1,
         const std::vector<uint64_t>& group2,
@@ -378,7 +378,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP13-45] Fair match prediction
+    // [SEQUENCE: 2674] Fair match prediction
     static double PredictMatchFairness(const MatchGroup& match) {
         // 여러 요소를 고려한 공정성 예측
         double fairness = 1.0;
@@ -410,10 +410,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-46] Matchmaking analytics
+// [SEQUENCE: 2675] Matchmaking analytics
 class MatchmakingAnalytics {
 public:
-    // [SEQUENCE: MVP13-47] Track queue abandonment
+    // [SEQUENCE: 2676] Track queue abandonment
     struct AbandonmentData {
         uint64_t player_id;
         MatchType match_type;
@@ -434,7 +434,7 @@ public:
         wait_time_abandonments_[wait_bucket]++;
     }
     
-    // [SEQUENCE: MVP13-48] Analyze match quality over time
+    // [SEQUENCE: 2677] Analyze match quality over time
     void AnalyzeMatchQuality(const MatchGroup& match) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -455,7 +455,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-49] Generate recommendations
+    // [SEQUENCE: 2678] Generate recommendations
     struct Recommendations {
         std::vector<std::string> suggestions;
         

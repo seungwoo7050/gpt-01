@@ -10,7 +10,7 @@
 
 namespace mmorpg::game::world {
 
-// [SEQUENCE: MVP7-1] Map types enumeration
+// [SEQUENCE: 412] Map types enumeration
 enum class MapType {
     OVERWORLD,      // 오픈 월드 맵
     DUNGEON,        // 던전 (인스턴스 가능)
@@ -19,7 +19,7 @@ enum class MapType {
     RAID            // 레이드 던전
 };
 
-// [SEQUENCE: MVP7-2] Map configuration
+// [SEQUENCE: 413] Map configuration
 struct MapConfig {
     uint32_t map_id;
     std::string map_name;
@@ -53,30 +53,20 @@ struct MapConfig {
     std::vector<Connection> connections;
 };
 
-// [SEQUENCE: MVP7-3] Map instance representation
+// [SEQUENCE: 414] Map instance representation
 class MapInstance {
 public:
     MapInstance(const MapConfig& config, uint32_t instance_id = 0)
         : config_(config), instance_id_(instance_id) {
         
-        // [SEQUENCE: MVP7-4] Create spatial index based on config
+        // [SEQUENCE: 415] Create spatial index based on config
         if (config.use_octree) {
-            grid::WorldGrid::Config grid_config;
-            grid_config.width = config.width;
-            grid_config.height = config.height;
             spatial_index_ = std::make_unique<OctreeWorld>(
-                octree::OctreeWorld::Config{ 
-                    .world_min = {0, 0, 0}, 
-                    .world_max = {config.width, config.height, config.depth} 
-                }
+                config.width, config.height, config.depth
             );
         } else {
             spatial_index_ = std::make_unique<WorldGrid>(
-                grid::WorldGrid::Config{ 
-                    .cell_size = 100.0f, 
-                    .grid_width = static_cast<int>(config.width / 100.0f),
-                    .grid_height = static_cast<int>(config.height / 100.0f)
-                }
+                config.width, config.height
             );
         }
     }
@@ -85,7 +75,7 @@ public:
     uint32_t GetInstanceId() const { return instance_id_; }
     const MapConfig& GetConfig() const { return config_; }
     
-    // [SEQUENCE: MVP7-5] Entity management
+    // [SEQUENCE: 416] Entity management
     void AddEntity(core::ecs::EntityId entity, float x, float y, float z = 0) {
         entities_.insert(entity);
         if (config_.use_octree) {
@@ -112,7 +102,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP7-6] Spatial queries
+    // [SEQUENCE: 417] Spatial queries
     std::vector<core::ecs::EntityId> GetEntitiesInRadius(float x, float y, float z, float radius) {
         if (config_.use_octree) {
             return static_cast<OctreeWorld*>(spatial_index_.get())->GetEntitiesInRadius(x, y, z, radius);
@@ -128,7 +118,7 @@ public:
     size_t GetPlayerCount() const { return entities_.size(); }
     bool IsFull() const { return entities_.size() >= config_.max_players; }
     
-    // [SEQUENCE: MVP7-7] Check if position is near map transition
+    // [SEQUENCE: 418] Check if position is near map transition
     std::optional<MapConfig::Connection> CheckMapTransition(float x, float y, float z) {
         for (const auto& conn : config_.connections) {
             float dx = x - conn.x;
@@ -150,7 +140,7 @@ private:
     std::unordered_set<core::ecs::EntityId> entities_;
 };
 
-// [SEQUENCE: MVP7-8] Map manager singleton
+// [SEQUENCE: 419] Map manager singleton
 class MapManager {
 public:
     static MapManager& Instance() {
@@ -158,7 +148,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP7-9] Map configuration management
+    // [SEQUENCE: 420] Map configuration management
     void RegisterMap(const MapConfig& config) {
         std::lock_guard<std::mutex> lock(mutex_);
         map_configs_[config.map_id] = config;
@@ -169,7 +159,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP7-10] Instance management
+    // [SEQUENCE: 421] Instance management
     std::shared_ptr<MapInstance> CreateInstance(uint32_t map_id, uint32_t instance_id = 0) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -193,7 +183,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP7-11] Get map instance
+    // [SEQUENCE: 422] Get map instance
     std::shared_ptr<MapInstance> GetInstance(uint32_t map_id, uint32_t instance_id = 0) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -207,7 +197,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP7-12] Find available instance for instanced maps
+    // [SEQUENCE: 423] Find available instance for instanced maps
     std::shared_ptr<MapInstance> FindAvailableInstance(uint32_t map_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -227,7 +217,7 @@ public:
         return CreateInstance(map_id);
     }
     
-    // [SEQUENCE: MVP7-13] Remove empty instances
+    // [SEQUENCE: 424] Remove empty instances
     void CleanupEmptyInstances() {
         std::lock_guard<std::mutex> lock(mutex_);
         

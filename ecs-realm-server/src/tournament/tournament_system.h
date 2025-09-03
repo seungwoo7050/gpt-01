@@ -15,7 +15,7 @@
 
 namespace mmorpg::tournament {
 
-// [SEQUENCE: MVP13-137] Tournament types and formats
+// [SEQUENCE: 2835] Tournament types and formats
 enum class TournamentFormat {
     SINGLE_ELIMINATION,     // 단판 토너먼트
     DOUBLE_ELIMINATION,     // 패자부활전 있음
@@ -25,7 +25,7 @@ enum class TournamentFormat {
     CUSTOM                 // 커스텀 규칙
 };
 
-// [SEQUENCE: MVP13-138] Tournament entry requirements
+// [SEQUENCE: 2836] Tournament entry requirements
 struct TournamentRequirements {
     // Rating requirements
     int32_t minimum_rating{0};
@@ -53,7 +53,7 @@ struct TournamentRequirements {
     std::vector<uint32_t> banned_items;
 };
 
-// [SEQUENCE: MVP13-139] Tournament configuration
+// [SEQUENCE: 2837] Tournament configuration
 struct TournamentConfig {
     std::string tournament_name;
     TournamentFormat format{TournamentFormat::SINGLE_ELIMINATION};
@@ -80,7 +80,7 @@ struct TournamentConfig {
     std::unordered_map<uint32_t, TournamentReward> rewards;
 };
 
-// [SEQUENCE: MVP13-140] Tournament reward structure
+// [SEQUENCE: 2838] Tournament reward structure
 struct TournamentReward {
     uint32_t placement;  // 1st, 2nd, 3rd, etc.
     
@@ -101,7 +101,7 @@ struct TournamentReward {
     int32_t rating_bonus{0};
 };
 
-// [SEQUENCE: MVP13-141] Tournament participant
+// [SEQUENCE: 2839] Tournament participant
 struct TournamentParticipant {
     uint64_t participant_id;  // Player or team ID
     std::string name;
@@ -131,7 +131,7 @@ struct TournamentParticipant {
     uint64_t team_captain{0};
 };
 
-// [SEQUENCE: MVP13-142] Tournament match
+// [SEQUENCE: 2840] Tournament match
 struct TournamentMatch {
     uint64_t match_id;
     uint32_t round_number;
@@ -160,10 +160,10 @@ struct TournamentMatch {
     std::chrono::system_clock::time_point end_time;
 };
 
-// [SEQUENCE: MVP13-143] Tournament bracket
+// [SEQUENCE: 2841] Tournament bracket
 class TournamentBracket {
 public:
-    // [SEQUENCE: MVP13-144] Initialize bracket
+    // [SEQUENCE: 2842] Initialize bracket
     TournamentBracket(TournamentFormat format, uint32_t participant_count)
         : format_(format)
         , participant_count_(participant_count) {
@@ -171,7 +171,7 @@ public:
         GenerateBracket();
     }
     
-    // [SEQUENCE: MVP13-145] Generate initial bracket
+    // [SEQUENCE: 2843] Generate initial bracket
     void GenerateBracket() {
         switch (format_) {
             case TournamentFormat::SINGLE_ELIMINATION:
@@ -196,7 +196,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-146] Get next matches for round
+    // [SEQUENCE: 2844] Get next matches for round
     std::vector<TournamentMatch> GetRoundMatches(uint32_t round) const {
         std::vector<TournamentMatch> round_matches;
         
@@ -209,7 +209,7 @@ public:
         return round_matches;
     }
     
-    // [SEQUENCE: MVP13-147] Update match result
+    // [SEQUENCE: 2845] Update match result
     void UpdateMatchResult(uint64_t match_id, uint64_t winner_id) {
         auto it = matches_.find(match_id);
         if (it == matches_.end()) {
@@ -230,7 +230,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-148] Check if tournament is complete
+    // [SEQUENCE: 2846] Check if tournament is complete
     bool IsComplete() const {
         // Check if final match is completed
         auto final_match = GetFinalMatch();
@@ -240,7 +240,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP13-149] Get tournament standings
+    // [SEQUENCE: 2847] Get tournament standings
     std::vector<std::pair<uint64_t, uint32_t>> GetStandings() const {
         std::vector<std::pair<uint64_t, uint32_t>> standings;
         
@@ -382,10 +382,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-150] Tournament instance
+// [SEQUENCE: 2848] Tournament instance
 class Tournament {
 public:
-    // [SEQUENCE: MVP13-151] Create tournament
+    // [SEQUENCE: 2849] Create tournament
     Tournament(uint64_t tournament_id, const TournamentConfig& config)
         : tournament_id_(tournament_id)
         , config_(config)
@@ -395,7 +395,7 @@ public:
                     tournament_id_, config_.tournament_name);
     }
     
-    // [SEQUENCE: MVP13-152] Tournament states
+    // [SEQUENCE: 2850] Tournament states
     enum class TournamentState {
         REGISTRATION,      // 참가 신청 중
         CHECK_IN,         // 체크인 기간
@@ -405,7 +405,7 @@ public:
         CANCELLED         // 취소됨
     };
     
-    // [SEQUENCE: MVP13-153] Register participant
+    // [SEQUENCE: 2851] Register participant
     bool RegisterParticipant(uint64_t participant_id, const std::string& name,
                            const std::vector<uint64_t>& team_members = {}) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -441,7 +441,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP13-154] Check in participant
+    // [SEQUENCE: 2852] Check in participant
     bool CheckInParticipant(uint64_t participant_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -460,7 +460,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP13-155] Start tournament
+    // [SEQUENCE: 2853] Start tournament
     void StartTournament() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -496,7 +496,7 @@ public:
                     tournament_id_, participants_.size());
     }
     
-    // [SEQUENCE: MVP13-156] Process match completion
+    // [SEQUENCE: 2854] Process match completion
     void ProcessMatchCompletion(uint64_t arena_match_id, 
                               uint64_t winner_id,
                               const ArenaMatch::MatchStatistics& stats) {
@@ -527,7 +527,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-157] Get current standings
+    // [SEQUENCE: 2855] Get current standings
     std::vector<std::pair<TournamentParticipant, uint32_t>> GetStandings() const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -567,7 +567,7 @@ private:
     
     mutable std::mutex mutex_;
     
-    // [SEQUENCE: MVP13-158] Check participant requirements
+    // [SEQUENCE: 2856] Check participant requirements
     bool CheckRequirements(uint64_t participant_id) {
         // In real implementation, check:
         // - Rating requirements
@@ -577,7 +577,7 @@ private:
         return true;
     }
     
-    // [SEQUENCE: MVP13-159] Remove no-show participants
+    // [SEQUENCE: 2857] Remove no-show participants
     void RemoveNoShows() {
         auto it = participants_.begin();
         while (it != participants_.end()) {
@@ -590,7 +590,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-160] Assign bracket positions
+    // [SEQUENCE: 2858] Assign bracket positions
     void AssignBracketPositions() {
         // Seeding based on rating
         std::vector<std::pair<uint64_t, int32_t>> seeded_participants;
@@ -611,7 +611,7 @@ private:
         AssignSeedingPositions(seeded_participants);
     }
     
-    // [SEQUENCE: MVP13-161] Start tournament round
+    // [SEQUENCE: 2859] Start tournament round
     void StartRound(uint32_t round) {
         auto round_matches = bracket_->GetRoundMatches(round);
         current_round_matches_.clear();
@@ -631,7 +631,7 @@ private:
                     tournament_id_, round, round_matches.size());
     }
     
-    // [SEQUENCE: MVP13-162] Complete tournament round
+    // [SEQUENCE: 2860] Complete tournament round
     void CompleteRound() {
         current_round_++;
         
@@ -648,7 +648,7 @@ private:
         StartRound(current_round_);
     }
     
-    // [SEQUENCE: MVP13-163] Complete tournament
+    // [SEQUENCE: 2861] Complete tournament
     void CompleteTournament() {
         state_ = TournamentState::COMPLETED;
         
@@ -703,10 +703,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-164] Tournament system manager
+// [SEQUENCE: 2862] Tournament system manager
 class TournamentSystem {
 public:
-    // [SEQUENCE: MVP13-165] Create tournament
+    // [SEQUENCE: 2863] Create tournament
     uint64_t CreateTournament(const TournamentConfig& config) {
         uint64_t tournament_id = next_tournament_id_++;
         
@@ -726,7 +726,7 @@ public:
         return tournament_id;
     }
     
-    // [SEQUENCE: MVP13-166] Get active tournaments
+    // [SEQUENCE: 2864] Get active tournaments
     std::vector<std::shared_ptr<Tournament>> GetActiveTournaments() const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -743,7 +743,7 @@ public:
         return active;
     }
     
-    // [SEQUENCE: MVP13-167] Get tournament by ID
+    // [SEQUENCE: 2865] Get tournament by ID
     std::shared_ptr<Tournament> GetTournament(uint64_t tournament_id) const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -755,7 +755,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP13-168] Register for tournament
+    // [SEQUENCE: 2866] Register for tournament
     bool RegisterForTournament(uint64_t tournament_id, 
                              uint64_t participant_id,
                              const std::string& name,
@@ -768,7 +768,7 @@ public:
         return tournament->RegisterParticipant(participant_id, name, team_members);
     }
     
-    // [SEQUENCE: MVP13-169] Get tournament schedule
+    // [SEQUENCE: 2867] Get tournament schedule
     struct TournamentSchedule {
         struct ScheduledTournament {
             uint64_t tournament_id;
@@ -825,7 +825,7 @@ public:
         return schedule;
     }
     
-    // [SEQUENCE: MVP13-170] Process arena match completion
+    // [SEQUENCE: 2868] Process arena match completion
     void ProcessArenaMatchCompletion(uint64_t arena_match_id,
                                    uint64_t winner_id,
                                    const ArenaMatch::MatchStatistics& stats) {
@@ -845,7 +845,7 @@ private:
     
     mutable std::mutex mutex_;
     
-    // [SEQUENCE: MVP13-171] Schedule tournament state transitions
+    // [SEQUENCE: 2869] Schedule tournament state transitions
     void ScheduleTournamentTransitions(std::shared_ptr<Tournament> tournament) {
         const auto& config = tournament->GetConfig();
         

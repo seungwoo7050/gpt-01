@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP1-43] common.proto: Vector3, 에러 코드 등 여러 메시지에서 공통으로 사용되는 데이터 구조를 정의합니다.
+// [SEQUENCE: MVP1-28] common.proto: 공통 데이터 구조를 정의합니다.
 syntax = "proto3";
 
 package mmorpg.proto;

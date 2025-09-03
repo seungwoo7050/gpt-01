@@ -12,7 +12,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-137] Housing storage types
+// [SEQUENCE: 3456] Housing storage types
 enum class HousingStorageType {
     PERSONAL_CHEST,     // 개인 상자
     SHARED_STORAGE,     // 공유 저장소
@@ -24,7 +24,7 @@ enum class HousingStorageType {
     MAGICAL_CHEST      // 마법 상자
 };
 
-// [SEQUENCE: MVP14-138] Storage container properties
+// [SEQUENCE: 3457] Storage container properties
 struct StorageContainerProperties {
     HousingStorageType type;
     std::string name;
@@ -54,10 +54,10 @@ struct StorageContainerProperties {
     bool trap_enabled{false};
 };
 
-// [SEQUENCE: MVP14-139] Storage container instance
+// [SEQUENCE: 3458] Storage container instance
 class HousingStorageContainer {
 public:
-    // [SEQUENCE: MVP14-140] Container management
+    // [SEQUENCE: 3459] Container management
     HousingStorageContainer(uint64_t container_id,
                            const StorageContainerProperties& props);
     
@@ -74,7 +74,7 @@ public:
     uint32_t GetTotalCapacity() const { return current_capacity_; }
     float GetWeightUsage() const;
     
-    // [SEQUENCE: MVP14-141] Item search and filtering
+    // [SEQUENCE: 3460] Item search and filtering
     struct StoredItem {
         uint32_t item_id;
         uint32_t quantity;
@@ -122,7 +122,7 @@ private:
     void UpdateWeight();
 };
 
-// [SEQUENCE: MVP14-142] Storage room management
+// [SEQUENCE: 3461] Storage room management
 class HousingStorageRoom {
 public:
     struct StorageRoomConfig {
@@ -138,7 +138,7 @@ public:
         bool auto_organize{false};
     };
     
-    // [SEQUENCE: MVP14-143] Room management
+    // [SEQUENCE: 3462] Room management
     HousingStorageRoom(uint64_t room_id, const StorageRoomConfig& config);
     
     // Container management
@@ -184,7 +184,7 @@ private:
     void ApplyTimeFreezingEffect();
 };
 
-// [SEQUENCE: MVP14-144] Linked storage network
+// [SEQUENCE: 3463] Linked storage network
 class LinkedStorageNetwork {
 public:
     struct NetworkNode {
@@ -195,7 +195,7 @@ public:
         uint32_t access_tier{1};  // Higher tiers can access lower
     };
     
-    // [SEQUENCE: MVP14-145] Network management
+    // [SEQUENCE: 3464] Network management
     void AddNode(const NetworkNode& node);
     void RemoveNode(uint64_t container_id);
     void LinkNodes(uint64_t container_id_1, uint64_t container_id_2);
@@ -228,7 +228,7 @@ private:
     bool ValidateAccess(uint64_t player_id, uint64_t container_id);
 };
 
-// [SEQUENCE: MVP14-146] Storage manager
+// [SEQUENCE: 3465] Storage manager
 class HousingStorageManager {
 public:
     static HousingStorageManager& Instance() {
@@ -236,7 +236,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-147] Storage creation
+    // [SEQUENCE: 3466] Storage creation
     std::shared_ptr<HousingStorageContainer> CreateContainer(
         HousingStorageType type,
         const std::string& custom_name = "");
@@ -253,7 +253,7 @@ public:
     void CreateStorageNetwork(uint64_t player_id);
     LinkedStorageNetwork* GetPlayerNetwork(uint64_t player_id);
     
-    // [SEQUENCE: MVP14-148] Bulk operations
+    // [SEQUENCE: 3467] Bulk operations
     struct BulkTransferRequest {
         uint64_t source_container;
         uint64_t target_container;
@@ -288,7 +288,7 @@ private:
     void InitializeDefaultTemplates();
 };
 
-// [SEQUENCE: MVP14-149] Special storage types
+// [SEQUENCE: 3468] Special storage types
 class SpecialStorageContainers {
 public:
     // Display case for showing items
@@ -303,7 +303,7 @@ public:
             std::string description_plaque;
         };
         
-        // [SEQUENCE: MVP14-150] Display management
+        // [SEQUENCE: 3469] Display management
         bool AddDisplayItem(uint32_t item_id, const DisplaySlot& slot);
         void RemoveDisplayItem(uint32_t slot_index);
         void UpdateDisplayDescription(uint32_t slot_index, 
@@ -326,7 +326,7 @@ public:
             bool is_favorite{false};
         };
         
-        // [SEQUENCE: MVP14-151] Outfit management
+        // [SEQUENCE: 3470] Outfit management
         void SaveOutfit(const std::string& name, const Outfit& outfit);
         bool LoadOutfit(const std::string& name, Player& player);
         void DeleteOutfit(const std::string& name);
@@ -341,7 +341,7 @@ public:
     // Crafting material storage with auto-sorting
     class CraftingStorage : public HousingStorageContainer {
     public:
-        // [SEQUENCE: MVP14-152] Material organization
+        // [SEQUENCE: 3471] Material organization
         void OrganizeByType();
         void OrganizeByQuality();
         void OrganizeByProfession(uint32_t profession_id);
@@ -354,7 +354,7 @@ public:
     };
 };
 
-// [SEQUENCE: MVP14-153] Storage utilities
+// [SEQUENCE: 3472] Storage utilities
 namespace StorageUtils {
     // Capacity calculations
     uint32_t CalculateUpgradeCost(HousingStorageType type,

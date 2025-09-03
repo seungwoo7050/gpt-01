@@ -10,7 +10,7 @@
 
 namespace mmorpg::quest {
 
-// [SEQUENCE: MVP14-84] Quest template validation
+// [SEQUENCE: 3673] Quest template validation
 bool QuestTemplate::CanGenerate(const QuestGenerationParams& params) const {
     // Check level requirements
     if (params.player_level < min_level_ || params.player_level > max_level_) {
@@ -39,12 +39,12 @@ bool QuestTemplate::CanGenerate(const QuestGenerationParams& params) const {
     return true;
 }
 
-// [SEQUENCE: MVP14-85] Quest generation engine constructor
+// [SEQUENCE: 3674] Quest generation engine constructor
 QuestGenerationEngine::QuestGenerationEngine()
     : rng_(std::chrono::steady_clock::now().time_since_epoch().count()) {
 }
 
-// [SEQUENCE: MVP14-86] Generate quest from parameters
+// [SEQUENCE: 3675] Generate quest from parameters
 GeneratedQuestPtr QuestGenerationEngine::GenerateQuest(
     const QuestGenerationParams& params) {
     
@@ -99,7 +99,7 @@ GeneratedQuestPtr QuestGenerationEngine::GenerateQuest(
     return quest;
 }
 
-// [SEQUENCE: MVP14-87] Generate multiple quests
+// [SEQUENCE: 3676] Generate multiple quests
 std::vector<GeneratedQuestPtr> QuestGenerationEngine::GenerateMultipleQuests(
     const QuestGenerationParams& params, uint32_t count) {
     
@@ -120,7 +120,7 @@ std::vector<GeneratedQuestPtr> QuestGenerationEngine::GenerateMultipleQuests(
     return quests;
 }
 
-// [SEQUENCE: MVP14-88] Template selection
+// [SEQUENCE: 3677] Template selection
 QuestTemplatePtr QuestGenerationEngine::SelectTemplate(
     const QuestGenerationParams& params) {
     
@@ -171,7 +171,7 @@ QuestTemplatePtr QuestGenerationEngine::SelectTemplate(
     return valid_templates.back();
 }
 
-// [SEQUENCE: MVP14-89] Get valid templates
+// [SEQUENCE: 3678] Get valid templates
 std::vector<QuestTemplatePtr> QuestGenerationEngine::GetValidTemplates(
     const QuestGenerationParams& params) {
     
@@ -185,7 +185,7 @@ std::vector<QuestTemplatePtr> QuestGenerationEngine::GetValidTemplates(
     return valid_templates;
 }
 
-// [SEQUENCE: MVP14-90] Generate objectives
+// [SEQUENCE: 3679] Generate objectives
 std::vector<QuestObjective> QuestGenerationEngine::GenerateObjectives(
     const QuestTemplate& template_quest,
     const QuestGenerationParams& params) {
@@ -224,7 +224,7 @@ std::vector<QuestObjective> QuestGenerationEngine::GenerateObjectives(
     return objectives;
 }
 
-// [SEQUENCE: MVP14-91] Calculate rewards
+// [SEQUENCE: 3680] Calculate rewards
 QuestRewards QuestGenerationEngine::CalculateRewards(
     const QuestTemplate& template_quest,
     const QuestGenerationParams& params,
@@ -262,7 +262,7 @@ QuestRewards QuestGenerationEngine::CalculateRewards(
     return rewards;
 }
 
-// [SEQUENCE: MVP14-92] Generate quest name
+// [SEQUENCE: 3681] Generate quest name
 std::string QuestGenerationEngine::GenerateQuestName(
     const QuestTemplate& template_quest,
     const QuestGenerationParams& params) {
@@ -285,7 +285,7 @@ std::string QuestGenerationEngine::GenerateQuestName(
     return base_name;
 }
 
-// [SEQUENCE: MVP14-93] Generate quest description
+// [SEQUENCE: 3682] Generate quest description
 std::string QuestGenerationEngine::GenerateQuestDescription(
     const QuestTemplate& template_quest,
     const std::vector<QuestObjective>& objectives) {
@@ -307,7 +307,7 @@ std::string QuestGenerationEngine::GenerateQuestDescription(
     return desc;
 }
 
-// [SEQUENCE: MVP14-94] Helper - Select target
+// [SEQUENCE: 3683] Helper - Select target
 uint32_t QuestGenerationEngine::SelectTarget(
     const ObjectiveTemplate& objective,
     const QuestGenerationParams& params) {
@@ -332,7 +332,7 @@ uint32_t QuestGenerationEngine::SelectTarget(
     return valid_targets[dist(rng_)];
 }
 
-// [SEQUENCE: MVP14-95] Helper - Calculate objective count
+// [SEQUENCE: 3684] Helper - Calculate objective count
 uint32_t QuestGenerationEngine::CalculateObjectiveCount(
     const ObjectiveTemplate& objective,
     float difficulty_modifier) {
@@ -345,7 +345,7 @@ uint32_t QuestGenerationEngine::CalculateObjectiveCount(
     return std::clamp(modified_count, objective.min_count, objective.max_count);
 }
 
-// [SEQUENCE: MVP14-96] Helper - Calculate difficulty modifier
+// [SEQUENCE: 3685] Helper - Calculate difficulty modifier
 float QuestGenerationEngine::CalculateDifficultyModifier(
     const QuestGenerationParams& params) {
     
@@ -367,14 +367,14 @@ float QuestGenerationEngine::CalculateDifficultyModifier(
     return std::clamp(modifier, 0.5f, 3.0f);
 }
 
-// [SEQUENCE: MVP14-97] Dynamic quest manager constructor
+// [SEQUENCE: 3686] Dynamic quest manager constructor
 DynamicQuestManager::DynamicQuestManager()
     : generation_engine_(std::make_unique<QuestGenerationEngine>()) {
     
     spdlog::info("[DynamicQuest] Manager initialized");
 }
 
-// [SEQUENCE: MVP14-98] Register quest template
+// [SEQUENCE: 3687] Register quest template
 void DynamicQuestManager::RegisterTemplate(QuestTemplatePtr template_quest) {
     if (!template_quest) {
         return;
@@ -393,14 +393,14 @@ void DynamicQuestManager::RegisterTemplate(QuestTemplatePtr template_quest) {
                  id, static_cast<int>(type));
 }
 
-// [SEQUENCE: MVP14-99] Get template by ID
+// [SEQUENCE: 3688] Get template by ID
 QuestTemplatePtr DynamicQuestManager::GetTemplate(const std::string& template_id) {
     std::shared_lock lock(mutex_);
     auto it = templates_.find(template_id);
     return (it != templates_.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-100] Generate quest for player
+// [SEQUENCE: 3689] Generate quest for player
 GeneratedQuestPtr DynamicQuestManager::GenerateQuestForPlayer(Player& player) {
     // Build generation parameters
     auto params = BuildGenerationParams(player);
@@ -424,7 +424,7 @@ GeneratedQuestPtr DynamicQuestManager::GenerateQuestForPlayer(Player& player) {
     return quest;
 }
 
-// [SEQUENCE: MVP14-101] Generate daily quests
+// [SEQUENCE: 3690] Generate daily quests
 std::vector<GeneratedQuestPtr> DynamicQuestManager::GenerateDailyQuests(
     Player& player, uint32_t count) {
     
@@ -447,7 +447,7 @@ std::vector<GeneratedQuestPtr> DynamicQuestManager::GenerateDailyQuests(
     return quests;
 }
 
-// [SEQUENCE: MVP14-102] World event handlers
+// [SEQUENCE: 3691] World event handlers
 void DynamicQuestManager::OnWorldEvent(const std::string& event_type, float intensity) {
     std::unique_lock lock(mutex_);
     current_world_events_[event_type] = intensity;
@@ -471,7 +471,7 @@ void DynamicQuestManager::OnZoneExplored(const std::string& zone_name, uint64_t 
     // TODO: Implement exploration-triggered quest generation
 }
 
-// [SEQUENCE: MVP14-103] Build generation parameters
+// [SEQUENCE: 3692] Build generation parameters
 QuestGenerationParams DynamicQuestManager::BuildGenerationParams(Player& player) {
     QuestGenerationParams params;
     
@@ -499,7 +499,7 @@ QuestGenerationParams DynamicQuestManager::BuildGenerationParams(Player& player)
     return params;
 }
 
-// [SEQUENCE: MVP14-104] Quest template builder implementation
+// [SEQUENCE: 3693] Quest template builder implementation
 QuestTemplateBuilder& QuestTemplateBuilder::Name(const std::string& name) {
     template_->SetName(name);
     return *this;
@@ -543,7 +543,7 @@ QuestTemplatePtr QuestTemplateBuilder::Build() {
     return template_;
 }
 
-// [SEQUENCE: MVP14-105] Predefined templates
+// [SEQUENCE: 3694] Predefined templates
 namespace PredefinedTemplates {
 
 QuestTemplatePtr CreateBountyHunterTemplate() {
@@ -584,7 +584,7 @@ QuestTemplatePtr CreateCourierTemplate() {
 
 } // namespace PredefinedTemplates
 
-// [SEQUENCE: MVP14-106] Quest generation utilities
+// [SEQUENCE: 3695] Quest generation utilities
 namespace QuestGenerationUtils {
 
 std::string GenerateQuestTitle(QuestTemplateType type,
@@ -627,6 +627,5 @@ float CalculateQuestDifficulty(const GeneratedQuest& quest,
 }
 
 } // namespace QuestGenerationUtils
-
 
 } // namespace mmorpg::quest

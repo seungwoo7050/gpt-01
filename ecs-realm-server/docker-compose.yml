@@ -1,8 +1,9 @@
-# [SEQUENCE: MVP6-5] Production-ready multi-server deployment
+# [SEQUENCE: MVP6-5] A Docker Compose setup for local development and testing.
+# [SEQUENCE: 1] Production-ready multi-server deployment
 version: '3.8'
 
 services:
-  # [SEQUENCE: MVP6-11] Game server for zone 1
+  # [SEQUENCE: 2] Game server zone 1 - handles world area A
   game-server-zone1:
     build:
       context: .
@@ -47,7 +48,52 @@ services:
       timeout: 3s
       retries: 3
 
-  # [SEQUENCE: MVP6-12] PostgreSQL for persistent storage
+  # [SEQUENCE: 3] Game server zone 2 - handles world area B
+  game-server-zone2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: mmorpg-server-zone2
+    command: ["--config", "/app/config/server.yaml", "--zone", "2"]
+    environment:
+      - SERVER_NAME=Zone2
+      - WORLD_ZONE_ID=2
+      - SERVER_PORT=8080
+      - METRICS_PORT=9090
+      - HEALTH_PORT=8081
+      - MAX_PLAYERS=1000
+      - REDIS_URL=redis://redis:6379/0
+      - DB_HOST=postgres
+      - DB_NAME=gamedb
+      - DB_USER=gameserver
+      - DB_PASSWORD=${DB_PASSWORD:-gamepass123}
+      - RABBITMQ_URL=amqp://game:game123@rabbitmq:5672/
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - ENABLE_METRICS=true
+    ports:
+      - "8082:8080"
+      - "9091:9090"
+    volumes:
+      - ./logs/zone2:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - game-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # [SEQUENCE: 4] PostgreSQL for persistent storage
   postgres:
     image: postgres:15-alpine
     container_name: mmorpg-postgres
@@ -71,6 +117,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # [SEQUENCE: 5] Redis for session state and matchmaking
   redis:
     image: redis:7-alpine
     container_name: mmorpg-redis
@@ -93,6 +140,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # [SEQUENCE: 6] RabbitMQ for cross-server messaging
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: mmorpg-rabbitmq
@@ -114,7 +162,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # [SEQUENCE: MVP6-13] Nginx load balancer
+  # [SEQUENCE: 7] Nginx load balancer
   nginx:
     image: nginx:alpine
     container_name: mmorpg-nginx
@@ -126,6 +174,7 @@ services:
       - "443:443"
     depends_on:
       - game-server-zone1
+      - game-server-zone2
     networks:
       - game-network
     restart: unless-stopped
@@ -135,6 +184,7 @@ services:
       timeout: 3s
       retries: 3
 
+  # [SEQUENCE: 8] Prometheus for metrics
   prometheus:
     image: prom/prometheus:latest
     container_name: mmorpg-prometheus
@@ -153,6 +203,7 @@ services:
       - game-network
     restart: unless-stopped
 
+  # [SEQUENCE: 9] Grafana for visualization
   grafana:
     image: grafana/grafana:latest
     container_name: mmorpg-grafana
@@ -172,6 +223,21 @@ services:
       - game-network
     restart: unless-stopped
 
+  # [SEQUENCE: 10] Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: mmorpg-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    ports:
+      - "6831:6831/udp"  # Agent port
+      - "16686:16686"    # Web UI
+      - "14268:14268"    # Collector
+    networks:
+      - game-network
+    restart: unless-stopped
+
+# [SEQUENCE: 11] Network configuration
 networks:
   game-network:
     driver: bridge
@@ -179,6 +245,7 @@ networks:
       config:
         - subnet: 172.20.0.0/16
 
+# [SEQUENCE: 12] Volume definitions
 volumes:
   postgres-data:
     driver: local

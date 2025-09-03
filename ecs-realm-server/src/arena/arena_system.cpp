@@ -5,10 +5,10 @@
 
 namespace mmorpg::arena {
 
-// [SEQUENCE: MVP12-192] Arena system integration
+// [SEQUENCE: 2820] Arena system integration
 class ArenaIntegration {
 public:
-    // [SEQUENCE: MVP12-193] Initialize arena system with game server
+    // [SEQUENCE: 2821] Initialize arena system with game server
     static void InitializeWithGameServer(GameServer* server,
                                        ArenaSystem* arena_system,
                                        MatchmakingService* matchmaking_service,
@@ -17,7 +17,7 @@ public:
         arena_system->SetMatchmakingService(matchmaking_service);
         arena_system->SetRankingService(ranking_service);
         
-        // [SEQUENCE: MVP12-194] Handle matchmaking completion
+        // [SEQUENCE: 2822] Handle matchmaking completion
         matchmaking_service->OnMatchFound = [arena_system, server](
             const MatchFoundEvent& event) {
             
@@ -63,7 +63,7 @@ public:
                         match_id, event.teams.size() * event.teams[0].players.size());
         };
         
-        // [SEQUENCE: MVP12-195] Handle player actions in arena
+        // [SEQUENCE: 2823] Handle player actions in arena
         server->RegisterPacketHandler<ArenaActionPacket>(
             [arena_system](uint64_t player_id, const ArenaActionPacket& packet) {
                 
@@ -89,7 +89,7 @@ public:
                 }
             });
         
-        // [SEQUENCE: MVP12-196] Handle match completion
+        // [SEQUENCE: 2824] Handle match completion
         server->ScheduleRecurringTask("arena_update", 
             std::chrono::milliseconds(100), [arena_system, ranking_service]() {
                 
@@ -104,7 +104,7 @@ public:
                 }
             });
         
-        // [SEQUENCE: MVP12-197] Arena queue command
+        // [SEQUENCE: 2825] Arena queue command
         server->RegisterCommand("queue", [arena_system, server](
             uint64_t player_id, const std::vector<std::string>& args) {
             
@@ -129,7 +129,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP12-198] Process match completion
+    // [SEQUENCE: 2826] Process match completion
     static void ProcessMatchCompletion(std::shared_ptr<ArenaMatch> match,
                                      RankingService* ranking_service) {
         auto stats = match->GetMatchStatistics();
@@ -156,7 +156,7 @@ private:
         CheckArenaAchievements(stats);
     }
     
-    // [SEQUENCE: MVP12-199] Send match summary to player
+    // [SEQUENCE: 2827] Send match summary to player
     static void SendMatchSummary(uint64_t player_id,
                                 const ArenaMatch::MatchStatistics& stats,
                                 const ArenaPlayer& player) {
@@ -209,7 +209,7 @@ private:
         SendPacket(player_id, packet);
     }
     
-    // [SEQUENCE: MVP12-200] Log match results for analytics
+    // [SEQUENCE: 2828] Log match results for analytics
     static void LogMatchResults(uint64_t match_id,
                                const ArenaMatch::MatchStatistics& stats) {
         Json::Value log_entry;
@@ -256,7 +256,7 @@ private:
         WriteAnalyticsLog("arena_matches", log_entry);
     }
     
-    // [SEQUENCE: MVP12-201] Check for arena achievements
+    // [SEQUENCE: 2829] Check for arena achievements
     static void CheckArenaAchievements(const ArenaMatch::MatchStatistics& stats) {
         for (const auto& team : stats.team_stats) {
             for (const auto& player : team.players) {
@@ -391,10 +391,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-202] Arena map configurations
+// [SEQUENCE: 2830] Arena map configurations
 class ArenaMapConfig {
 public:
-    // [SEQUENCE: MVP12-203] Get map-specific spawn points
+    // [SEQUENCE: 2831] Get map-specific spawn points
     static std::vector<Vector3> GetSpawnPoints(ArenaMap map, uint32_t team_id) {
         switch (map) {
             case ArenaMap::COLOSSEUM:
@@ -420,7 +420,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-204] Get map boundaries
+    // [SEQUENCE: 2832] Get map boundaries
     struct MapBounds {
         Vector3 min;
         Vector3 max;
@@ -559,7 +559,7 @@ private:
     };
 };
 
-// [SEQUENCE: MVP12-205] Arena season management
+// [SEQUENCE: 2833] Arena season management
 class ArenaSeasonManager {
 public:
     struct ArenaSeason {
@@ -581,7 +581,7 @@ public:
         } rewards;
     };
     
-    // [SEQUENCE: MVP12-206] Create new arena season
+    // [SEQUENCE: 2834] Create new arena season
     static ArenaSeason CreateArenaSeason(uint32_t season_id,
                                         const std::string& name,
                                         uint32_t duration_days) {

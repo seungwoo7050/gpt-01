@@ -16,7 +16,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-89] 글로벌 로드 밸런서
+// [SEQUENCE: 976] 글로벌 로드 밸런서
 class GlobalLoadBalancer {
 public:
     struct ServerNode {
@@ -126,7 +126,7 @@ public:
         Shutdown();
     }
 
-    // [SEQUENCE: MVP13-90] 서버 노드 관리
+    // [SEQUENCE: 977] 서버 노드 관리
     bool RegisterServer(const ServerNode& server) {
         std::lock_guard<std::mutex> lock(servers_mutex_);
         
@@ -181,7 +181,7 @@ public:
         }
     }
 
-    // [SEQUENCE: MVP13-91] 클라이언트 요청 라우팅
+    // [SEQUENCE: 978] 클라이언트 요청 라우팅
     struct RoutingResult {
         bool success{false};
         std::string selected_server_id;
@@ -260,7 +260,7 @@ public:
         return result;
     }
 
-    // [SEQUENCE: MVP13-92] 지역별 서버 스케일링
+    // [SEQUENCE: 979] 지역별 서버 스케일링
     struct ScalingRecommendation {
         std::string region;
         std::string action; // "scale_up", "scale_down", "maintain"
@@ -327,7 +327,7 @@ public:
         return recommendations;
     }
 
-    // [SEQUENCE: MVP13-93] 로드 밸런서 통계
+    // [SEQUENCE: 980] 로드 밸런서 통계
     struct LoadBalancerStats {
         uint32_t total_servers{0};
         uint32_t healthy_servers{0};
@@ -448,7 +448,7 @@ private:
     // 라운드 로빈 상태
     std::unordered_map<std::string, std::atomic<size_t>> round_robin_counters_;
 
-    // [SEQUENCE: MVP13-94] 로드 밸런싱 전략 구현
+    // [SEQUENCE: 981] 로드 밸런싱 전략 구현
     void InitializeStrategies() {
         strategies_[LoadBalancingStrategy::ROUND_ROBIN] = [this](const std::vector<std::string>& candidates, const ClientLocation& client) {
             return SelectRoundRobin(candidates);
@@ -595,7 +595,7 @@ private:
         return candidates[0]; // 폴백
     }
 
-    // [SEQUENCE: MVP13-95] 개별 로드 밸런싱 전략들
+    // [SEQUENCE: 982] 개별 로드 밸런싱 전략들
     std::string SelectRoundRobin(const std::vector<std::string>& candidates) {
         static std::atomic<size_t> counter{0};
         size_t index = counter.fetch_add(1) % candidates.size();
@@ -752,7 +752,7 @@ private:
         return best_server;
     }
 
-    // [SEQUENCE: MVP13-96] 유틸리티 함수들
+    // [SEQUENCE: 983] 유틸리티 함수들
     double CalculateGeographicDistance(double lat1, double lon1, double lat2, double lon2) {
         // Haversine 공식으로 두 지점 간 거리 계산 (km)
         const double R = 6371.0; // 지구 반지름 (km)

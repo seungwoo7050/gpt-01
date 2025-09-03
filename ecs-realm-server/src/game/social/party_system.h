@@ -10,17 +10,17 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-208] Party system for group gameplay
+// [SEQUENCE: 1632] Party system for group gameplay
 // 파티 시스템으로 그룹 플레이 관리
 
-// [SEQUENCE: MVP11-209] Party roles
+// [SEQUENCE: 1633] Party roles
 enum class PartyRole {
     LEADER,         // Can invite, kick, change settings
     ASSISTANT,      // Can invite
     MEMBER          // Regular member
 };
 
-// [SEQUENCE: MVP11-210] Loot distribution method
+// [SEQUENCE: 1634] Loot distribution method
 enum class LootMethod {
     FREE_FOR_ALL,   // Anyone can loot
     ROUND_ROBIN,    // Take turns
@@ -29,7 +29,7 @@ enum class LootMethod {
     NEED_BEFORE_GREED  // Need/Greed system
 };
 
-// [SEQUENCE: MVP11-211] Party member info
+// [SEQUENCE: 1635] Party member info
 struct PartyMember {
     uint64_t player_id;
     std::string character_name;
@@ -61,7 +61,7 @@ struct PartyMember {
     uint64_t gold_looted = 0;
 };
 
-// [SEQUENCE: MVP11-212] Party settings
+// [SEQUENCE: 1636] Party settings
 struct PartySettings {
     LootMethod loot_method = LootMethod::GROUP_LOOT;
     uint32_t loot_threshold = 2;  // Item quality threshold for group loot
@@ -75,7 +75,7 @@ struct PartySettings {
     uint32_t max_level = 0;  // 0 = no limit
 };
 
-// [SEQUENCE: MVP11-213] Party class
+// [SEQUENCE: 1637] Party class
 class Party {
 public:
     Party(uint32_t party_id, uint64_t leader_id, const std::string& leader_name)
@@ -92,7 +92,7 @@ public:
         creation_time_ = std::chrono::system_clock::now();
     }
     
-    // [SEQUENCE: MVP11-214] Add member
+    // [SEQUENCE: 1638] Add member
     bool AddMember(uint64_t player_id, const std::string& character_name) {
         if (IsFull()) {
             spdlog::warn("Party {} is full", party_id_);
@@ -116,7 +116,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-215] Remove member
+    // [SEQUENCE: 1639] Remove member
     bool RemoveMember(uint64_t player_id) {
         auto it = std::find_if(members_.begin(), members_.end(),
             [player_id](const PartyMember& m) { return m.player_id == player_id; });
@@ -137,7 +137,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-216] Change member role
+    // [SEQUENCE: 1640] Change member role
     bool ChangeMemberRole(uint64_t player_id, PartyRole new_role) {
         auto* member = GetMember(player_id);
         if (!member) {
@@ -159,7 +159,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-217] Update member info
+    // [SEQUENCE: 1641] Update member info
     void UpdateMemberInfo(uint64_t player_id, 
                          const std::function<void(PartyMember&)>& updater) {
         auto* member = GetMember(player_id);
@@ -169,7 +169,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-218] Update member stats
+    // [SEQUENCE: 1642] Update member stats
     void UpdateMemberStats(uint64_t player_id, uint32_t hp, uint32_t max_hp,
                           uint32_t mp, uint32_t max_mp) {
         UpdateMemberInfo(player_id, [=](PartyMember& m) {
@@ -180,7 +180,7 @@ public:
         });
     }
     
-    // [SEQUENCE: MVP11-219] Update member location
+    // [SEQUENCE: 1643] Update member location
     void UpdateMemberLocation(uint64_t player_id, uint32_t zone_id,
                              float x, float y, float z) {
         UpdateMemberInfo(player_id, [=](PartyMember& m) {
@@ -191,7 +191,7 @@ public:
         });
     }
     
-    // [SEQUENCE: MVP11-220] Set ready check
+    // [SEQUENCE: 1644] Set ready check
     void StartReadyCheck(uint64_t initiator_id) {
         if (!IsLeaderOrAssistant(initiator_id)) {
             return;
@@ -212,7 +212,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-221] Set member ready
+    // [SEQUENCE: 1645] Set member ready
     void SetMemberReady(uint64_t player_id, bool ready) {
         if (!ready_check_active_) {
             return;
@@ -238,7 +238,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-222] Calculate experience share
+    // [SEQUENCE: 1646] Calculate experience share
     std::unordered_map<uint64_t, uint64_t> CalculateExperienceShare(
         uint64_t base_experience, uint64_t killer_id) {
         
@@ -299,7 +299,7 @@ public:
         return shares;
     }
     
-    // [SEQUENCE: MVP11-223] Distribute loot
+    // [SEQUENCE: 1647] Distribute loot
     uint64_t DetermineLooter(uint32_t item_quality) {
         switch (settings_.loot_method) {
             case LootMethod::FREE_FOR_ALL:
@@ -381,7 +381,7 @@ private:
     std::chrono::system_clock::time_point creation_time_;
     std::chrono::system_clock::time_point last_update_time_;
     
-    // [SEQUENCE: MVP11-224] Promote new leader
+    // [SEQUENCE: 1648] Promote new leader
     void PromoteNewLeader() {
         // Prefer assistants
         auto it = std::find_if(members_.begin(), members_.end(),
@@ -399,7 +399,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-225] Party invite
+// [SEQUENCE: 1649] Party invite
 struct PartyInvite {
     uint64_t inviter_id;
     uint64_t target_id;
@@ -415,12 +415,12 @@ struct PartyInvite {
     }
 };
 
-// [SEQUENCE: MVP11-226] Raid group (multiple parties)
+// [SEQUENCE: 1650] Raid group (multiple parties)
 class RaidGroup {
 public:
     RaidGroup(uint32_t raid_id) : raid_id_(raid_id) {}
     
-    // [SEQUENCE: MVP11-227] Add party to raid
+    // [SEQUENCE: 1651] Add party to raid
     bool AddParty(std::shared_ptr<Party> party) {
         if (parties_.size() >= max_parties_) {
             return false;
@@ -430,7 +430,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-228] Remove party from raid
+    // [SEQUENCE: 1652] Remove party from raid
     bool RemoveParty(uint32_t party_id) {
         auto it = std::find_if(parties_.begin(), parties_.end(),
             [party_id](const auto& p) { return p->GetId() == party_id; });
@@ -443,7 +443,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP11-229] Get all members
+    // [SEQUENCE: 1653] Get all members
     std::vector<PartyMember> GetAllMembers() const {
         std::vector<PartyMember> all_members;
         
@@ -469,7 +469,7 @@ private:
     static constexpr size_t max_parties_ = 8;  // 40-man raid max
 };
 
-// [SEQUENCE: MVP11-230] Party manager
+// [SEQUENCE: 1654] Party manager
 class PartyManager {
 public:
     static PartyManager& Instance() {
@@ -477,7 +477,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-231] Create party
+    // [SEQUENCE: 1655] Create party
     std::shared_ptr<Party> CreateParty(uint64_t leader_id, 
                                       const std::string& leader_name) {
         // Check if player already in party
@@ -496,7 +496,7 @@ public:
         return party;
     }
     
-    // [SEQUENCE: MVP11-232] Invite to party
+    // [SEQUENCE: 1656] Invite to party
     bool InviteToParty(uint64_t inviter_id, uint64_t target_id) {
         auto party = GetPlayerParty(inviter_id);
         if (!party) {
@@ -527,7 +527,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-233] Accept party invite
+    // [SEQUENCE: 1657] Accept party invite
     bool AcceptPartyInvite(uint64_t player_id, const std::string& player_name) {
         auto invite_it = pending_invites_.find(player_id);
         if (invite_it == pending_invites_.end()) {
@@ -553,7 +553,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP11-234] Leave party
+    // [SEQUENCE: 1658] Leave party
     bool LeaveParty(uint64_t player_id) {
         auto party = GetPlayerParty(player_id);
         if (!party) {
@@ -572,7 +572,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-235] Get player's party
+    // [SEQUENCE: 1659] Get player's party
     std::shared_ptr<Party> GetPlayerParty(uint64_t player_id) {
         auto it = player_parties_.find(player_id);
         if (it == player_parties_.end()) {
@@ -582,13 +582,13 @@ public:
         return GetParty(it->second);
     }
     
-    // [SEQUENCE: MVP11-236] Get party by ID
+    // [SEQUENCE: 1660] Get party by ID
     std::shared_ptr<Party> GetParty(uint32_t party_id) {
         auto it = parties_.find(party_id);
         return (it != parties_.end()) ? it->second : nullptr;
     }
     
-    // [SEQUENCE: MVP11-237] Update all parties
+    // [SEQUENCE: 1661] Update all parties
     void UpdateParties() {
         // Clean expired invites
         std::erase_if(pending_invites_, [](const auto& pair) {

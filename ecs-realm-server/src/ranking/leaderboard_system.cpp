@@ -6,10 +6,10 @@
 
 namespace mmorpg::ranking {
 
-// [SEQUENCE: MVP12-152] Leaderboard system integration examples
+// [SEQUENCE: 2780] Leaderboard system integration examples
 class LeaderboardIntegration {
 public:
-    // [SEQUENCE: MVP12-153] Initialize leaderboard with game server
+    // [SEQUENCE: 2781] Initialize leaderboard with game server
     static void InitializeWithGameServer(GameServer* server,
                                        LeaderboardSystem* leaderboard_system,
                                        RankingService* ranking_service) {
@@ -68,7 +68,7 @@ public:
                 return response;
             });
         
-        // [SEQUENCE: MVP12-154] Subscribe to rank updates for live updates
+        // [SEQUENCE: 2782] Subscribe to rank updates for live updates
         ranking_service->OnRankUpdate = [leaderboard_system](uint64_t player_id,
                                                            RankingCategory category,
                                                            uint32_t old_rank,
@@ -82,7 +82,7 @@ public:
             }
         };
         
-        // [SEQUENCE: MVP12-155] Handle leaderboard refresh timer
+        // [SEQUENCE: 2783] Handle leaderboard refresh timer
         server->ScheduleRecurringTask("leaderboard_refresh", 
             std::chrono::minutes(5), [leaderboard_system]() {
                 // 모든 캐시된 리더보드 새로고침
@@ -119,10 +119,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-156] Leaderboard data persistence
+// [SEQUENCE: 2784] Leaderboard data persistence
 class LeaderboardPersistence {
 public:
-    // [SEQUENCE: MVP12-157] Save leaderboard snapshot
+    // [SEQUENCE: 2785] Save leaderboard snapshot
     static void SaveLeaderboardSnapshot(const LeaderboardSystem& system,
                                       RankingCategory category,
                                       const std::string& filename) {
@@ -160,7 +160,7 @@ public:
                     header.entry_count, filename);
     }
     
-    // [SEQUENCE: MVP12-158] Export leaderboard to various formats
+    // [SEQUENCE: 2786] Export leaderboard to various formats
     static void ExportLeaderboard(const LeaderboardSystem& system,
                                 RankingCategory category,
                                 ExportFormat format,
@@ -206,7 +206,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-159] Export to CSV format
+    // [SEQUENCE: 2787] Export to CSV format
     static void ExportToCSV(const LeaderboardSystem& system,
                           RankingCategory category,
                           const std::string& filename) {
@@ -246,7 +246,7 @@ private:
         spdlog::info("Exported leaderboard to CSV: {}", filename);
     }
     
-    // [SEQUENCE: MVP12-160] Export to JSON format
+    // [SEQUENCE: 2788] Export to JSON format
     static void ExportToJSON(const LeaderboardSystem& system,
                            RankingCategory category,
                            const std::string& filename) {
@@ -311,7 +311,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-161] Export to HTML format
+    // [SEQUENCE: 2789] Export to HTML format
     static void ExportToHTML(const LeaderboardSystem& system,
                            RankingCategory category,
                            const std::string& filename) {
@@ -464,10 +464,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-162] Leaderboard UI generation
+// [SEQUENCE: 2790] Leaderboard UI generation
 class LeaderboardUIGenerator {
 public:
-    // [SEQUENCE: MVP12-163] Generate leaderboard UI data
+    // [SEQUENCE: 2791] Generate leaderboard UI data
     static Json::Value GenerateLeaderboardUI(const LeaderboardSystem& system,
                                            RankingCategory category,
                                            LeaderboardType type,
@@ -492,7 +492,7 @@ public:
         return ui_data;
     }
     
-    // [SEQUENCE: MVP12-164] Generate player comparison view
+    // [SEQUENCE: 2792] Generate player comparison view
     static Json::Value GenerateComparisonView(const LeaderboardSystem& system,
                                             uint64_t player1_id,
                                             uint64_t player2_id,

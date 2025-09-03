@@ -1,4 +1,6 @@
 #include "game_server.h"
+#include "game/handlers/guild_handler.h"
+#include "game/handlers/pvp_handler.h"
 #include <spdlog/spdlog.h>
 #include <chrono>
 #include <thread>
@@ -57,11 +59,51 @@ GameServer::GameServer()
     tcp_server_ = std::make_unique<core::network::TcpServer>(config, packet_queue_);
 
     // Register packet handlers
-    auto auth_handler = std::make_shared<game::handlers::AuthHandler>(auth_service_);
+    auto auth_handler = std::make_shared<game::handlers::AuthHandler>(auth_service_, session_manager_);
     packet_handler_->RegisterHandler(
         proto::PACKET_LOGIN_REQUEST,
         [auth_handler](auto session, const auto& packet) {
             auth_handler->HandleLoginRequest(session, packet);
+        }
+    );
+
+    auto guild_handler = std::make_shared<game::handlers::GuildHandler>(session_manager_);
+    packet_handler_->RegisterHandler(
+        proto::PACKET_GUILD_CREATE_REQUEST,
+        [guild_handler](auto session, const auto& packet) {
+            guild_handler->HandleGuildCreateRequest(session, static_cast<const proto::GuildCreateRequest&>(packet));
+        }
+    );
+    packet_handler_->RegisterHandler(
+        proto::PACKET_GUILD_INVITE_REQUEST,
+        [guild_handler](auto session, const auto& packet) {
+            guild_handler->HandleGuildInviteRequest(session, static_cast<const proto::GuildInviteRequest&>(packet));
+        }
+    );
+    packet_handler_->RegisterHandler(
+        proto::PACKET_GUILD_INVITE_ACCEPT_REQUEST,
+        [guild_handler](auto session, const auto& packet) {
+            guild_handler->HandleGuildInviteAcceptRequest(session, static_cast<const proto::GuildInviteAcceptRequest&>(packet));
+        }
+    );
+    packet_handler_->RegisterHandler(
+        proto::PACKET_GUILD_LEAVE_REQUEST,
+        [guild_handler](auto session, const auto& packet) {
+            guild_handler->HandleGuildLeaveRequest(session, static_cast<const proto::GuildLeaveRequest&>(packet));
+        }
+    );
+
+    auto pvp_handler = std::make_shared<game::handlers::PvPHandler>(session_manager_);
+    packet_handler_->RegisterHandler(
+        proto::PACKET_DUEL_ACCEPT_REQUEST,
+        [pvp_handler](auto session, const auto& packet) {
+            pvp_handler->HandleDuelAcceptRequest(session, static_cast<const proto::DuelAcceptRequest&>(packet));
+        }
+    );
+    packet_handler_->RegisterHandler(
+        proto::PACKET_DUEL_DECLINE_REQUEST,
+        [pvp_handler](auto session, const auto& packet) {
+            pvp_handler->HandleDuelDeclineRequest(session, static_cast<const proto::DuelDeclineRequest&>(packet));
         }
     );
     // ... register other handlers ...
@@ -111,6 +153,8 @@ void GameServer::Run() {
 
             // 2. Update all game systems
             world_->Update(delta_time.count() / 1000.0f);
+            // [SEQUENCE: MVP5-21] The `PvPManager` is updated in the main game loop to handle matchmaking and other time-based PvP activities.
+            game::pvp::PvPManager::Instance().Update(delta_time.count() / 1000.0f);
 
             // 3. Other periodic tasks (e.g., save world state)
         }

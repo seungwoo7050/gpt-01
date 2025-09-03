@@ -8,10 +8,10 @@
 
 namespace mmorpg::game::pvp {
 
-// [SEQUENCE: MVP14-723] Random generator for matchmaking
+// [SEQUENCE: 1277] Random generator for matchmaking
 static thread_local std::mt19937 pvp_rng(std::chrono::steady_clock::now().time_since_epoch().count());
 
-// [SEQUENCE: MVP14-724] PvPController - Record kill
+// [SEQUENCE: 1278] PvPController - Record kill
 void PvPController::RecordKill(uint64_t victim_id) {
     stats_.total_kills++;
     stats_.current_kill_streak++;
@@ -31,7 +31,7 @@ void PvPController::RecordKill(uint64_t victim_id) {
                  entity_id_, victim_id, stats_.current_kill_streak);
 }
 
-// [SEQUENCE: MVP14-725] PvPController - Record death
+// [SEQUENCE: 1279] PvPController - Record death
 void PvPController::RecordDeath(uint64_t killer_id) {
     stats_.total_deaths++;
     stats_.current_kill_streak = 0;  // Reset kill streak
@@ -46,7 +46,7 @@ void PvPController::RecordDeath(uint64_t killer_id) {
     spdlog::info("Player {} was killed by player {}", entity_id_, killer_id);
 }
 
-// [SEQUENCE: MVP14-726] PvPController - Record assist
+// [SEQUENCE: 1280] PvPController - Record assist
 void PvPController::RecordAssist(uint64_t victim_id) {
     stats_.total_assists++;
     last_pvp_action_ = std::chrono::steady_clock::now();
@@ -54,7 +54,7 @@ void PvPController::RecordAssist(uint64_t victim_id) {
     spdlog::debug("Player {} assisted in killing player {}", entity_id_, victim_id);
 }
 
-// [SEQUENCE: MVP14-727] MatchmakingQueue - Add player
+// [SEQUENCE: 1281] MatchmakingQueue - Add player
 void MatchmakingQueue::AddPlayer(uint64_t player_id, int32_t rating) {
     // Check if already queued
     auto it = std::find_if(queued_players_.begin(), queued_players_.end(),
@@ -77,7 +77,7 @@ void MatchmakingQueue::AddPlayer(uint64_t player_id, int32_t rating) {
                   player_id, rating, static_cast<int>(pvp_type_));
 }
 
-// [SEQUENCE: MVP14-728] MatchmakingQueue - Remove player
+// [SEQUENCE: 1282] MatchmakingQueue - Remove player
 void MatchmakingQueue::RemovePlayer(uint64_t player_id) {
     queued_players_.erase(
         std::remove_if(queued_players_.begin(), queued_players_.end(),
@@ -86,13 +86,13 @@ void MatchmakingQueue::RemovePlayer(uint64_t player_id) {
     );
 }
 
-// [SEQUENCE: MVP14-729] MatchmakingQueue - Is player queued
+// [SEQUENCE: 1283] MatchmakingQueue - Is player queued
 bool MatchmakingQueue::IsPlayerQueued(uint64_t player_id) const {
     return std::any_of(queued_players_.begin(), queued_players_.end(),
         [player_id](const QueuedPlayer& p) { return p.player_id == player_id; });
 }
 
-// [SEQUENCE: MVP14-730] MatchmakingQueue - Try create match
+// [SEQUENCE: 1284] MatchmakingQueue - Try create match
 std::optional<PvPMatchInfo> MatchmakingQueue::TryCreateMatch() {
     // Determine team size based on PvP type
     size_t team_size = 1;
@@ -146,6 +146,8 @@ std::optional<PvPMatchInfo> MatchmakingQueue::TryCreateMatch() {
             match.duration_seconds = 1200; // 20 minutes
             match.score_limit = 1000;
             break;
+        default:
+            break;
     }
     
     spdlog::info("Created {} match with {} players per team", 
@@ -154,7 +156,7 @@ std::optional<PvPMatchInfo> MatchmakingQueue::TryCreateMatch() {
     return match;
 }
 
-// [SEQUENCE: MVP14-731] MatchmakingQueue - Get average wait time
+// [SEQUENCE: 1285] MatchmakingQueue - Get average wait time
 float MatchmakingQueue::GetAverageWaitTime() const {
     if (queued_players_.empty()) {
         return 0.0f;
@@ -172,7 +174,7 @@ float MatchmakingQueue::GetAverageWaitTime() const {
     return total_wait / queued_players_.size();
 }
 
-// [SEQUENCE: MVP14-732] MatchmakingQueue - Are players compatible
+// [SEQUENCE: 1286] MatchmakingQueue - Are players compatible
 bool MatchmakingQueue::ArePlayersCompatible(const QueuedPlayer& p1, const QueuedPlayer& p2) const {
     int32_t rating_diff = std::abs(p1.rating - p2.rating);
     
@@ -188,7 +190,7 @@ bool MatchmakingQueue::ArePlayersCompatible(const QueuedPlayer& p1, const Queued
     return rating_diff <= allowed_diff;
 }
 
-// [SEQUENCE: MVP14-733] PvPManager - Create controller
+// [SEQUENCE: 1287] PvPManager - Create controller
 std::shared_ptr<PvPController> PvPManager::CreateController(uint64_t entity_id) {
     auto controller = std::make_shared<PvPController>(entity_id);
     controllers_[entity_id] = controller;
@@ -197,13 +199,13 @@ std::shared_ptr<PvPController> PvPManager::CreateController(uint64_t entity_id) 
     return controller;
 }
 
-// [SEQUENCE: MVP14-734] PvPManager - Get controller
+// [SEQUENCE: 1288] PvPManager - Get controller
 std::shared_ptr<PvPController> PvPManager::GetController(uint64_t entity_id) const {
     auto it = controllers_.find(entity_id);
     return (it != controllers_.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-735] PvPManager - Remove controller
+// [SEQUENCE: 1289] PvPManager - Remove controller
 void PvPManager::RemoveController(uint64_t entity_id) {
     // Remove from any queues
     LeaveQueue(entity_id);
@@ -212,7 +214,7 @@ void PvPManager::RemoveController(uint64_t entity_id) {
     spdlog::debug("Removed PvP controller for entity {}", entity_id);
 }
 
-// [SEQUENCE: MVP14-736] PvPManager - Send duel request
+// [SEQUENCE: 1290] PvPManager - Send duel request
 bool PvPManager::SendDuelRequest(uint64_t challenger_id, uint64_t target_id) {
     // Validate both players exist
     auto challenger = GetController(challenger_id);
@@ -253,7 +255,7 @@ bool PvPManager::SendDuelRequest(uint64_t challenger_id, uint64_t target_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-737] PvPManager - Accept duel
+// [SEQUENCE: 1291] PvPManager - Accept duel
 bool PvPManager::AcceptDuel(uint64_t target_id, uint64_t challenger_id) {
     auto it = std::find_if(pending_duels_.begin(), pending_duels_.end(),
         [challenger_id, target_id](const DuelRequest& req) {
@@ -272,7 +274,7 @@ bool PvPManager::AcceptDuel(uint64_t target_id, uint64_t challenger_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-738] PvPManager - Decline duel
+// [SEQUENCE: 1292] PvPManager - Decline duel
 bool PvPManager::DeclineDuel(uint64_t target_id, uint64_t challenger_id) {
     auto it = std::find_if(pending_duels_.begin(), pending_duels_.end(),
         [challenger_id, target_id](const DuelRequest& req) {
@@ -288,34 +290,34 @@ bool PvPManager::DeclineDuel(uint64_t target_id, uint64_t challenger_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-739] PvPManager - Start duel
+// [SEQUENCE: 1293] PvPManager - Start duel
 void PvPManager::StartDuel(uint64_t player1_id, uint64_t player2_id) {
     PvPMatchInfo match;
-    match.match_id = CreateMatch(match);
     match.type = PvPType::DUEL;
     match.state = PvPState::IN_PROGRESS;
+    match.match_id = CreateMatch(match);
     match.team_a.push_back(player1_id);
     match.team_b.push_back(player2_id);
     match.start_time = std::chrono::steady_clock::now();
     match.duration_seconds = 300;  // 5 minutes
     match.kill_limit = 1;
-    
+
     // Update controllers
     auto p1 = GetController(player1_id);
     auto p2 = GetController(player2_id);
-    
+
     if (p1 && p2) {
         p1->SetState(PvPState::IN_PROGRESS);
         p1->SetCurrentMatch(match.match_id);
-        
+
         p2->SetState(PvPState::IN_PROGRESS);
         p2->SetCurrentMatch(match.match_id);
-        
+
         spdlog::info("Duel started between {} and {}", player1_id, player2_id);
     }
 }
 
-// [SEQUENCE: MVP14-740] PvPManager - End duel
+// [SEQUENCE: 1294] PvPManager - End duel
 void PvPManager::EndDuel(uint64_t winner_id, uint64_t loser_id) {
     // Find match
     uint64_t match_id = 0;
@@ -357,7 +359,7 @@ void PvPManager::EndDuel(uint64_t winner_id, uint64_t loser_id) {
     spdlog::info("Duel ended: {} defeated {}", winner_id, loser_id);
 }
 
-// [SEQUENCE: MVP14-741] PvPManager - Queue for PvP
+// [SEQUENCE: 1295] PvPManager - Queue for PvP
 bool PvPManager::QueueForPvP(uint64_t player_id, PvPType type) {
     auto controller = GetController(player_id);
     if (!controller || controller->GetState() != PvPState::NONE) {
@@ -381,7 +383,7 @@ bool PvPManager::QueueForPvP(uint64_t player_id, PvPType type) {
     return false;
 }
 
-// [SEQUENCE: MVP14-742] PvPManager - Leave queue
+// [SEQUENCE: 1296] PvPManager - Leave queue
 bool PvPManager::LeaveQueue(uint64_t player_id) {
     auto controller = GetController(player_id);
     if (!controller || controller->GetState() != PvPState::QUEUED) {
@@ -398,7 +400,7 @@ bool PvPManager::LeaveQueue(uint64_t player_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-743] PvPManager - Update matchmaking
+// [SEQUENCE: 1297] PvPManager - Update matchmaking
 void PvPManager::UpdateMatchmaking() {
     for (auto& [type, queue] : queues_) {
         auto match_opt = queue->TryCreateMatch();
@@ -430,7 +432,7 @@ void PvPManager::UpdateMatchmaking() {
     }
 }
 
-// [SEQUENCE: MVP14-744] PvPManager - Create match
+// [SEQUENCE: 1298] PvPManager - Create match
 uint64_t PvPManager::CreateMatch(const PvPMatchInfo& info) {
     uint64_t match_id = next_match_id_++;
     PvPMatchInfo match = info;
@@ -439,13 +441,13 @@ uint64_t PvPManager::CreateMatch(const PvPMatchInfo& info) {
     return match_id;
 }
 
-// [SEQUENCE: MVP14-745] PvPManager - Get match
+// [SEQUENCE: 1299] PvPManager - Get match
 PvPMatchInfo* PvPManager::GetMatch(uint64_t match_id) {
     auto it = active_matches_.find(match_id);
     return (it != active_matches_.end()) ? &it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-746] PvPManager - Can attack
+// [SEQUENCE: 1300] PvPManager - Can attack
 bool PvPManager::CanAttack(uint64_t attacker_id, uint64_t target_id) const {
     auto attacker = GetController(attacker_id);
     auto target = GetController(target_id);
@@ -480,7 +482,7 @@ bool PvPManager::CanAttack(uint64_t attacker_id, uint64_t target_id) const {
     return false;
 }
 
-// [SEQUENCE: MVP14-747] PvPManager - Update ratings
+// [SEQUENCE: 1301] PvPManager - Update ratings
 void PvPManager::UpdateRatings(uint64_t winner_id, uint64_t loser_id) {
     auto winner = GetController(winner_id);
     auto loser = GetController(loser_id);
@@ -512,7 +514,7 @@ void PvPManager::UpdateRatings(uint64_t winner_id, uint64_t loser_id) {
                  winner_id, rating_change, loser_id, rating_change);
 }
 
-// [SEQUENCE: MVP14-748] PvPManager - Calculate rating change
+// [SEQUENCE: 1302] PvPManager - Calculate rating change
 int32_t PvPManager::CalculateRatingChange(int32_t winner_rating, int32_t loser_rating) {
     // Simple ELO calculation
     const float K = 32.0f;  // K-factor
@@ -524,7 +526,7 @@ int32_t PvPManager::CalculateRatingChange(int32_t winner_rating, int32_t loser_r
     return std::max(1, change);
 }
 
-// [SEQUENCE: MVP14-749] PvPManager - Initialize queues
+// [SEQUENCE: 1303] PvPManager - Initialize queues
 void PvPManager::InitializeQueues() {
     queues_[PvPType::ARENA_2V2] = std::make_unique<MatchmakingQueue>(PvPType::ARENA_2V2);
     queues_[PvPType::ARENA_3V3] = std::make_unique<MatchmakingQueue>(PvPType::ARENA_3V3);
@@ -533,14 +535,14 @@ void PvPManager::InitializeQueues() {
     queues_[PvPType::BATTLEGROUND_20V20] = std::make_unique<MatchmakingQueue>(PvPType::BATTLEGROUND_20V20);
 }
 
-// [SEQUENCE: MVP14-750] PvPManager - Update
+// [SEQUENCE: 1304] PvPManager - Update
 void PvPManager::Update(float delta_time) {
     ProcessExpiredDuels();
     UpdateMatchmaking();
     UpdateMatches(delta_time);
 }
 
-// [SEQUENCE: MVP14-751] PvPManager - Process expired duels
+// [SEQUENCE: 1305] PvPManager - Process expired duels
 void PvPManager::ProcessExpiredDuels() {
     auto now = std::chrono::steady_clock::now();
     
@@ -555,8 +557,8 @@ void PvPManager::ProcessExpiredDuels() {
     );
 }
 
-// [SEQUENCE: MVP14-752] PvPManager - Update matches
-void PvPManager::UpdateMatches(float delta_time) {
+// [SEQUENCE: 1306] PvPManager - Update matches
+void PvPManager::UpdateMatches([[maybe_unused]] float delta_time) {
     auto now = std::chrono::steady_clock::now();
     std::vector<uint64_t> matches_to_end;
     
@@ -578,7 +580,7 @@ void PvPManager::UpdateMatches(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP14-753] PvPManager - Is ally
+// [SEQUENCE: 1307] PvPManager - Is ally
 bool PvPManager::IsAlly(uint64_t player1_id, uint64_t player2_id) const {
     // Check if in same match
     auto p1 = GetController(player1_id);
@@ -605,7 +607,7 @@ bool PvPManager::IsAlly(uint64_t player1_id, uint64_t player2_id) const {
     return p1_team_a == p2_team_a;
 }
 
-// [SEQUENCE: MVP14-754] PvPManager - End match
+// [SEQUENCE: 1308] PvPManager - End match
 void PvPManager::EndMatch(uint64_t match_id) {
     auto match = GetMatch(match_id);
     if (!match) {

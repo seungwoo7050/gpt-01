@@ -16,7 +16,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-80] QUIC 프로토콜 핸들러
+// [SEQUENCE: 984] QUIC 프로토콜 핸들러
 class QUICProtocolHandler {
 public:
     // QUIC 연결 상태
@@ -200,7 +200,7 @@ public:
         Shutdown();
     }
 
-    // [SEQUENCE: MVP13-81] 연결 관리
+    // [SEQUENCE: 985] 연결 관리
     std::shared_ptr<QUICConnection> CreateConnection(const std::string& peer_address, uint16_t peer_port) {
         std::lock_guard<std::mutex> lock(connections_mutex_);
         
@@ -237,7 +237,7 @@ public:
         return false;
     }
 
-    // [SEQUENCE: MVP13-82] 스트림 관리
+    // [SEQUENCE: 986] 스트림 관리
     std::shared_ptr<QUICStream> CreateStream(const std::array<uint8_t, 8>& connection_id, 
                                            StreamType type = StreamType::BIDIRECTIONAL_CLIENT) {
         std::lock_guard<std::mutex> lock(connections_mutex_);
@@ -309,7 +309,7 @@ public:
         return success;
     }
 
-    // [SEQUENCE: MVP13-83] 패킷 처리
+    // [SEQUENCE: 987] 패킷 처리
     bool ProcessIncomingPacket(const std::vector<uint8_t>& packet_data, 
                               const std::string& source_address, uint16_t source_port) {
         if (packet_data.size() < 12) { // 최소 QUIC 패킷 크기
@@ -356,7 +356,7 @@ public:
         return ProcessPacketFrames(connection, packet);
     }
 
-    // [SEQUENCE: MVP13-84] 혼잡 제어 및 흐름 제어
+    // [SEQUENCE: 988] 혼잡 제어 및 흐름 제어
     void UpdateCongestionWindow(std::shared_ptr<QUICConnection> connection, bool packet_lost) {
         auto& cwnd = connection->congestion_window;
         
@@ -381,7 +381,7 @@ public:
         }
     }
 
-    // [SEQUENCE: MVP13-85] 0-RTT 지원
+    // [SEQUENCE: 989] 0-RTT 지원
     bool Send0RTTData(const std::array<uint8_t, 8>& connection_id, 
                      const std::vector<uint8_t>& application_data) {
         if (!config_.enable_0rtt) {
@@ -416,7 +416,7 @@ public:
         return SendPacket(connection, packet);
     }
 
-    // [SEQUENCE: MVP13-86] 연결 마이그레이션
+    // [SEQUENCE: 990] 연결 마이그레이션
     bool MigrateConnection(const std::array<uint8_t, 8>& connection_id,
                           const std::string& new_address, uint16_t new_port) {
         if (!config_.enable_migration) {
@@ -457,7 +457,7 @@ public:
         return success;
     }
 
-    // [SEQUENCE: MVP13-87] 통계 및 모니터링
+    // [SEQUENCE: 991] 통계 및 모니터링
     struct QUICStats {
         uint64_t total_connections{0};
         uint64_t active_connections{0};
@@ -590,7 +590,7 @@ private:
     std::thread packet_sender_thread_;
     std::thread cleanup_thread_;
 
-    // [SEQUENCE: MVP13-88] 내부 구현 함수들
+    // [SEQUENCE: 992] 내부 구현 함수들
     void InitializeDefaults() {
         // 기본 설정 초기화
     }

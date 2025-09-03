@@ -9,10 +9,10 @@
 
 namespace mmorpg::ui {
 
-// [SEQUENCE: MVP12-1] HUD (Heads-Up Display) elements for gameplay interface
-// HUD  - t x0t| \ Ü¤\
+// [SEQUENCE: 2394] HUD (Heads-Up Display) elements for gameplay interface
+// HUD ”Œ - Œ„t x0˜t¤| \ Ü¤\
 
-// [SEQUENCE: MVP12-2] Health bar widget
+// [SEQUENCE: 2395] Health bar widget
 class HealthBar : public UIElement {
 public:
     HealthBar(const std::string& name) : UIElement(name) {
@@ -49,7 +49,7 @@ public:
         SetSize({200, 30});
     }
     
-    // [SEQUENCE: MVP12-3] Update health values
+    // [SEQUENCE: 2396] Update health values
     void SetHealth(float current, float max) {
         current_health_ = current;
         max_health_ = max;
@@ -130,16 +130,16 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-4] Mana/Resource bar
+// [SEQUENCE: 2397] Mana/Resource bar
 class ResourceBar : public UIElement {
 public:
     enum class ResourceType {
-        MANA,               // È˜ ()
-        ENERGY,             //  (x)
-        RAGE,               // x (h)
-        FOCUS,              //  (i)
-        RUNIC_POWER,        //  % (X)
-        CUSTOM              // @
+        MANA,               // È˜ (€É)
+        ENERGY,             // ÐÀ (x€É)
+        RAGE,               // „x (hÉ)
+        FOCUS,              // Ñ (üiÉ)
+        RUNIC_POWER,        // ì È% (X˜É)
+        CUSTOM              // ä¤@
     };
     
     ResourceBar(const std::string& name, ResourceType type = ResourceType::MANA) 
@@ -219,7 +219,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-5] Experience bar
+// [SEQUENCE: 2398] Experience bar
 class ExperienceBar : public UIElement {
 public:
     ExperienceBar(const std::string& name) : UIElement(name) {
@@ -256,7 +256,7 @@ public:
         SetSize({800, 8});
     }
     
-    // [SEQUENCE: MVP12-6] Update experience values
+    // [SEQUENCE: 2399] Update experience values
     void SetExperience(uint64_t current, uint64_t needed, uint32_t level) {
         current_xp_ = current;
         needed_xp_ = needed;
@@ -307,7 +307,7 @@ private:
     uint32_t current_level_ = 1;
 };
 
-// [SEQUENCE: MVP12-7] Action bar for abilities
+// [SEQUENCE: 2400] Action bar for abilities
 class ActionBar : public UIElement {
 public:
     ActionBar(const std::string& name, int slot_count = 12) 
@@ -338,7 +338,7 @@ public:
         background_->SetSize(GetSize());
     }
     
-    // [SEQUENCE: MVP12-8] Set ability in slot
+    // [SEQUENCE: 2401] Set ability in slot
     void SetAbility(int slot_index, uint32_t ability_id, uint32_t icon_id) {
         if (slot_index >= 0 && slot_index < slots_.size()) {
             slots_[slot_index]->SetAbility(ability_id, icon_id);
@@ -374,7 +374,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-9] Individual action slot
+// [SEQUENCE: 2402] Individual action slot
 class ActionSlot : public UIButton {
 public:
     ActionSlot(const std::string& name) : UIButton(name) {
@@ -441,7 +441,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-10] Cooldown management
+    // [SEQUENCE: 2403] Cooldown management
     void SetCooldown(float remaining, float total) {
         cooldown_remaining_ = remaining;
         cooldown_total_ = total;
@@ -535,7 +535,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-11] Target frame
+// [SEQUENCE: 2404] Target frame
 class TargetFrame : public UIElement {
 public:
     TargetFrame(const std::string& name) : UIElement(name) {
@@ -587,7 +587,7 @@ public:
         SetVisibility(Visibility::HIDDEN);  // Hidden until target selected
     }
     
-    // [SEQUENCE: MVP12-12] Set target information
+    // [SEQUENCE: 2405] Set target information
     void SetTarget(uint64_t target_id, const std::string& name, uint32_t level,
                   const std::string& class_name, uint32_t portrait_id) {
         
@@ -639,7 +639,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-13] Cast bar widget
+// [SEQUENCE: 2406] Cast bar widget
 class CastBar : public UIElement {
 public:
     CastBar(const std::string& name) : UIElement(name) {
@@ -731,7 +731,7 @@ private:
     bool interruptible_ = true;
 };
 
-// [SEQUENCE: MVP12-14] Buff/Debuff container
+// [SEQUENCE: 2407] Buff/Debuff container
 class BuffContainer : public UIElement {
 public:
     BuffContainer(const std::string& name) : UIElement(name) {
@@ -777,7 +777,7 @@ private:
     
     void RepositionBuffs() {
         int index = 0;
-        for (auto& [id, icon] : buff_icons_) {
+        for (auto& [buff_id, icon] : buff_icons_) {
             int row = index / 10;
             int col = index % 10;
             icon->SetPosition({col * 34.0f, row * 34.0f});
@@ -786,7 +786,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-15] Individual buff icon
+// [SEQUENCE: 2408] Individual buff icon
 class BuffIcon : public UIElement {
 public:
     BuffIcon(const std::string& name) : UIElement(name) {
@@ -898,7 +898,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-16] Floating combat text
+// [SEQUENCE: 2409] Floating combat text
 class FloatingText : public UILabel {
 public:
     FloatingText(const std::string& text, const Color& color) 
@@ -940,7 +940,7 @@ private:
     float float_speed_ = 50.0f;
 };
 
-// [SEQUENCE: MVP12-17] HUD manager
+// [SEQUENCE: 2410] HUD manager
 class HUDManager {
 public:
     static HUDManager& Instance() {

@@ -8,13 +8,13 @@
 
 namespace mmorpg::game::world {
 
-// [SEQUENCE: MVP7-106] SpawnManager constructor
+// [SEQUENCE: 613] SpawnManager constructor
 SpawnManager::SpawnManager(core::ecs::World& ecs_world)
     : ecs_world_(ecs_world) {
     spdlog::info("SpawnManager initialized");
 }
 
-// [SEQUENCE: MVP7-107] Register spawn point for a map
+// [SEQUENCE: 614] Register spawn point for a map
 void SpawnManager::RegisterSpawnPoint(uint32_t map_id, const SpawnPoint& spawn_point) {
     map_spawns_[map_id].push_back(spawn_point);
     spawn_registry_[spawn_point.spawn_id] = &map_spawns_[map_id].back();
@@ -23,7 +23,7 @@ void SpawnManager::RegisterSpawnPoint(uint32_t map_id, const SpawnPoint& spawn_p
                  spawn_point.spawn_id, map_id, spawn_point.x, spawn_point.y, spawn_point.z);
 }
 
-// [SEQUENCE: MVP7-108] Main update loop for spawn system
+// [SEQUENCE: 615] Main update loop for spawn system
 void SpawnManager::Update(float delta_time) {
     // Process each map's spawn points
     for (auto& [map_id, spawn_points] : map_spawns_) {
@@ -39,14 +39,14 @@ void SpawnManager::Update(float delta_time) {
     ProcessWaveSpawns();
 }
 
-// [SEQUENCE: MVP7-109] Process individual spawn point
+// [SEQUENCE: 616] Process individual spawn point
 void SpawnManager::ProcessSpawnPoint(SpawnPoint& spawn_point, uint32_t map_id) {
     // Skip disabled spawns
     if (disabled_spawns_.count(spawn_point.spawn_id) > 0) {
         return;
     }
     
-    // [SEQUENCE: MVP7-110] Remove dead entities from tracking
+    // [SEQUENCE: 617] Remove dead entities from tracking
     auto it = spawn_point.active_entities.begin();
     while (it != spawn_point.active_entities.end()) {
         auto* health = ecs_world_.GetComponent<core::ecs::HealthComponent>(*it);
@@ -57,7 +57,7 @@ void SpawnManager::ProcessSpawnPoint(SpawnPoint& spawn_point, uint32_t map_id) {
         }
     }
     
-    // [SEQUENCE: MVP7-111] Check if we should spawn
+    // [SEQUENCE: 618] Check if we should spawn
     if (ShouldSpawn(spawn_point)) {
         // Calculate how many to spawn
         uint32_t current_count = spawn_point.active_entities.size();
@@ -75,7 +75,7 @@ void SpawnManager::ProcessSpawnPoint(SpawnPoint& spawn_point, uint32_t map_id) {
         }
         desired_count = static_cast<uint32_t>(desired_count * density);
         
-        // [SEQUENCE: MVP7-112] Spawn missing entities
+        // [SEQUENCE: 619] Spawn missing entities
         while (current_count < desired_count) {
             auto entity_id = SpawnEntity(spawn_point, map_id);
             if (entity_id != core::ecs::INVALID_ENTITY) {
@@ -90,7 +90,7 @@ void SpawnManager::ProcessSpawnPoint(SpawnPoint& spawn_point, uint32_t map_id) {
     }
 }
 
-// [SEQUENCE: MVP7-113] Check if spawn should occur
+// [SEQUENCE: 620] Check if spawn should occur
 bool SpawnManager::ShouldSpawn(const SpawnPoint& spawn_point) const {
     // Check if under minimum count
     if (spawn_point.active_entities.size() >= spawn_point.min_count) {
@@ -113,7 +113,7 @@ bool SpawnManager::ShouldSpawn(const SpawnPoint& spawn_point) const {
     }
 }
 
-// [SEQUENCE: MVP7-114] Create entity from spawn point
+// [SEQUENCE: 621] Create entity from spawn point
 core::ecs::EntityId SpawnManager::SpawnEntity(const SpawnPoint& spawn_point, uint32_t map_id) {
     // Get spawn position
     auto [x, y, z] = CalculateSpawnPosition(spawn_point);
@@ -128,14 +128,14 @@ core::ecs::EntityId SpawnManager::SpawnEntity(const SpawnPoint& spawn_point, uin
         return core::ecs::INVALID_ENTITY;
     }
     
-    // [SEQUENCE: MVP7-115] Set map information
+    // [SEQUENCE: 622] Set map information
     auto* transform = ecs_world_.GetComponent<core::ecs::TransformComponent>(entity_id);
     if (transform) {
         transform->map_id = map_id;
         transform->rotation.y = spawn_point.facing;
     }
     
-    // [SEQUENCE: MVP7-116] Apply level variance
+    // [SEQUENCE: 623] Apply level variance
     if (spawn_point.level_variance > 0) {
         std::uniform_int_distribution<int> level_dist(
             -static_cast<int>(spawn_point.level_variance),
@@ -158,7 +158,7 @@ core::ecs::EntityId SpawnManager::SpawnEntity(const SpawnPoint& spawn_point, uin
     return entity_id;
 }
 
-// [SEQUENCE: MVP7-117] Calculate spawn position based on spawn type
+// [SEQUENCE: 624] Calculate spawn position based on spawn type
 std::tuple<float, float, float> SpawnManager::CalculateSpawnPosition(const SpawnPoint& spawn_point) const {
     float x = spawn_point.x;
     float y = spawn_point.y;
@@ -193,12 +193,12 @@ std::tuple<float, float, float> SpawnManager::CalculateSpawnPosition(const Spawn
     return {x, y, z};
 }
 
-// [SEQUENCE: MVP7-118] Setup entity behavior after spawning
+// [SEQUENCE: 625] Setup entity behavior after spawning
 void SpawnManager::SetupEntityBehavior(core::ecs::EntityId entity_id, const SpawnPoint& spawn_point) {
     auto* ai = ecs_world_.GetComponent<AIComponent>(entity_id);
     if (!ai) return;
     
-    // [SEQUENCE: MVP7-119] Set initial behavior
+    // [SEQUENCE: 626] Set initial behavior
     switch (spawn_point.initial_behavior) {
         case SpawnBehavior::PATROL:
             ai->behavior_state = AIBehaviorState::PATROLLING;
@@ -229,7 +229,7 @@ void SpawnManager::SetupEntityBehavior(core::ecs::EntityId entity_id, const Spaw
     ai->aggro_radius = spawn_point.aggro_radius;
 }
 
-// [SEQUENCE: MVP7-120] Update patrolling entities
+// [SEQUENCE: 627] Update patrolling entities
 void SpawnManager::UpdatePatrolling(float delta_time) {
     auto now = std::chrono::steady_clock::now();
     
@@ -258,7 +258,7 @@ void SpawnManager::UpdatePatrolling(float delta_time) {
             continue;
         }
         
-        // [SEQUENCE: MVP7-121] Move towards current patrol point
+        // [SEQUENCE: 628] Move towards current patrol point
         auto& target_point = spawn_point->patrol_points[patrol_info.current_point];
         float dx = target_point.first - transform->position.x;
         float dy = target_point.second - transform->position.y;
@@ -293,7 +293,7 @@ void SpawnManager::UpdatePatrolling(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP7-122] Trigger manual spawn
+// [SEQUENCE: 629] Trigger manual spawn
 void SpawnManager::TriggerSpawn(uint32_t spawn_id) {
     auto it = spawn_registry_.find(spawn_id);
     if (it == spawn_registry_.end()) {
@@ -322,7 +322,7 @@ void SpawnManager::TriggerSpawn(uint32_t spawn_id) {
     }
 }
 
-// [SEQUENCE: MVP7-123] Start wave spawning
+// [SEQUENCE: 630] Start wave spawning
 void SpawnManager::StartWaveSpawn(uint32_t spawn_id, uint32_t wave_count, std::chrono::seconds wave_interval) {
     WaveSpawnInfo wave_info;
     wave_info.remaining_waves = wave_count;
@@ -334,7 +334,7 @@ void SpawnManager::StartWaveSpawn(uint32_t spawn_id, uint32_t wave_count, std::c
     spdlog::info("Started wave spawn for spawn point {} with {} waves", spawn_id, wave_count);
 }
 
-// [SEQUENCE: MVP7-124] Process wave spawns
+// [SEQUENCE: 631] Process wave spawns
 void SpawnManager::ProcessWaveSpawns() {
     auto now = std::chrono::steady_clock::now();
     
@@ -358,7 +358,7 @@ void SpawnManager::ProcessWaveSpawns() {
     }
 }
 
-// [SEQUENCE: MVP7-125] SpawnTemplateRegistry - Create from template
+// [SEQUENCE: 632] SpawnTemplateRegistry - Create from template
 core::ecs::EntityId SpawnTemplateRegistry::CreateFromTemplate(uint32_t template_id, 
                                                              core::ecs::World& world,
                                                              float x, float y, float z) {
@@ -370,7 +370,7 @@ core::ecs::EntityId SpawnTemplateRegistry::CreateFromTemplate(uint32_t template_
     
     const auto& template_data = *template_opt;
     
-    // [SEQUENCE: MVP7-126] Create entity
+    // [SEQUENCE: 633] Create entity
     auto entity_id = world.CreateEntity();
     
     // Add transform component
@@ -399,7 +399,7 @@ core::ecs::EntityId SpawnTemplateRegistry::CreateFromTemplate(uint32_t template_
     return entity_id;
 }
 
-// [SEQUENCE: MVP7-127] Create rare spawn
+// [SEQUENCE: 634] Create rare spawn
 SpawnPoint SpecialSpawnHandler::CreateRareSpawn(uint32_t entity_template_id,
                                                float x, float y, float z,
                                                float spawn_chance,
@@ -416,7 +416,7 @@ SpawnPoint SpecialSpawnHandler::CreateRareSpawn(uint32_t entity_template_id,
     spawn.respawn_condition = RespawnCondition::CUSTOM;
     spawn.respawn_time = std::chrono::duration_cast<std::chrono::seconds>(respawn_time);
     
-    // [SEQUENCE: MVP7-128] Custom spawn condition based on chance
+    // [SEQUENCE: 635] Custom spawn condition based on chance
     spawn.spawn_condition = [spawn_chance]() {
         static std::mt19937 rng(std::random_device{}());
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
@@ -426,7 +426,7 @@ SpawnPoint SpecialSpawnHandler::CreateRareSpawn(uint32_t entity_template_id,
     return spawn;
 }
 
-// [SEQUENCE: MVP7-129] Calculate optimal spawn density
+// [SEQUENCE: 636] Calculate optimal spawn density
 float SpawnDensityController::CalculateOptimalDensity(uint32_t map_id,
                                                      size_t player_count,
                                                      float map_size) {

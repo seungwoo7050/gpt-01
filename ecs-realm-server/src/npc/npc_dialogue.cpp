@@ -6,7 +6,7 @@
 
 namespace mmorpg::npc {
 
-// [SEQUENCE: MVP14-15] Dialogue node execution
+// [SEQUENCE: 3644] Dialogue node execution
 std::string DialogueNode::Execute(Player& player, NPC& npc) {
     switch (type_) {
         case DialogueNodeType::TEXT:
@@ -41,7 +41,7 @@ std::string DialogueNode::Execute(Player& player, NPC& npc) {
     }
 }
 
-// [SEQUENCE: MVP14-16] Dialogue tree node management
+// [SEQUENCE: 3645] Dialogue tree node management
 void DialogueTree::AddNode(DialogueNodePtr node) {
     if (node) {
         nodes_[node->GetId()] = node;
@@ -105,7 +105,7 @@ std::string DialogueTree::DebugPrint() const {
     return ss.str();
 }
 
-// [SEQUENCE: MVP14-17] Dialogue state tracking
+// [SEQUENCE: 3646] Dialogue state tracking
 void DialogueState::AddToHistory(const std::string& node_id, uint32_t choice_id) {
     history_.emplace_back(node_id, choice_id);
 }
@@ -116,7 +116,7 @@ float DialogueState::GetDuration() const {
     return static_cast<float>(duration.count());
 }
 
-// [SEQUENCE: MVP14-18] Dialogue manager - tree management
+// [SEQUENCE: 3647] Dialogue manager - tree management
 void DialogueManager::RegisterDialogueTree(DialogueTreePtr tree) {
     if (tree) {
         std::unique_lock lock(mutex_);
@@ -132,7 +132,7 @@ DialogueTreePtr DialogueManager::GetDialogueTree(const std::string& tree_id) {
     return (it != dialogue_trees_.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-19] Dialogue session management
+// [SEQUENCE: 3648] Dialogue session management
 DialogueStatePtr DialogueManager::StartDialogue(Player& player, NPC& npc,
                                               const std::string& tree_id) {
     auto tree = GetDialogueTree(tree_id);
@@ -189,7 +189,7 @@ DialogueStatePtr DialogueManager::GetActiveDialogue(uint64_t player_id) {
     return (it != active_dialogues_.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-20] Dialogue progression
+// [SEQUENCE: 3649] Dialogue progression
 DialogueManager::DialogueResponse DialogueManager::ContinueDialogue(
     uint64_t player_id) {
     
@@ -322,7 +322,7 @@ DialogueManager::DialogueResponse DialogueManager::MakeChoice(
     return ContinueDialogue(player_id);
 }
 
-// [SEQUENCE: MVP14-21] Choice requirements and effects
+// [SEQUENCE: 3650] Choice requirements and effects
 bool DialogueManager::CheckChoiceRequirements(const DialogueChoice& choice,
                                             const Player& player) {
     const auto& req = choice.requirements;
@@ -402,7 +402,7 @@ void DialogueManager::ApplyChoiceEffects(const DialogueChoice& choice,
     }
 }
 
-// [SEQUENCE: MVP14-22] Global conditions and actions
+// [SEQUENCE: 3651] Global conditions and actions
 void DialogueManager::RegisterGlobalCondition(const std::string& name,
                                             GlobalConditionFunc condition) {
     std::unique_lock lock(mutex_);
@@ -436,7 +436,7 @@ void DialogueManager::ExecuteAction(const std::string& name,
     }
 }
 
-// [SEQUENCE: MVP14-23] Dialogue builder implementation
+// [SEQUENCE: 3652] Dialogue builder implementation
 DialogueBuilder& DialogueBuilder::Name(const std::string& name) {
     tree_->SetName(name);
     return *this;
@@ -530,7 +530,7 @@ DialogueBuilder& DialogueBuilder::End(const std::string& node_id,
     return *this;
 }
 
-// [SEQUENCE: MVP14-24] Requirements and effects
+// [SEQUENCE: 3653] Requirements and effects
 DialogueBuilder& DialogueBuilder::RequireLevel(uint32_t choice_id, uint32_t min_level) {
     if (auto it = choice_map_.find(choice_id); it != choice_map_.end()) {
         it->second->requirements.min_level = min_level;
@@ -572,7 +572,7 @@ DialogueTreePtr DialogueBuilder::Build() {
     return tree_;
 }
 
-// [SEQUENCE: MVP14-25] Common dialogue patterns
+// [SEQUENCE: 3654] Common dialogue patterns
 namespace DialoguePatterns {
 
 DialogueTreePtr CreateMerchantDialogue(const std::string& merchant_name,
@@ -627,7 +627,7 @@ DialogueTreePtr CreateQuestDialogue(const std::string& npc_name,
 
 } // namespace DialoguePatterns
 
-// [SEQUENCE: MVP14-26] Dialogue utilities
+// [SEQUENCE: 3655] Dialogue utilities
 namespace DialogueUtils {
 
 std::string FormatDialogueText(const std::string& text,
@@ -668,6 +668,5 @@ bool ValidateDialogueTree(DialogueTreePtr tree,
 }
 
 } // namespace DialogueUtils
-
 
 } // namespace mmorpg::npc

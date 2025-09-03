@@ -1,40 +1,19 @@
 #include "game/systems/pvp/openworld_pvp_system.h"
-#include "game/systems/grid_spatial_system.h"
+#include "game/systems/spatial_indexing_system.h"
 #include "game/components/transform_component.h"
 #include "game/components/health_component.h"
 #include "game/components/combat_stats_component.h"
-#include "core/ecs/world.h"
+#include "game/components/pvp_state_component.h"
+#include "game/components/pvp_zone_component.h"
+#include "core/ecs/optimized/optimized_world.h"
 #include <spdlog/spdlog.h>
 #include <algorithm>
 
 namespace mmorpg::game::systems::pvp {
 
-// [SEQUENCE: MVP5-141] Initialize open world PvP system
-void OpenWorldPvPSystem::OnSystemInit() {
-    // Find spatial system
-    if (auto* world = world_) {
-        spatial_system_ = dynamic_cast<SpatialIndexingSystem*>(
-            world->GetSystem("SpatialIndexingSystem")
-        );
-    }
-    
-    // Setup faction hostilities
-    hostile_factions_[1] = {2};  // Alliance vs Horde
-    hostile_factions_[2] = {1};
-    hostile_factions_[3] = {1, 2};  // Pirates hostile to all
-    
-    spdlog::info("OpenWorldPvPSystem initialized");
-}
+using namespace mmorpg::game::components;
 
-// [SEQUENCE: MVP5-142] Cleanup
-void OpenWorldPvPSystem::OnSystemShutdown() {
-    player_states_.clear();
-    pvp_zones_.clear();
-    kill_history_.clear();
-    spdlog::info("OpenWorldPvPSystem shut down");
-}
-
-// [SEQUENCE: MVP5-143] Main update loop
+// [SEQUENCE: 3] Main update loop
 void OpenWorldPvPSystem::Update(float delta_time) {
     // Update player zones
     UpdatePlayerZones(delta_time);
@@ -46,15 +25,14 @@ void OpenWorldPvPSystem::Update(float delta_time) {
     UpdatePvPFlags(delta_time);
 }
 
-// [SEQUENCE: MVP5-144] Create PvP zone
+// [SEQUENCE: 4] Create PvP zone
 core::ecs::EntityId OpenWorldPvPSystem::CreatePvPZone(const std::string& name,
                                                       const core::utils::Vector3& min,
                                                       const core::utils::Vector3& max) {
-    auto* world = world_;
-    if (!world) return 0;
+    if (!world_) return 0;
     
     // Create zone entity
-    auto zone_entity = world->CreateEntity();
+    auto zone_entity = world_->CreateEntity();
     
     // Add zone component
     PvPZoneComponent zone;
@@ -63,7 +41,7 @@ core::ecs::EntityId OpenWorldPvPSystem::CreatePvPZone(const std::string& name,
     zone.pvp_enabled = true;
     zone.faction_based = true;
     
-    world->AddComponent(zone_entity, zone);
+    world_->AddComponent(zone_entity, zone);
     
     // Store bounds
     zone_bounds_[zone_entity] = {min, max};
@@ -73,16 +51,13 @@ core::ecs::EntityId OpenWorldPvPSystem::CreatePvPZone(const std::string& name,
     return zone_entity;
 }
 
-// [SEQUENCE: MVP5-145] Check if player is PvP flagged
+// [SEQUENCE: 5] Check if player is PvP flagged
 bool OpenWorldPvPSystem::IsPlayerPvPFlagged(core::ecs::EntityId player) const {
-    auto it = player_states_.find(player);
-    if (it != player_states_.end()) {
-        return it->second.pvp_flagged;
-    }
-    return false;
+    if (!world_->HasComponent<PvPStateComponent>(player)) return false;
+    return world_->GetComponent<PvPStateComponent>(player).pvp_flagged;
 }
 
-// [SEQUENCE: MVP5-146] Check if can attack
+// [SEQUENCE: 6] Check if can attack
 bool OpenWorldPvPSystem::CanAttack(core::ecs::EntityId attacker, core::ecs::EntityId target) const {
     // Can't attack self
     if (attacker == target) return false;
@@ -100,10 +75,9 @@ bool OpenWorldPvPSystem::CanAttack(core::ecs::EntityId attacker, core::ecs::Enti
     if (attacker_faction == target_faction && attacker_faction != 0) {
         auto attacker_zone = GetPlayerZone(attacker);
         if (attacker_zone != 0) {
-            auto* world = world_;
-            if (world) {
-                auto* zone = world->GetComponent<PvPZoneComponent>(attacker_zone);
-                if (zone && !zone->free_for_all) {
+            if (world_) {
+                auto& zone = world_->GetComponent<PvPZoneComponent>(attacker_zone);
+                if (!zone.free_for_all) {
                     return false;
                 }
             }
@@ -114,22 +88,20 @@ bool OpenWorldPvPSystem::CanAttack(core::ecs::EntityId attacker, core::ecs::Enti
     return AreFactionsHostile(attacker_faction, target_faction);
 }
 
-// [SEQUENCE: MVP5-147] Set player faction
+// [SEQUENCE: 7] Set player faction
 void OpenWorldPvPSystem::SetPlayerFaction(core::ecs::EntityId player, uint32_t faction_id) {
-    player_states_[player].faction_id = faction_id;
+    if (!world_->HasComponent<PvPStateComponent>(player)) world_->AddComponent(player, PvPStateComponent{});
+    world_->GetComponent<PvPStateComponent>(player).faction_id = faction_id;
     spdlog::debug("Player {} joined faction {}", player, faction_id);
 }
 
-// [SEQUENCE: MVP5-148] Get player faction
+// [SEQUENCE: 8] Get player faction
 uint32_t OpenWorldPvPSystem::GetPlayerFaction(core::ecs::EntityId player) const {
-    auto it = player_states_.find(player);
-    if (it != player_states_.end()) {
-        return it->second.faction_id;
-    }
-    return 0;  // Neutral
+    if (!world_->HasComponent<PvPStateComponent>(player)) return 0;
+    return world_->GetComponent<PvPStateComponent>(player).faction_id;
 }
 
-// [SEQUENCE: MVP5-149] Check faction hostility
+// [SEQUENCE: 9] Check faction hostility
 bool OpenWorldPvPSystem::AreFactionsHostile(uint32_t faction1, uint32_t faction2) const {
     if (faction1 == faction2) return false;
     if (faction1 == 0 || faction2 == 0) return false;  // Neutral
@@ -141,13 +113,11 @@ bool OpenWorldPvPSystem::AreFactionsHostile(uint32_t faction1, uint32_t faction2
     return false;
 }
 
-// [SEQUENCE: MVP5-150] Start capturing zone
+// [SEQUENCE: 10] Start capturing zone
 bool OpenWorldPvPSystem::StartCapture(core::ecs::EntityId player, core::ecs::EntityId zone) {
-    auto* world = world_;
-    if (!world) return false;
+    if (!world_) return false;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (!zone_comp) return false;
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
     
     // Check if player in capture range
     if (!IsPlayerInZone(player, zone)) {
@@ -155,13 +125,13 @@ bool OpenWorldPvPSystem::StartCapture(core::ecs::EntityId player, core::ecs::Ent
     }
     
     // Add to capturing players
-    zone_comp->capturing_players.push_back(player);
+    zone_comp.capturing_players.push_back(player);
     
     spdlog::debug("Player {} started capturing zone {}", player, zone);
     return true;
 }
 
-// [SEQUENCE: MVP5-151] Update player zones
+// [SEQUENCE: 11] Update player zones
 void OpenWorldPvPSystem::UpdatePlayerZones(float delta_time) {
     static float update_timer = 0.0f;
     update_timer += delta_time;
@@ -171,12 +141,11 @@ void OpenWorldPvPSystem::UpdatePlayerZones(float delta_time) {
     }
     update_timer = 0.0f;
     
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    for (const auto& player : entities_) {
-        auto* transform = world->GetComponent<components::TransformComponent>(player);
-        if (!transform) continue;
+    // Check all players with transforms
+    for (auto player : world_->GetEntitiesWith<TransformComponent>()) {
+        auto& transform = world_->GetComponent<TransformComponent>(player);
         
         // Find which zone player is in
         core::ecs::EntityId current_zone = 0;
@@ -186,12 +155,12 @@ void OpenWorldPvPSystem::UpdatePlayerZones(float delta_time) {
             if (bounds_it != zone_bounds_.end()) {
                 const ZoneBounds& bounds = bounds_it->second;
                 
-                if (transform->position.x >= bounds.min.x &&
-                    transform->position.x <= bounds.max.x &&
-                    transform->position.y >= bounds.min.y &&
-                    transform->position.y <= bounds.max.y &&
-                    transform->position.z >= bounds.min.z &&
-                    transform->position.z <= bounds.max.z) {
+                if (transform.position.x >= bounds.min.x &&
+                    transform.position.x <= bounds.max.x &&
+                    transform.position.y >= bounds.min.y &&
+                    transform.position.y <= bounds.max.y &&
+                    transform.position.z >= bounds.min.z &&
+                    transform.position.z <= bounds.max.z) {
                     
                     current_zone = zone_entity;
                     break;
@@ -200,7 +169,8 @@ void OpenWorldPvPSystem::UpdatePlayerZones(float delta_time) {
         }
         
         // Update player zone
-        auto* player_state = world_->GetComponent<components::PvPStateComponent>(player);
+        if (!world_->HasComponent<PvPStateComponent>(player)) world_->AddComponent(player, PvPStateComponent{});
+        auto& player_state = world_->GetComponent<PvPStateComponent>(player);
         if (player_state.current_zone != current_zone) {
             if (player_state.current_zone != 0) {
                 OnPlayerLeaveZone(player, player_state.current_zone);
@@ -213,75 +183,69 @@ void OpenWorldPvPSystem::UpdatePlayerZones(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP5-152] Player enters PvP zone
+// [SEQUENCE: 12] Player enters PvP zone
 void OpenWorldPvPSystem::OnPlayerEnterZone(core::ecs::EntityId player, core::ecs::EntityId zone) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (!zone_comp || !zone_comp->pvp_enabled) return;
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
+    if (!zone_comp.pvp_enabled) return;
     
     // Flag player for PvP
-    auto* player_state = world_->GetComponent<components::PvPStateComponent>(player);
+    if (!world_->HasComponent<PvPStateComponent>(player)) world_->AddComponent(player, PvPStateComponent{});
+    auto& player_state = world_->GetComponent<PvPStateComponent>(player);
     player_state.pvp_flagged = true;
     player_state.flag_time = std::chrono::steady_clock::now();
     
     // Apply zone buffs if controlled by player's faction
-    if (zone_comp->controlling_faction == player_state.faction_id && 
+    if (zone_comp.controlling_faction == player_state.faction_id && 
         player_state.faction_id != 0) {
         
-        auto* stats = world->GetComponent<CombatStatsComponent>(player);
-        if (stats) {
-            // Apply territory buff
-            stats->damage_increase += config_.territory_buff_bonus;
-            stats->damage_reduction += config_.territory_buff_bonus;
-        }
+        auto& stats = world_->GetComponent<CombatStatsComponent>(player);
+        // Apply territory buff
+        stats.damage_increase += config_.territory_buff_bonus;
+        stats.damage_reduction += config_.territory_buff_bonus;
     }
     
-    spdlog::info("Player {} entered PvP zone '{}'", player, zone_comp->zone_name);
+    spdlog::info("Player {} entered PvP zone '{}'", player, zone_comp.zone_name);
 }
 
-// [SEQUENCE: MVP5-153] Player leaves PvP zone
+// [SEQUENCE: 13] Player leaves PvP zone
 void OpenWorldPvPSystem::OnPlayerLeaveZone(core::ecs::EntityId player, core::ecs::EntityId zone) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (!zone_comp) return;
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
     
     // Remove from capturing players
-    zone_comp->capturing_players.erase(
-        std::remove(zone_comp->capturing_players.begin(),
-                   zone_comp->capturing_players.end(), player),
-        zone_comp->capturing_players.end()
+    zone_comp.capturing_players.erase(
+        std::remove(zone_comp.capturing_players.begin(),
+                   zone_comp.capturing_players.end(), player),
+        zone_comp.capturing_players.end()
     );
     
     // Remove zone buffs
-    auto* player_state = world_->GetComponent<components::PvPStateComponent>(player);
-    if (zone_comp->controlling_faction == player_state.faction_id) {
-        auto* stats = world->GetComponent<CombatStatsComponent>(player);
-        if (stats) {
-            stats->damage_increase -= config_.territory_buff_bonus;
-            stats->damage_reduction -= config_.territory_buff_bonus;
-        }
+    if (!world_->HasComponent<PvPStateComponent>(player)) return;
+    auto& player_state = world_->GetComponent<PvPStateComponent>(player);
+    if (zone_comp.controlling_faction == player_state.faction_id) {
+        auto& stats = world_->GetComponent<CombatStatsComponent>(player);
+        stats.damage_increase -= config_.territory_buff_bonus;
+        stats.damage_reduction -= config_.territory_buff_bonus;
     }
     
-    spdlog::info("Player {} left PvP zone '{}'", player, zone_comp->zone_name);
+    spdlog::info("Player {} left PvP zone '{}'", player, zone_comp.zone_name);
 }
 
-// [SEQUENCE: MVP5-154] Update zone captures
+// [SEQUENCE: 14] Update zone captures
 void OpenWorldPvPSystem::UpdateZoneCaptures(float delta_time) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
     for (auto zone_entity : pvp_zones_) {
-        auto* zone = world->GetComponent<PvPZoneComponent>(zone_entity);
-        if (!zone || zone->capturing_players.empty()) continue;
+        auto& zone = world_->GetComponent<PvPZoneComponent>(zone_entity);
+        if (zone.capturing_players.empty()) continue;
         
         // Count capturing players by faction
         std::unordered_map<uint32_t, uint32_t> faction_counts;
         
-        for (auto player : zone->capturing_players) {
+        for (auto player : zone.capturing_players) {
             uint32_t faction = GetPlayerFaction(player);
             if (faction != 0) {
                 faction_counts[faction]++;
@@ -300,34 +264,32 @@ void OpenWorldPvPSystem::UpdateZoneCaptures(float delta_time) {
         }
         
         // Update capture progress
-        if (dominant_faction != 0 && dominant_faction != zone->controlling_faction) {
-            zone->capture_progress += config_.capture_tick_rate * delta_time * max_count;
+        if (dominant_faction != 0 && dominant_faction != zone.controlling_faction) {
+            zone.capture_progress += config_.capture_tick_rate * delta_time * max_count;
             
-            if (zone->capture_progress >= 100.0f) {
+            if (zone.capture_progress >= 100.0f) {
                 OnZoneCaptured(zone_entity, dominant_faction);
             }
-        } else if (dominant_faction == zone->controlling_faction) {
+        } else if (dominant_faction == zone.controlling_faction) {
             // Defend - reduce enemy progress
-            zone->capture_progress = std::max(0.0f, zone->capture_progress - 
+            zone.capture_progress = std::max(0.0f, zone.capture_progress - 
                                             config_.capture_tick_rate * delta_time);
         }
     }
 }
 
-// [SEQUENCE: MVP5-155] Zone captured
+// [SEQUENCE: 15] Zone captured
 void OpenWorldPvPSystem::OnZoneCaptured(core::ecs::EntityId zone_entity, uint32_t faction_id) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    auto* zone = world->GetComponent<PvPZoneComponent>(zone_entity);
-    if (!zone) return;
+    auto& zone = world_->GetComponent<PvPZoneComponent>(zone_entity);
     
-    uint32_t old_faction = zone->controlling_faction;
-    zone->controlling_faction = faction_id;
-    zone->capture_progress = 0.0f;
+    uint32_t old_faction = zone.controlling_faction;
+    zone.controlling_faction = faction_id;
+    zone.capture_progress = 0.0f;
     
     // Clear capturing players
-    zone->capturing_players.clear();
+    zone.capturing_players.clear();
     
     // Update stats
     stats_.zones_flipped++;
@@ -337,19 +299,18 @@ void OpenWorldPvPSystem::OnZoneCaptured(core::ecs::EntityId zone_entity, uint32_
     }
     
     // Grant rewards to capturing faction players in zone
-    for (const auto& entity : entities_) {
-        if (!world_->HasComponent<components::PvPStateComponent>(entity)) continue;
-        auto* state = world_->GetComponent<components::PvPStateComponent>(entity);
+    for (auto player : world_->GetEntitiesWith<PvPStateComponent>()) {
+        auto& state = world_->GetComponent<PvPStateComponent>(player);
         if (state.faction_id == faction_id && state.current_zone == zone_entity) {
             GrantObjectiveReward(player, 1);  // Zone capture
         }
     }
     
     spdlog::info("Zone '{}' captured by faction {} (was {})",
-                zone->zone_name, faction_id, old_faction);
+                zone.zone_name, faction_id, old_faction);
 }
 
-// [SEQUENCE: MVP5-156] Player killed player
+// [SEQUENCE: 16] Player killed player
 void OpenWorldPvPSystem::OnPlayerKilledPlayer(core::ecs::EntityId killer, core::ecs::EntityId victim) {
     // Check if valid PvP kill
     if (!CanAttack(killer, victim)) {
@@ -357,23 +318,20 @@ void OpenWorldPvPSystem::OnPlayerKilledPlayer(core::ecs::EntityId killer, core::
     }
     
     // Update stats
-    auto* world = world_;
-    if (world) {
-        auto* killer_stats = world->GetComponent<PvPStatsComponent>(killer);
-        auto* victim_stats = world->GetComponent<PvPStatsComponent>(victim);
+    if (world_) {
+        auto& killer_stats = world_->GetComponent<PvPStatsComponent>(killer);
+        auto& victim_stats = world_->GetComponent<PvPStatsComponent>(victim);
         
-        if (killer_stats && victim_stats) {
-            killer_stats->world_pvp_kills++;
-            killer_stats->kills++;
-            victim_stats->deaths++;
-            
-            // Update kill streak
-            UpdateKillStreak(killer);
-            victim_stats->current_streak = 0;
-            
-            // Grant honor
-            GrantHonorKill(killer, victim);
-        }
+        killer_stats.world_pvp_kills++;
+        killer_stats.kills++;
+        victim_stats.deaths++;
+        
+        // Update kill streak
+        UpdateKillStreak(killer);
+        victim_stats.current_streak = 0;
+        
+        // Grant honor
+        GrantHonorKill(killer, victim);
     }
     
     // Update faction kills
@@ -385,10 +343,9 @@ void OpenWorldPvPSystem::OnPlayerKilledPlayer(core::ecs::EntityId killer, core::
     stats_.total_kills++;
 }
 
-// [SEQUENCE: MVP5-157] Grant honor for kill
+// [SEQUENCE: 17] Grant honor for kill
 void OpenWorldPvPSystem::GrantHonorKill(core::ecs::EntityId killer, core::ecs::EntityId victim) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
     // Check diminishing returns
     auto kill_key = std::make_pair(killer, victim);
@@ -416,27 +373,24 @@ void OpenWorldPvPSystem::GrantHonorKill(core::ecs::EntityId killer, core::ecs::E
     // Apply faction bonus if in hostile territory
     auto killer_zone = GetPlayerZone(killer);
     if (killer_zone != 0) {
-        auto* zone = world->GetComponent<PvPZoneComponent>(killer_zone);
-        if (zone && zone->controlling_faction != GetPlayerFaction(killer)) {
+        auto& zone = world_->GetComponent<PvPZoneComponent>(killer_zone);
+        if (zone.controlling_faction != GetPlayerFaction(killer)) {
             honor = static_cast<uint32_t>(honor * 1.5f);  // 50% bonus
         }
     }
     
     // Grant honor
-    auto* pvp_stats = world->GetComponent<PvPStatsComponent>(killer);
-    if (pvp_stats) {
-        pvp_stats->honor_points += honor;
-        spdlog::debug("Player {} gained {} honor for killing {}", killer, honor, victim);
-    }
+    auto& pvp_stats = world_->GetComponent<PvPStatsComponent>(killer);
+    pvp_stats.honor_points += honor;
+    spdlog::debug("Player {} gained {} honor for killing {}", killer, honor, victim);
 }
 
-// [SEQUENCE: MVP5-158] Update PvP flags
-void OpenWorldPvPSystem::UpdatePvPFlags(float delta_time) {
+// [SEQUENCE: 18] Update PvP flags
+void OpenWorldPvPSystem::UpdatePvPFlags([[maybe_unused]] float delta_time) {
     auto now = std::chrono::steady_clock::now();
     
-    for (const auto& entity : entities_) {
-        if (!world_->HasComponent<components::PvPStateComponent>(entity)) continue;
-        auto* state = world_->GetComponent<components::PvPStateComponent>(entity);
+    for (auto player : world_->GetEntitiesWith<PvPStateComponent>()) {
+        auto& state = world_->GetComponent<PvPStateComponent>(player);
         if (!state.pvp_flagged) continue;
         
         // Check if should unflag
@@ -454,18 +408,16 @@ void OpenWorldPvPSystem::UpdatePvPFlags(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP5-159] Capture objective
+// [SEQUENCE: 19] Capture objective
 bool OpenWorldPvPSystem::CaptureObjective(core::ecs::EntityId player, 
                                          core::ecs::EntityId zone_entity,
                                          uint32_t objective_id) {
-    auto* world = world_;
-    if (!world) return false;
+    if (!world_) return false;
     
-    auto* zone = world->GetComponent<PvPZoneComponent>(zone_entity);
-    if (!zone) return false;
+    auto& zone = world_->GetComponent<PvPZoneComponent>(zone_entity);
     
     // Find objective
-    for (auto& obj : zone->objectives) {
+    for (auto& obj : zone.objectives) {
         if (obj.objective_id == objective_id) {
             uint32_t player_faction = GetPlayerFaction(player);
             
@@ -480,16 +432,15 @@ bool OpenWorldPvPSystem::CaptureObjective(core::ecs::EntityId player,
     return false;
 }
 
-
+// [SEQUENCE: 20] Objective captured
 void OpenWorldPvPSystem::OnObjectiveCaptured(core::ecs::EntityId zone_entity,
                                             uint32_t objective_id,
                                             uint32_t faction_id) {
     stats_.objectives_captured++;
     
     // Find all faction players in zone for rewards
-    for (const auto& entity : entities_) {
-        if (!world_->HasComponent<components::PvPStateComponent>(entity)) continue;
-        auto* state = world_->GetComponent<components::PvPStateComponent>(entity);
+    for (auto player : world_->GetEntitiesWith<PvPStateComponent>()) {
+        auto& state = world_->GetComponent<PvPStateComponent>(player);
         if (state.faction_id == faction_id && state.current_zone == zone_entity) {
             GrantObjectiveReward(player, 2);  // Objective capture
         }
@@ -499,88 +450,69 @@ void OpenWorldPvPSystem::OnObjectiveCaptured(core::ecs::EntityId zone_entity,
                 objective_id, zone_entity, faction_id);
 }
 
-void OpenWorldPvPSystem::GrantObjectiveReward(core::ecs::EntityId player, uint32_t objective_type) {
-    auto* world = world_;
-    if (!world) return;
+void OpenWorldPvPSystem::GrantObjectiveReward(core::ecs::EntityId player, uint32_t) {
+    if (!world_) return;
     
-    auto* pvp_stats = world->GetComponent<PvPStatsComponent>(player);
-    if (pvp_stats) {
-        pvp_stats->honor_points += config_.honor_per_objective;
-        pvp_stats->objectives_completed++;
-    }
+    auto& pvp_stats = world_->GetComponent<PvPStatsComponent>(player);
+    pvp_stats.honor_points += config_.honor_per_objective;
+    pvp_stats.objectives_completed++;
 }
 
 void OpenWorldPvPSystem::UpdateKillStreak(core::ecs::EntityId player) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    auto* pvp_stats = world->GetComponent<PvPStatsComponent>(player);
-    if (pvp_stats) {
-        pvp_stats->current_streak++;
-        pvp_stats->max_killing_spree = std::max(pvp_stats->max_killing_spree,
-                                               pvp_stats->current_streak);
-        
-        // Announce sprees
-        if (pvp_stats->current_streak == 3) {
-            spdlog::info("Player {} is on a killing spree!", player);
-        } else if (pvp_stats->current_streak == 5) {
-            spdlog::info("Player {} is dominating!", player);
-        } else if (pvp_stats->current_streak == 10) {
-            spdlog::info("Player {} is UNSTOPPABLE!", player);
-        }
+    auto& pvp_stats = world_->GetComponent<PvPStatsComponent>(player);
+    pvp_stats.current_streak++;
+    pvp_stats.max_killing_spree = std::max(pvp_stats.max_killing_spree,
+                                            pvp_stats.current_streak);
+    
+    // Announce sprees
+    if (pvp_stats.current_streak == 3) {
+        spdlog::info("Player {} is on a killing spree!", player);
+    } else if (pvp_stats.current_streak == 5) {
+        spdlog::info("Player {} is dominating!", player);
+    } else if (pvp_stats.current_streak == 10) {
+        spdlog::info("Player {} is UNSTOPPABLE!", player);
     }
 }
 
 bool OpenWorldPvPSystem::IsPlayerInZone(core::ecs::EntityId player, core::ecs::EntityId zone) const {
-    auto it = player_states_.find(player);
-    if (it != player_states_.end()) {
-        return it->second.current_zone == zone;
-    }
-    return false;
+    if (!world_->HasComponent<PvPStateComponent>(player)) return false;
+    return world_->GetComponent<PvPStateComponent>(player).current_zone == zone;
 }
 
 core::ecs::EntityId OpenWorldPvPSystem::GetPlayerZone(core::ecs::EntityId player) const {
-    auto* player_state = world_->GetComponent<components::PvPStateComponent>(player);
-    if (player_state) {
-        return player_state->current_zone;
-    }
-    return 0;
+    if (!world_->HasComponent<PvPStateComponent>(player)) return 0;
+    return world_->GetComponent<PvPStateComponent>(player).current_zone;
 }
 
 void OpenWorldPvPSystem::AddObjective(core::ecs::EntityId zone, uint32_t objective_id,
                                      const core::utils::Vector3& position) {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (zone_comp) {
-        PvPZoneComponent::Objective obj;
-        obj.objective_id = objective_id;
-        obj.position = position;
-        obj.controlling_team = 0;
-        obj.capture_radius = 10.0f;
-        obj.point_value = 1;
-        
-        zone_comp->objectives.push_back(obj);
-    }
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
+    PvPZoneComponent::Objective obj;
+    obj.objective_id = objective_id;
+    obj.position = position;
+    obj.controlling_team = 0;
+    obj.capture_radius = 10.0f;
+    obj.point_value = 1;
+    
+    zone_comp.objectives.push_back(obj);
 }
 
 bool OpenWorldPvPSystem::SetZonePvPEnabled(core::ecs::EntityId zone, bool enabled) {
-    auto* world = world_;
-    if (!world) return false;
+    if (!world_) return false;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (zone_comp) {
-        zone_comp->pvp_enabled = enabled;
-        return true;
-    }
-    return false;
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
+    zone_comp.pvp_enabled = enabled;
+    return true;
 }
 
 std::vector<core::ecs::EntityId> OpenWorldPvPSystem::GetPvPEnabledPlayers() const {
     std::vector<core::ecs::EntityId> result;
-    for (const auto& [player, state] : player_states_) {
-        if (state.pvp_flagged) {
+    for (auto player : world_->GetEntitiesWith<PvPStateComponent>()) {
+        if (world_->GetComponent<PvPStateComponent>(player).pvp_flagged) {
             result.push_back(player);
         }
     }
@@ -588,46 +520,31 @@ std::vector<core::ecs::EntityId> OpenWorldPvPSystem::GetPvPEnabledPlayers() cons
 }
 
 bool OpenWorldPvPSystem::StopCapture(core::ecs::EntityId player, core::ecs::EntityId zone) {
-    auto* world = world_;
-    if (!world) return false;
+    if (!world_) return false;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (!zone_comp) return false;
-    
-    zone_comp->capturing_players.erase(
-        std::remove(zone_comp->capturing_players.begin(),
-                   zone_comp->capturing_players.end(), player),
-        zone_comp->capturing_players.end()
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
+    zone_comp.capturing_players.erase(
+        std::remove(zone_comp.capturing_players.begin(),
+                   zone_comp.capturing_players.end(), player),
+        zone_comp.capturing_players.end()
     );
     
     return true;
 }
 
 float OpenWorldPvPSystem::GetCaptureProgress(core::ecs::EntityId zone) const {
-    auto* world = world_;
-    if (!world) return 0.0f;
+    if (!world_) return 0.0f;
     
-    auto* zone_comp = world->GetComponent<PvPZoneComponent>(zone);
-    if (zone_comp) {
-        return zone_comp->capture_progress;
-    }
-    return 0.0f;
+    auto& zone_comp = world_->GetComponent<PvPZoneComponent>(zone);
+    return zone_comp.capture_progress;
 }
 
-void OpenWorldPvPSystem::OnPlayerAssist(core::ecs::EntityId assister, core::ecs::EntityId victim) {
-    auto* world = world_;
-    if (!world) return;
+void OpenWorldPvPSystem::OnPlayerAssist(core::ecs::EntityId assister, [[maybe_unused]] core::ecs::EntityId victim) {
+    if (!world_) return;
     
-    auto* pvp_stats = world->GetComponent<PvPStatsComponent>(assister);
-    if (pvp_stats) {
-        pvp_stats->assists++;
-        pvp_stats->honor_points += config_.honor_per_assist;
-    }
+    auto& pvp_stats = world_->GetComponent<PvPStatsComponent>(assister);
+    pvp_stats.assists++;
+    pvp_stats.honor_points += config_.honor_per_assist;
 }
 
-} // namespace mmorpg::game::systems::pvp      pvp_stats->assists++;
-        pvp_stats->honor_points += config_.honor_per_assist;
-    }
-}
-
-} // namespace mmorpg::game::systems::pvppppvp mmorpg::game::systems::pvp
+} // namespace mmorpg::game::systems::pvp

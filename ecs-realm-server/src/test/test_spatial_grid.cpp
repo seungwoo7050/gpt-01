@@ -5,7 +5,7 @@
 #include <chrono>
 #include <random>
 
-// [SEQUENCE: MVP3-55] test_spatial_grid.cpp: Test spatial grid performance and correctness
+// [SEQUENCE: 1] Test spatial grid performance and correctness
 int main() {
     using namespace mmorpg;
     
@@ -25,7 +25,7 @@ int main() {
     
     std::cout << "=== Spatial Grid Test ===\n";
     
-    // [SEQUENCE: MVP3-56] test_spatial_grid.cpp: Create test entities
+    // [SEQUENCE: 2] Create test entities
     constexpr size_t ENTITY_COUNT = 1000;
     std::vector<core::ecs::EntityId> entities;
     entities.reserve(ENTITY_COUNT);
@@ -50,7 +50,7 @@ int main() {
         world.AddComponent(entity, transform);
     }
     
-    // [SEQUENCE: MVP3-57] test_spatial_grid.cpp: Test spatial queries
+    // [SEQUENCE: 3] Test spatial queries
     std::cout << "\nTesting spatial queries...\n";
     
     // Update spatial index
@@ -70,7 +70,7 @@ int main() {
               << nearby.size() << " entities found in "
               << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-58] test_spatial_grid.cpp: Test entity movement
+    // [SEQUENCE: 4] Test entity movement
     std::cout << "\nTesting entity movement...\n";
     
     // Move some entities
@@ -93,7 +93,7 @@ int main() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Spatial update after movement: " << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-59] test_spatial_grid.cpp: Test visibility query
+    // [SEQUENCE: 5] Test visibility query
     if (!entities.empty()) {
         auto observer = entities[0];
         float view_distance = 300.0f;
@@ -109,14 +109,14 @@ int main() {
                   << duration.count() << " microseconds\n";
     }
     
-    // [SEQUENCE: MVP3-60] test_spatial_grid.cpp: Grid statistics
+    // [SEQUENCE: 6] Grid statistics
     if (auto* grid = spatial->GetWorldGrid()) {
         std::cout << "\n=== Grid Statistics ===\n";
         std::cout << "Total entities: " << grid->GetEntityCount() << "\n";
         std::cout << "Occupied cells: " << grid->GetOccupiedCellCount() << "\n";
         
         // Calculate density
-        float density = static_cast<float>(ENTITY_COUNT) /
+        float density = static_cast<float>(ENTITY_COUNT) / 
                        static_cast<float>(grid->GetOccupiedCellCount());
         std::cout << "Average entities per cell: " << density << "\n";
     }

@@ -11,10 +11,10 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-65] Guild system for player organizations
+// [SEQUENCE: 1523] Guild system for player organizations
 // 길드 시스템으로 플레이어 조직 관리
 
-// [SEQUENCE: MVP11-66] Guild rank permissions
+// [SEQUENCE: 1524] Guild rank permissions
 enum class GuildPermission {
     INVITE_MEMBER      = 1 << 0,
     KICK_MEMBER        = 1 << 1,
@@ -31,7 +31,7 @@ enum class GuildPermission {
     ALL_PERMISSIONS    = 0xFFFF
 };
 
-// [SEQUENCE: MVP11-67] Guild rank
+// [SEQUENCE: 1525] Guild rank
 struct GuildRank {
     uint32_t rank_id;
     std::string rank_name;
@@ -52,7 +52,7 @@ struct GuildRank {
     }
 };
 
-// [SEQUENCE: MVP11-68] Guild member
+// [SEQUENCE: 1526] Guild member
 struct GuildMember {
     uint64_t player_id;
     std::string character_name;
@@ -76,7 +76,7 @@ struct GuildMember {
     std::string officer_note;
 };
 
-// [SEQUENCE: MVP11-69] Guild bank tab
+// [SEQUENCE: 1527] Guild bank tab
 struct GuildBankTab {
     uint32_t tab_id;
     std::string tab_name;
@@ -97,7 +97,7 @@ struct GuildBankTab {
     std::vector<AccessLog> access_logs;
 };
 
-// [SEQUENCE: MVP11-70] Guild configuration
+// [SEQUENCE: 1528] Guild configuration
 struct GuildConfig {
     uint32_t max_members = 100;
     uint32_t max_ranks = 10;
@@ -108,7 +108,7 @@ struct GuildConfig {
     bool allow_multiple_guilds = false;
 };
 
-// [SEQUENCE: MVP11-71] Guild data
+// [SEQUENCE: 1529] Guild data
 class Guild {
 public:
     Guild(uint32_t guild_id, const std::string& name, uint64_t founder_id)
@@ -117,7 +117,7 @@ public:
         InitializeDefaultRanks();
     }
     
-    // [SEQUENCE: MVP11-72] Add member
+    // [SEQUENCE: 1530] Add member
     bool AddMember(uint64_t player_id, const std::string& character_name) {
         if (members_.size() >= config_.max_members) {
             spdlog::warn("Guild {} is full", guild_id_);
@@ -142,7 +142,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-73] Remove member
+    // [SEQUENCE: 1531] Remove member
     bool RemoveMember(uint64_t player_id) {
         auto it = members_.find(player_id);
         if (it == members_.end()) {
@@ -160,7 +160,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-74] Promote/Demote member
+    // [SEQUENCE: 1532] Promote/Demote member
     bool ChangeMemberRank(uint64_t player_id, uint32_t new_rank_id) {
         auto member_it = members_.find(player_id);
         if (member_it == members_.end()) {
@@ -179,7 +179,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-75] Check member permission
+    // [SEQUENCE: 1533] Check member permission
     bool HasPermission(uint64_t player_id, GuildPermission perm) const {
         auto member_it = members_.find(player_id);
         if (member_it == members_.end()) {
@@ -194,7 +194,7 @@ public:
         return rank_it->second.HasPermission(perm);
     }
     
-    // [SEQUENCE: MVP11-76] Update MOTD
+    // [SEQUENCE: 1534] Update MOTD
     bool SetMotd(const std::string& motd, uint64_t setter_id) {
         if (!HasPermission(setter_id, GuildPermission::EDIT_MOTD)) {
             return false;
@@ -207,7 +207,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-77] Deposit gold
+    // [SEQUENCE: 1535] Deposit gold
     bool DepositGold(uint64_t player_id, uint64_t amount) {
         auto member_it = members_.find(player_id);
         if (member_it == members_.end()) {
@@ -230,7 +230,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-78] Withdraw gold
+    // [SEQUENCE: 1536] Withdraw gold
     bool WithdrawGold(uint64_t player_id, uint64_t amount) {
         if (!HasPermission(player_id, GuildPermission::WITHDRAW_GOLD)) {
             return false;
@@ -273,7 +273,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-79] Add guild rank
+    // [SEQUENCE: 1537] Add guild rank
     bool AddRank(const std::string& rank_name, uint32_t permissions) {
         if (ranks_.size() >= config_.max_ranks) {
             return false;
@@ -291,7 +291,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-80] Update member contribution
+    // [SEQUENCE: 1538] Update member contribution
     void UpdateMemberContribution(uint64_t player_id, uint64_t points) {
         auto it = members_.find(player_id);
         if (it != members_.end()) {
@@ -299,13 +299,13 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-81] Get member info
+    // [SEQUENCE: 1539] Get member info
     const GuildMember* GetMember(uint64_t player_id) const {
         auto it = members_.find(player_id);
         return it != members_.end() ? &it->second : nullptr;
     }
     
-    // [SEQUENCE: MVP11-82] Get all members
+    // [SEQUENCE: 1540] Get all members
     std::vector<GuildMember> GetAllMembers() const {
         std::vector<GuildMember> result;
         for (const auto& [id, member] : members_) {
@@ -314,7 +314,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP11-83] Get online members
+    // [SEQUENCE: 1541] Get online members
     std::vector<GuildMember> GetOnlineMembers() const {
         std::vector<GuildMember> result;
         auto now = std::chrono::system_clock::now();
@@ -340,7 +340,7 @@ public:
     size_t GetMemberCount() const { return members_.size(); }
     bool IsDisbanded() const { return is_disbanded_; }
     
-    // [SEQUENCE: MVP11-84] Level up guild
+    // [SEQUENCE: 1542] Level up guild
     void AddExperience(uint64_t exp) {
         guild_experience_ += exp;
         
@@ -393,7 +393,7 @@ private:
     // Configuration
     GuildConfig config_;
     
-    // [SEQUENCE: MVP11-85] Transaction log
+    // [SEQUENCE: 1543] Transaction log
     enum class TransactionType {
         GOLD_DEPOSIT,
         GOLD_WITHDRAWAL,
@@ -411,7 +411,7 @@ private:
     
     std::vector<BankTransaction> bank_transactions_;
     
-    // [SEQUENCE: MVP11-86] Initialize default ranks
+    // [SEQUENCE: 1544] Initialize default ranks
     void InitializeDefaultRanks() {
         // Guild Master
         GuildRank master_rank;
@@ -450,7 +450,7 @@ private:
         next_rank_id_ = 4;
     }
     
-    // [SEQUENCE: MVP11-87] Get lowest rank ID
+    // [SEQUENCE: 1545] Get lowest rank ID
     uint32_t GetLowestRankId() const {
         uint32_t lowest_id = 0;
         for (const auto& [id, rank] : ranks_) {
@@ -461,7 +461,7 @@ private:
         return lowest_id;
     }
     
-    // [SEQUENCE: MVP11-88] Reset daily limits
+    // [SEQUENCE: 1546] Reset daily limits
     void ResetDailyLimits(GuildMember& member) {
         auto now = std::chrono::system_clock::now();
         auto last_reset = member.last_withdrawal_reset;
@@ -477,7 +477,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP11-89] On level up
+    // [SEQUENCE: 1547] On level up
     void OnLevelUp() {
         // Increase limits
         config_.max_members = 100 + (guild_level_ - 1) * 10;
@@ -487,7 +487,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-90] Guild manager
+// [SEQUENCE: 1548] Guild manager
 class GuildManager {
 public:
     static GuildManager& Instance() {
@@ -495,7 +495,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-91] Create guild
+    // [SEQUENCE: 1549] Create guild
     std::shared_ptr<Guild> CreateGuild(const std::string& name, 
                                       uint64_t founder_id,
                                       const std::vector<uint64_t>& charter_signers) {
@@ -543,13 +543,13 @@ public:
         return guild;
     }
     
-    // [SEQUENCE: MVP11-92] Get guild
+    // [SEQUENCE: 1550] Get guild
     std::shared_ptr<Guild> GetGuild(uint32_t guild_id) {
         auto it = guilds_.find(guild_id);
         return it != guilds_.end() ? it->second : nullptr;
     }
     
-    // [SEQUENCE: MVP11-93] Get guild by name
+    // [SEQUENCE: 1551] Get guild by name
     std::shared_ptr<Guild> GetGuildByName(const std::string& name) {
         auto it = guild_name_index_.find(name);
         if (it != guild_name_index_.end()) {
@@ -558,7 +558,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP11-94] Get player's guild
+    // [SEQUENCE: 1552] Get player's guild
     std::shared_ptr<Guild> GetPlayerGuild(uint64_t player_id) {
         auto it = player_guilds_.find(player_id);
         if (it != player_guilds_.end()) {
@@ -567,9 +567,9 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP11-95] Process guild invite
+    // [SEQUENCE: 1553] Process guild invite
     bool InviteToGuild(uint32_t guild_id, uint64_t inviter_id, 
-                      uint64_t target_id, const std::string& target_name) {
+                      uint64_t target_id, [[maybe_unused]] const std::string& target_name) {
         auto guild = GetGuild(guild_id);
         if (!guild) {
             return false;
@@ -597,7 +597,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-96] Accept guild invite
+    // [SEQUENCE: 1554] Accept guild invite
     bool AcceptGuildInvite(uint64_t player_id, const std::string& player_name) {
         auto invite_it = guild_invites_.find(player_id);
         if (invite_it == guild_invites_.end()) {
@@ -618,7 +618,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP11-97] Leave guild
+    // [SEQUENCE: 1555] Leave guild
     bool LeaveGuild(uint64_t player_id) {
         auto guild = GetPlayerGuild(player_id);
         if (!guild) {
@@ -636,7 +636,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-98] Update player online status
+    // [SEQUENCE: 1556] Update player online status
     void UpdatePlayerOnlineStatus(uint64_t player_id) {
         auto guild = GetPlayerGuild(player_id);
         if (guild) {
@@ -666,12 +666,12 @@ private:
     uint32_t next_guild_id_ = 1;
     GuildConfig config_;
     
-    // [SEQUENCE: MVP11-99] Check if guild name exists
+    // [SEQUENCE: 1557] Check if guild name exists
     bool GuildNameExists(const std::string& name) {
         return guild_name_index_.find(name) != guild_name_index_.end();
     }
     
-    // [SEQUENCE: MVP11-100] Disband guild
+    // [SEQUENCE: 1558] Disband guild
     void DisbandGuild(uint32_t guild_id) {
         auto guild_it = guilds_.find(guild_id);
         if (guild_it == guilds_.end()) {
@@ -695,3 +695,5 @@ private:
         spdlog::info("Guild {} disbanded", guild_id);
     }
 };
+
+} // namespace mmorpg::game::social

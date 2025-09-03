@@ -5,19 +5,22 @@
 
 namespace mmorpg::game::world::grid {
 
-// [SEQUENCE: MVP3-10] world_grid.cpp: Constructor - initialize grid
+// [SEQUENCE: 1] Constructor - initialize grid
 WorldGrid::WorldGrid(const Config& config) : config_(config) {
     // Allocate grid cells
     grid_.resize(config_.grid_width);
     for (auto& column : grid_) {
         column.resize(config_.grid_height);
+        for (auto& cell : column) {
+            cell = std::make_unique<GridCell>();
+        }
     }
     
     spdlog::info("WorldGrid initialized: {}x{} cells of size {}", 
                  config_.grid_width, config_.grid_height, config_.cell_size);
 }
 
-// [SEQUENCE: MVP3-11] world_grid.cpp: Add entity to grid
+// [SEQUENCE: 2] Add entity to grid
 void WorldGrid::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3& position) {
     auto [cell_x, cell_y] = GetCellCoordinates(position);
     
@@ -28,8 +31,8 @@ void WorldGrid::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3
     
     // Add to cell
     {
-        std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y].mutex);
-        grid_[cell_x][cell_y].entities.insert(entity);
+        std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y]->mutex);
+        grid_[cell_x][cell_y]->entities.insert(entity);
     }
     
     // Update entity mapping
@@ -41,7 +44,7 @@ void WorldGrid::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3
     spdlog::debug("Added entity {} to cell ({}, {})", entity, cell_x, cell_y);
 }
 
-// [SEQUENCE: MVP3-12] world_grid.cpp: Remove entity from grid
+// [SEQUENCE: 3] Remove entity from grid
 void WorldGrid::RemoveEntity(core::ecs::EntityId entity) {
     std::pair<int, int> cell_coords;
     
@@ -58,14 +61,14 @@ void WorldGrid::RemoveEntity(core::ecs::EntityId entity) {
     
     // Remove from cell
     {
-        std::lock_guard<std::mutex> lock(grid_[cell_coords.first][cell_coords.second].mutex);
-        grid_[cell_coords.first][cell_coords.second].entities.erase(entity);
+        std::lock_guard<std::mutex> lock(grid_[cell_coords.first][cell_coords.second]->mutex);
+        grid_[cell_coords.first][cell_coords.second]->entities.erase(entity);
     }
     
     spdlog::debug("Removed entity {} from cell ({}, {})", entity, cell_coords.first, cell_coords.second);
 }
 
-// [SEQUENCE: MVP3-13] world_grid.cpp: Update entity position
+// [SEQUENCE: 4] Update entity position
 void WorldGrid::UpdateEntity(core::ecs::EntityId entity, 
                            const core::utils::Vector3& old_pos,
                            const core::utils::Vector3& new_pos) {
@@ -79,14 +82,14 @@ void WorldGrid::UpdateEntity(core::ecs::EntityId entity,
     
     // Remove from old cell
     if (IsValidCell(old_x, old_y)) {
-        std::lock_guard<std::mutex> lock(grid_[old_x][old_y].mutex);
-        grid_[old_x][old_y].entities.erase(entity);
+        std::lock_guard<std::mutex> lock(grid_[old_x][old_y]->mutex);
+        grid_[old_x][old_y]->entities.erase(entity);
     }
     
     // Add to new cell
     if (IsValidCell(new_x, new_y)) {
-        std::lock_guard<std::mutex> lock(grid_[new_x][new_y].mutex);
-        grid_[new_x][new_y].entities.insert(entity);
+        std::lock_guard<std::mutex> lock(grid_[new_x][new_y]->mutex);
+        grid_[new_x][new_y]->entities.insert(entity);
         
         // Update mapping
         std::lock_guard<std::mutex> map_lock(entity_map_mutex_);
@@ -98,7 +101,7 @@ void WorldGrid::UpdateEntity(core::ecs::EntityId entity,
     }
 }
 
-// [SEQUENCE: MVP3-14] world_grid.cpp: Get entities within radius
+// [SEQUENCE: 5] Get entities within radius
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     const core::utils::Vector3& center, float radius) const {
     
@@ -108,16 +111,16 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     // Get all cells that might contain entities within radius
     GetCellsInRadius(center, radius, cells_to_check);
     
-    float radius_squared = radius * radius;
+    // float radius_squared = radius * radius; // This is not used, but might be useful for precise filtering later
     
     // Check each cell
     for (const auto& [cell_x, cell_y] : cells_to_check) {
         if (!IsValidCell(cell_x, cell_y)) continue;
         
-        std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y].mutex);
+        std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y]->mutex);
         
         // For each entity in cell, check actual distance
-        for (core::ecs::EntityId entity : grid_[cell_x][cell_y].entities) {
+        for (core::ecs::EntityId entity : grid_[cell_x][cell_y]->entities) {
             // Note: Would need entity position here for exact check
             // For now, include all entities in relevant cells
             result.push_back(entity);
@@ -127,7 +130,7 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     return result;
 }
 
-// [SEQUENCE: MVP3-15] world_grid.cpp: Get entities in box
+// [SEQUENCE: 6] Get entities in box
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInBox(
     const core::utils::Vector3& min, const core::utils::Vector3& max) const {
     
@@ -146,28 +149,30 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInBox(
     // Collect entities from all cells in range
     for (int x = min_x; x <= max_x; ++x) {
         for (int y = min_y; y <= max_y; ++y) {
-            std::lock_guard<std::mutex> lock(grid_[x][y].mutex);
+            std::lock_guard<std::mutex> lock(grid_[x][y]->mutex);
             result.insert(result.end(), 
-                         grid_[x][y].entities.begin(), 
-                         grid_[x][y].entities.end());
+                         grid_[x][y]->entities.begin(), 
+                         grid_[x][y]->entities.end());
         }
     }
     
     return result;
 }
 
+// [SEQUENCE: 7] Get entities in specific cell
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInCell(int x, int y) const {
     if (!IsValidCell(x, y)) {
         return {};
     }
     
-    std::lock_guard<std::mutex> lock(grid_[x][y].mutex);
+    std::lock_guard<std::mutex> lock(grid_[x][y]->mutex);
     return std::vector<core::ecs::EntityId>(
-        grid_[x][y].entities.begin(), 
-        grid_[x][y].entities.end()
+        grid_[x][y]->entities.begin(), 
+        grid_[x][y]->entities.end()
     );
 }
 
+// [SEQUENCE: 8] Get entities in adjacent cells
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInAdjacentCells(
     const core::utils::Vector3& position, int range) const {
     
@@ -187,10 +192,10 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInAdjacentCells(
             }
             
             if (IsValidCell(cell_x, cell_y)) {
-                std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y].mutex);
+                std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y]->mutex);
                 result.insert(result.end(),
-                            grid_[cell_x][cell_y].entities.begin(),
-                            grid_[cell_x][cell_y].entities.end());
+                            grid_[cell_x][cell_y]->entities.begin(),
+                            grid_[cell_x][cell_y]->entities.end());
             }
         }
     }
@@ -198,28 +203,31 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInAdjacentCells(
     return result;
 }
 
-
+// [SEQUENCE: 9] Convert world position to cell coordinates
 std::pair<int, int> WorldGrid::GetCellCoordinates(const core::utils::Vector3& position) const {
     int x = GetCellIndex(position.x, config_.world_min_x, config_.grid_width, config_.cell_size);
     int y = GetCellIndex(position.y, config_.world_min_y, config_.grid_height, config_.cell_size);
     return {x, y};
 }
 
+// [SEQUENCE: 10] Check if cell coordinates are valid
 bool WorldGrid::IsValidCell(int x, int y) const {
     return x >= 0 && x < config_.grid_width && y >= 0 && y < config_.grid_height;
 }
 
+// [SEQUENCE: 11] Get total entity count
 size_t WorldGrid::GetEntityCount() const {
     std::lock_guard<std::mutex> lock(entity_map_mutex_);
     return entity_cells_.size();
 }
 
+// [SEQUENCE: 12] Get occupied cell count
 size_t WorldGrid::GetOccupiedCellCount() const {
     size_t count = 0;
     for (const auto& column : grid_) {
         for (const auto& cell : column) {
-            std::lock_guard<std::mutex> lock(cell.mutex);
-            if (!cell.entities.empty()) {
+            std::lock_guard<std::mutex> lock(cell->mutex);
+            if (!cell->entities.empty()) {
                 count++;
             }
         }
@@ -227,6 +235,7 @@ size_t WorldGrid::GetOccupiedCellCount() const {
     return count;
 }
 
+// [SEQUENCE: 13] Get cell bounds for visualization
 void WorldGrid::GetCellBounds(int x, int y, core::utils::Vector3& min, core::utils::Vector3& max) const {
     min.x = config_.world_min_x + x * config_.cell_size;
     min.y = config_.world_min_y + y * config_.cell_size;
@@ -237,13 +246,14 @@ void WorldGrid::GetCellBounds(int x, int y, core::utils::Vector3& min, core::uti
     max.z = 0;
 }
 
+// [SEQUENCE: 14] Get all occupied cells
 std::vector<std::pair<int, int>> WorldGrid::GetOccupiedCells() const {
     std::vector<std::pair<int, int>> occupied;
     
     for (int x = 0; x < config_.grid_width; ++x) {
         for (int y = 0; y < config_.grid_height; ++y) {
-            std::lock_guard<std::mutex> lock(grid_[x][y].mutex);
-            if (!grid_[x][y].entities.empty()) {
+            std::lock_guard<std::mutex> lock(grid_[x][y]->mutex);
+            if (!grid_[x][y]->entities.empty()) {
                 occupied.emplace_back(x, y);
             }
         }
@@ -252,10 +262,12 @@ std::vector<std::pair<int, int>> WorldGrid::GetOccupiedCells() const {
     return occupied;
 }
 
-int WorldGrid::GetCellIndex(float world_coord, float world_min, int grid_size, float cell_size) const {
+// [SEQUENCE: 15] Helper: Convert world coordinate to cell index
+int WorldGrid::GetCellIndex(float world_coord, float world_min, [[maybe_unused]] int grid_size, float cell_size) const {
     return static_cast<int>((world_coord - world_min) / cell_size);
 }
 
+// [SEQUENCE: 16] Helper: Get cells potentially containing entities within radius
 void WorldGrid::GetCellsInRadius(const core::utils::Vector3& center, float radius,
                                std::vector<std::pair<int, int>>& cells) const {
     // Calculate cell range
@@ -281,6 +293,7 @@ void WorldGrid::GetCellsInRadius(const core::utils::Vector3& center, float radiu
     }
 }
 
+// [SEQUENCE: 17] Helper: Calculate minimum distance squared from point to cell
 float WorldGrid::DistanceSquaredToCell(const core::utils::Vector3& point, int cell_x, int cell_y) const {
     core::utils::Vector3 cell_min, cell_max;
     GetCellBounds(cell_x, cell_y, cell_min, cell_max);
@@ -295,6 +308,4 @@ float WorldGrid::DistanceSquaredToCell(const core::utils::Vector3& point, int ce
     return dx * dx + dy * dy;
 }
 
-} // namespace mmorpg::game::world::grid
-} // namespace mmorpg::game::world::gridorpg::game::world::gridid
 } // namespace mmorpg::game::world::grid

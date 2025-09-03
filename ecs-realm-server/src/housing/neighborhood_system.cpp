@@ -7,7 +7,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-114] Neighborhood constructor
+// [SEQUENCE: 3574] Neighborhood constructor
 Neighborhood::Neighborhood(const Properties& props)
     : properties_(props) {
     
@@ -28,7 +28,7 @@ Neighborhood::Neighborhood(const Properties& props)
     CalculateDesirability();
 }
 
-// [SEQUENCE: MVP14-115] Get available plot
+// [SEQUENCE: 3575] Get available plot
 Neighborhood::Plot* Neighborhood::GetAvailablePlot(HouseType type) const {
     for (auto& plot : layout_.plots) {
         if (!plot.is_occupied && plot.allowed_type == type) {
@@ -46,7 +46,7 @@ Neighborhood::Plot* Neighborhood::GetAvailablePlot(HouseType type) const {
     return nullptr;
 }
 
-// [SEQUENCE: MVP14-116] Reserve plot for player
+// [SEQUENCE: 3576] Reserve plot for player
 bool Neighborhood::ReservePlot(uint32_t plot_id, uint64_t player_id) {
     if (plot_id >= layout_.plots.size()) {
         return false;
@@ -70,7 +70,7 @@ bool Neighborhood::ReservePlot(uint32_t plot_id, uint64_t player_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-117] Release plot
+// [SEQUENCE: 3577] Release plot
 bool Neighborhood::ReleasePlot(uint32_t plot_id) {
     if (plot_id >= layout_.plots.size()) {
         return false;
@@ -92,7 +92,7 @@ bool Neighborhood::ReleasePlot(uint32_t plot_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-118] Get neighbor houses
+// [SEQUENCE: 3578] Get neighbor houses
 std::vector<uint64_t> Neighborhood::GetNeighborHouses(uint64_t house_id,
                                                      float radius) const {
     // Check cache
@@ -136,7 +136,7 @@ std::vector<uint64_t> Neighborhood::GetNeighborHouses(uint64_t house_id,
     return neighbors;
 }
 
-// [SEQUENCE: MVP14-119] Update desirability score
+// [SEQUENCE: 3579] Update desirability score
 void Neighborhood::UpdateDesirability() {
     properties_.desirability_score = NeighborhoodUtils::CalculateDesirability(
         properties_.features,
@@ -145,7 +145,7 @@ void Neighborhood::UpdateDesirability() {
     );
 }
 
-// [SEQUENCE: MVP14-120] Add community feature
+// [SEQUENCE: 3580] Add community feature
 void Neighborhood::AddCommunityFeature(const std::string& feature_type,
                                      const Vector3& position) {
     NeighborhoodLayout::CommonArea area;
@@ -170,7 +170,7 @@ void Neighborhood::AddCommunityFeature(const std::string& feature_type,
                 position.x, position.y, position.z);
 }
 
-// [SEQUENCE: MVP14-121] Start seasonal event
+// [SEQUENCE: 3581] Start seasonal event
 void Neighborhood::StartSeasonalEvent(const std::string& event_type) {
     active_event_ = event_type;
     event_end_time_ = std::chrono::system_clock::now() + std::chrono::hours(24);
@@ -179,7 +179,7 @@ void Neighborhood::StartSeasonalEvent(const std::string& event_type) {
                 event_type, properties_.neighborhood_id);
 }
 
-// [SEQUENCE: MVP14-122] Get neighborhood statistics
+// [SEQUENCE: 3582] Get neighborhood statistics
 Neighborhood::Statistics Neighborhood::GetStatistics() const {
     Statistics stats;
     stats.total_residents = properties_.current_houses;
@@ -195,7 +195,7 @@ Neighborhood::Statistics Neighborhood::GetStatistics() const {
     return stats;
 }
 
-// [SEQUENCE: MVP14-123] Create neighborhood
+// [SEQUENCE: 3583] Create neighborhood
 std::shared_ptr<Neighborhood> NeighborhoodManager::CreateNeighborhood(
     const std::string& name,
     NeighborhoodType type,
@@ -246,7 +246,7 @@ std::shared_ptr<Neighborhood> NeighborhoodManager::CreateNeighborhood(
     return neighborhood;
 }
 
-// [SEQUENCE: MVP14-124] Register neighborhood
+// [SEQUENCE: 3584] Register neighborhood
 void NeighborhoodManager::RegisterNeighborhood(
     std::shared_ptr<Neighborhood> neighborhood) {
     
@@ -257,7 +257,7 @@ void NeighborhoodManager::RegisterNeighborhood(
         neighborhood->properties_.neighborhood_id);
 }
 
-// [SEQUENCE: MVP14-125] Find best neighborhood
+// [SEQUENCE: 3585] Find best neighborhood
 std::shared_ptr<Neighborhood> NeighborhoodManager::FindBestNeighborhood(
     HouseType house_type,
     uint64_t budget) {
@@ -291,7 +291,7 @@ std::shared_ptr<Neighborhood> NeighborhoodManager::FindBestNeighborhood(
     return best;
 }
 
-// [SEQUENCE: MVP14-126] Allocate plot
+// [SEQUENCE: 3586] Allocate plot
 NeighborhoodManager::PlotAllocation NeighborhoodManager::AllocatePlot(
     uint64_t player_id,
     HouseType type,
@@ -333,7 +333,7 @@ NeighborhoodManager::PlotAllocation NeighborhoodManager::AllocatePlot(
     return allocation;
 }
 
-// [SEQUENCE: MVP14-127] Update all neighborhoods
+// [SEQUENCE: 3587] Update all neighborhoods
 void NeighborhoodManager::UpdateAllNeighborhoods() {
     for (auto& [id, neighborhood] : neighborhoods_) {
         neighborhood->UpdateDesirability();
@@ -348,7 +348,7 @@ void NeighborhoodManager::UpdateAllNeighborhoods() {
     }
 }
 
-// [SEQUENCE: MVP14-128] Record neighbor interaction
+// [SEQUENCE: 3588] Record neighbor interaction
 void CommunityInteraction::RecordInteraction(uint64_t player1, uint64_t player2,
                                            const std::string& interaction_type) {
     // Ensure consistent ordering
@@ -392,7 +392,7 @@ void CommunityInteraction::RecordInteraction(uint64_t player1, uint64_t player2,
                  interaction_type, player1, player2);
 }
 
-// [SEQUENCE: MVP14-129] Get relationship type
+// [SEQUENCE: 3589] Get relationship type
 CommunityInteraction::RelationshipType CommunityInteraction::GetRelationship(
     uint64_t player1, uint64_t player2) const {
     
@@ -410,7 +410,7 @@ CommunityInteraction::RelationshipType CommunityInteraction::GetRelationship(
     return RelationshipType::STRANGER;
 }
 
-// [SEQUENCE: MVP14-130] Update reputation
+// [SEQUENCE: 3590] Update reputation
 void CommunityInteraction::UpdateReputation(uint64_t player_id,
                                           const std::string& action) {
     auto& rep = reputations_[player_id];
@@ -432,7 +432,7 @@ void CommunityInteraction::UpdateReputation(uint64_t player_id,
                  player_id, action);
 }
 
-// [SEQUENCE: MVP14-131] Add neighborhood service
+// [SEQUENCE: 3591] Add neighborhood service
 void NeighborhoodServices::AddService(uint32_t neighborhood_id,
                                     const ServicePoint& service) {
     services_[neighborhood_id].push_back(service);
@@ -441,7 +441,7 @@ void NeighborhoodServices::AddService(uint32_t neighborhood_id,
                 service.service_type, neighborhood_id);
 }
 
-// [SEQUENCE: MVP14-132] Find nearest service
+// [SEQUENCE: 3592] Find nearest service
 NeighborhoodServices::ServicePoint* NeighborhoodServices::FindNearestService(
     const Vector3& position,
     const std::string& service_type) {
@@ -464,7 +464,7 @@ NeighborhoodServices::ServicePoint* NeighborhoodServices::FindNearestService(
     return nearest;
 }
 
-// [SEQUENCE: MVP14-133] Create community event
+// [SEQUENCE: 3593] Create community event
 uint32_t NeighborhoodEvents::CreateEvent(const CommunityEvent& event) {
     uint32_t event_id = next_event_id_++;
     
@@ -480,7 +480,7 @@ uint32_t NeighborhoodEvents::CreateEvent(const CommunityEvent& event) {
     return event_id;
 }
 
-// [SEQUENCE: MVP14-134] Register for event
+// [SEQUENCE: 3594] Register for event
 bool NeighborhoodEvents::RegisterForEvent(uint32_t event_id, uint64_t player_id) {
     auto it = events_.find(event_id);
     if (it == events_.end()) {
@@ -508,7 +508,7 @@ bool NeighborhoodEvents::RegisterForEvent(uint32_t event_id, uint64_t player_id)
     return true;
 }
 
-// [SEQUENCE: MVP14-135] Start block party event
+// [SEQUENCE: 3595] Start block party event
 void NeighborhoodEvents::StartBlockParty(uint32_t neighborhood_id) {
     CommunityEvent event;
     event.name = "Block Party";
@@ -525,7 +525,7 @@ void NeighborhoodEvents::StartBlockParty(uint32_t neighborhood_id) {
     CreateEvent(event);
 }
 
-// [SEQUENCE: MVP14-136] Neighborhood utility functions
+// [SEQUENCE: 3596] Neighborhood utility functions
 namespace NeighborhoodUtils {
 
 float GetDistanceBetweenHouses(uint64_t house1_id, uint64_t house2_id) {

@@ -4,16 +4,16 @@
 
 namespace mmorpg::monitoring {
 
-// [SEQUENCE: MVP14-652] A/B testing integration example
+// [SEQUENCE: 2604] A/B testing integration example
 class ABTestingIntegration {
 public:
-    // [SEQUENCE: MVP14-653] Initialize A/B testing with game server
+    // [SEQUENCE: 2605] Initialize A/B testing with game server
     static void InitializeWithGameServer(GameServer* server, 
                                        ABTestingService* ab_service) {
         // Load experiment configurations
         ab_service->LoadExperiments("config/experiments.json");
         
-        // [SEQUENCE: MVP14-654] Hook into player login
+        // [SEQUENCE: 2606] Hook into player login
         server->RegisterLoginHandler([ab_service, server](uint64_t player_id) {
             // Build player profile
             PlayerProfile profile;
@@ -31,7 +31,7 @@ public:
                 // Get test assignments
                 auto assignments = ab_service->GetPlayerAssignments(profile);
                 
-                // [SEQUENCE: MVP14-655] Apply experiment parameters
+                // [SEQUENCE: 2607] Apply experiment parameters
                 for (const auto& assignment : assignments) {
                     ApplyExperimentParameters(player, assignment);
                     
@@ -45,7 +45,7 @@ public:
             }
         });
         
-        // [SEQUENCE: MVP14-656] Hook into session end
+        // [SEQUENCE: 2608] Hook into session end
         server->RegisterLogoutHandler([ab_service](uint64_t player_id, 
                                                   const SessionStats& stats) {
             ab_service->UpdateSessionMetrics(player_id, 
@@ -53,7 +53,7 @@ public:
                                            stats.revenue);
         });
         
-        // [SEQUENCE: MVP14-657] Hook into game events
+        // [SEQUENCE: 2609] Hook into game events
         server->RegisterEventHandler([ab_service](const GameEvent& event) {
             // Track relevant events for experiments
             if (IsExperimentRelevantEvent(event)) {
@@ -66,7 +66,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP14-658] Apply experiment parameters to player
+    // [SEQUENCE: 2610] Apply experiment parameters to player
     static void ApplyExperimentParameters(Player* player, 
                                         const TestAssignment& assignment) {
         const auto& params = assignment.parameters;
@@ -98,7 +98,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP14-659] Check if event is relevant for experiments
+    // [SEQUENCE: 2611] Check if event is relevant for experiments
     static bool IsExperimentRelevantEvent(const GameEvent& event) {
         // Events to track for A/B testing
         static const std::set<std::string> relevant_events = {
@@ -121,10 +121,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-660] Real-time experiment monitoring
+// [SEQUENCE: 2612] Real-time experiment monitoring
 class ExperimentMonitor {
 public:
-    // [SEQUENCE: MVP14-661] Monitor experiment health
+    // [SEQUENCE: 2613] Monitor experiment health
     static void MonitorExperiments(ABTestingService* ab_service) {
         std::thread monitor_thread([ab_service]() {
             while (true) {
@@ -138,13 +138,13 @@ public:
                 for (const auto& exp_id : GetActiveExperimentIds(ab_service)) {
                     auto results = ab_service->GetExperimentResults(exp_id);
                     
-                    // [SEQUENCE: MVP14-662] Check for sample ratio mismatch
+                    // [SEQUENCE: 2614] Check for sample ratio mismatch
                     CheckSampleRatioMismatch(results);
                     
-                    // [SEQUENCE: MVP14-663] Check for metric anomalies
+                    // [SEQUENCE: 2615] Check for metric anomalies
                     CheckMetricAnomalies(results);
                     
-                    // [SEQUENCE: MVP14-664] Auto-stop harmful experiments
+                    // [SEQUENCE: 2616] Auto-stop harmful experiments
                     if (IsExperimentHarmful(results)) {
                         spdlog::error("Experiment {} showing harmful effects, stopping",
                                     exp_id);
@@ -159,7 +159,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP14-665] Check sample ratio mismatch (SRM)
+    // [SEQUENCE: 2617] Check sample ratio mismatch (SRM)
     static void CheckSampleRatioMismatch(const Json::Value& results) {
         if (!results.isMember("variants")) return;
         
@@ -197,7 +197,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP14-666] Check for metric anomalies
+    // [SEQUENCE: 2618] Check for metric anomalies
     static void CheckMetricAnomalies(const Json::Value& results) {
         if (!results.isMember("statistical_analysis")) return;
         
@@ -227,7 +227,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP14-667] Check if experiment is harmful
+    // [SEQUENCE: 2619] Check if experiment is harmful
     static bool IsExperimentHarmful(const Json::Value& results) {
         if (!results.isMember("statistical_analysis")) return false;
         
@@ -254,10 +254,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-668] Example experiment configurations
+// [SEQUENCE: 2620] Example experiment configurations
 class ExperimentExamples {
 public:
-    // [SEQUENCE: MVP14-669] XP progression experiment
+    // [SEQUENCE: 2621] XP progression experiment
     static Json::Value CreateXPProgressionExperiment() {
         Json::Value config;
         config["id"] = "xp_progression_test";
@@ -303,7 +303,7 @@ public:
         return config;
     }
     
-    // [SEQUENCE: MVP14-670] Store UI redesign experiment
+    // [SEQUENCE: 2622] Store UI redesign experiment
     static Json::Value CreateStoreUIExperiment() {
         Json::Value config;
         config["id"] = "store_ui_redesign";
@@ -363,7 +363,7 @@ public:
         return config;
     }
     
-    // [SEQUENCE: MVP14-671] Guild feature rollout
+    // [SEQUENCE: 2623] Guild feature rollout
     static Json::Value CreateGuildFeatureRollout() {
         Json::Value config;
         config["id"] = "guild_wars_feature";
@@ -421,10 +421,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-672] A/B test results analyzer
+// [SEQUENCE: 2624] A/B test results analyzer
 class ABTestResultsAnalyzer {
 public:
-    // [SEQUENCE: MVP14-673] Generate experiment report
+    // [SEQUENCE: 2625] Generate experiment report
     static std::string GenerateExperimentReport(const Json::Value& results) {
         std::stringstream report;
         
@@ -464,7 +464,7 @@ public:
             report << "Statistical Significance: " 
                    << (analysis["is_significant"].asBool() ? "YES" : "NO") << std::endl;
             
-            // [SEQUENCE: MVP14-674] Recommendation based on results
+            // [SEQUENCE: 2626] Recommendation based on results
             report << "\n=== Recommendation ===" << std::endl;
             if (analysis["is_significant"].asBool()) {
                 if (analysis["revenue_lift_percentage"].asDouble() > 0) {
@@ -485,7 +485,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP14-675] Calculate annual revenue impact
+    // [SEQUENCE: 2627] Calculate annual revenue impact
     static double CalculateAnnualImpact(const Json::Value& analysis) {
         // Simplified calculation
         double control_arpu = analysis["control_arpu"].asDouble();
@@ -498,7 +498,7 @@ private:
         return monthly_impact * 12;
     }
     
-    // [SEQUENCE: MVP14-676] Estimate required sample size
+    // [SEQUENCE: 2628] Estimate required sample size
     static uint64_t EstimateRequiredSample(const Json::Value& results) {
         // Simplified sample size calculation
         // In production, use proper power analysis

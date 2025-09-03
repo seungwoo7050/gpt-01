@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -10,10 +11,10 @@
 
 namespace mmorpg::game::pvp {
 
-// [SEQUENCE: MVP14-687] PvP system
+// [SEQUENCE: 1241] PvP system
 // 플레이어 간 전투, 결투, 아레나, 전장을 관리하는 시스템
 
-// [SEQUENCE: MVP14-688] PvP types
+// [SEQUENCE: 1242] PvP types
 enum class PvPType {
     DUEL,               // 1v1 결투
     ARENA_2V2,          // 2v2 아레나
@@ -25,7 +26,7 @@ enum class PvPType {
     GUILD_WAR           // 길드전
 };
 
-// [SEQUENCE: MVP14-689] PvP states
+// [SEQUENCE: 1243] PvP states
 enum class PvPState {
     NONE,               // PvP 비활성
     QUEUED,             // 매칭 대기 중
@@ -35,7 +36,7 @@ enum class PvPState {
     COMPLETED           // 완료
 };
 
-// [SEQUENCE: MVP14-690] PvP zone types
+// [SEQUENCE: 1244] PvP zone types
 enum class PvPZoneType {
     SAFE_ZONE,          // PvP 불가 지역
     CONTESTED,          // PvP 가능 지역
@@ -45,7 +46,7 @@ enum class PvPZoneType {
     DUEL_ZONE           // 결투 가능 지역
 };
 
-// [SEQUENCE: MVP14-691] PvP match info
+// [SEQUENCE: 1245] PvP match info
 struct PvPMatchInfo {
     uint64_t match_id;
     PvPType type;
@@ -73,7 +74,7 @@ struct PvPMatchInfo {
     std::string map_name;
 };
 
-// [SEQUENCE: MVP14-692] Player PvP stats
+// [SEQUENCE: 1246] Player PvP stats
 struct PlayerPvPStats {
     // Overall stats
     uint32_t total_kills = 0;
@@ -106,7 +107,7 @@ struct PlayerPvPStats {
     std::unordered_map<PvPType, uint32_t> losses_by_type;
 };
 
-// [SEQUENCE: MVP14-693] PvP reward
+// [SEQUENCE: 1247] PvP reward
 struct PvPReward {
     uint64_t experience = 0;
     uint64_t honor_points = 0;
@@ -115,7 +116,7 @@ struct PvPReward {
     uint64_t currency = 0;
 };
 
-// [SEQUENCE: MVP14-694] Duel request
+// [SEQUENCE: 1248] Duel request
 struct DuelRequest {
     uint64_t challenger_id;
     uint64_t target_id;
@@ -123,35 +124,35 @@ struct DuelRequest {
     uint32_t timeout_seconds = 30;
 };
 
-// [SEQUENCE: MVP14-695] PvP controller (per player)
+// [SEQUENCE: 1249] PvP controller (per player)
 class PvPController {
 public:
     PvPController(uint64_t entity_id) : entity_id_(entity_id) {}
     
-    // [SEQUENCE: MVP14-696] PvP state management
+    // [SEQUENCE: 1250] PvP state management
     PvPState GetState() const { return current_state_; }
     void SetState(PvPState state) { current_state_ = state; }
     
-    // [SEQUENCE: MVP14-697] Match management
+    // [SEQUENCE: 1251] Match management
     void SetCurrentMatch(uint64_t match_id) { current_match_id_ = match_id; }
     uint64_t GetCurrentMatch() const { return current_match_id_; }
     
-    // [SEQUENCE: MVP14-698] Stats tracking
+    // [SEQUENCE: 1252] Stats tracking
     PlayerPvPStats& GetStats() { return stats_; }
     const PlayerPvPStats& GetStats() const { return stats_; }
     
-    // [SEQUENCE: MVP14-699] Kill tracking
+    // [SEQUENCE: 1253] Kill tracking
     void RecordKill(uint64_t victim_id);
     void RecordDeath(uint64_t killer_id);
     void RecordAssist(uint64_t victim_id);
     
-    // [SEQUENCE: MVP14-700] PvP flags
+    // [SEQUENCE: 1254] PvP flags
     bool IsPvPEnabled() const { return pvp_enabled_; }
     void SetPvPEnabled(bool enabled) { pvp_enabled_ = enabled; }
     bool IsInCombat() const { return in_pvp_combat_; }
     void SetInCombat(bool in_combat) { in_pvp_combat_ = in_combat; }
     
-    // [SEQUENCE: MVP14-701] Zone tracking
+    // [SEQUENCE: 1255] Zone tracking
     void SetCurrentZone(PvPZoneType zone) { current_zone_ = zone; }
     PvPZoneType GetCurrentZone() const { return current_zone_; }
     
@@ -176,20 +177,20 @@ private:
     std::chrono::steady_clock::time_point last_pvp_action_;
 };
 
-// [SEQUENCE: MVP14-702] Matchmaking queue
+// [SEQUENCE: 1256] Matchmaking queue
 class MatchmakingQueue {
 public:
     MatchmakingQueue(PvPType type) : pvp_type_(type) {}
     
-    // [SEQUENCE: MVP14-703] Queue management
+    // [SEQUENCE: 1257] Queue management
     void AddPlayer(uint64_t player_id, int32_t rating);
     void RemovePlayer(uint64_t player_id);
     bool IsPlayerQueued(uint64_t player_id) const;
     
-    // [SEQUENCE: MVP14-704] Match creation
+    // [SEQUENCE: 1258] Match creation
     std::optional<PvPMatchInfo> TryCreateMatch();
     
-    // [SEQUENCE: MVP14-705] Queue info
+    // [SEQUENCE: 1259] Queue info
     size_t GetQueueSize() const { return queued_players_.size(); }
     float GetAverageWaitTime() const;
     
@@ -204,12 +205,12 @@ private:
     
     std::vector<QueuedPlayer> queued_players_;
     
-    // [SEQUENCE: MVP14-706] Rating-based matching
+    // [SEQUENCE: 1260] Rating-based matching
     bool ArePlayersCompatible(const QueuedPlayer& p1, const QueuedPlayer& p2) const;
     int32_t GetRatingDifference(const QueuedPlayer& p1, const QueuedPlayer& p2) const;
 };
 
-// [SEQUENCE: MVP14-707] PvP manager (global)
+// [SEQUENCE: 1261] PvP manager (global)
 class PvPManager {
 public:
     static PvPManager& Instance() {
@@ -217,47 +218,47 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-708] Controller management
+    // [SEQUENCE: 1262] Controller management
     std::shared_ptr<PvPController> CreateController(uint64_t entity_id);
     std::shared_ptr<PvPController> GetController(uint64_t entity_id) const;
     void RemoveController(uint64_t entity_id);
     
-    // [SEQUENCE: MVP14-709] Duel system
+    // [SEQUENCE: 1263] Duel system
     bool SendDuelRequest(uint64_t challenger_id, uint64_t target_id);
     bool AcceptDuel(uint64_t target_id, uint64_t challenger_id);
     bool DeclineDuel(uint64_t target_id, uint64_t challenger_id);
     void StartDuel(uint64_t player1_id, uint64_t player2_id);
     void EndDuel(uint64_t winner_id, uint64_t loser_id);
     
-    // [SEQUENCE: MVP14-710] Matchmaking
+    // [SEQUENCE: 1264] Matchmaking
     bool QueueForPvP(uint64_t player_id, PvPType type);
     bool LeaveQueue(uint64_t player_id);
     void UpdateMatchmaking();
     
-    // [SEQUENCE: MVP14-711] Match management
+    // [SEQUENCE: 1265] Match management
     uint64_t CreateMatch(const PvPMatchInfo& info);
     PvPMatchInfo* GetMatch(uint64_t match_id);
     void StartMatch(uint64_t match_id);
     void EndMatch(uint64_t match_id);
     
-    // [SEQUENCE: MVP14-712] PvP validation
+    // [SEQUENCE: 1266] PvP validation
     bool CanAttack(uint64_t attacker_id, uint64_t target_id) const;
     bool IsAlly(uint64_t player1_id, uint64_t player2_id) const;
     bool IsEnemy(uint64_t player1_id, uint64_t player2_id) const;
     
-    // [SEQUENCE: MVP14-713] Zone management
+    // [SEQUENCE: 1267] Zone management
     void SetZonePvPType(uint32_t zone_id, PvPZoneType type);
     PvPZoneType GetZonePvPType(uint32_t zone_id) const;
     
-    // [SEQUENCE: MVP14-714] Rewards
+    // [SEQUENCE: 1268] Rewards
     PvPReward CalculateRewards(uint64_t player_id, uint64_t match_id, bool won);
     void GrantRewards(uint64_t player_id, const PvPReward& rewards);
     
-    // [SEQUENCE: MVP14-715] Rating calculation
+    // [SEQUENCE: 1269] Rating calculation
     int32_t CalculateRatingChange(int32_t winner_rating, int32_t loser_rating);
     void UpdateRatings(uint64_t winner_id, uint64_t loser_id);
     
-    // [SEQUENCE: MVP14-716] Update
+    // [SEQUENCE: 1270] Update
     void Update(float delta_time);
     
 private:
@@ -281,17 +282,17 @@ private:
     // Zone PvP types
     std::unordered_map<uint32_t, PvPZoneType> zone_pvp_types_;
     
-    // [SEQUENCE: MVP14-717] Initialize queues
+    // [SEQUENCE: 1271] Initialize queues
     void InitializeQueues();
     
-    // [SEQUENCE: MVP14-718] Process expired duels
+    // [SEQUENCE: 1272] Process expired duels
     void ProcessExpiredDuels();
     
-    // [SEQUENCE: MVP14-719] Update match states
+    // [SEQUENCE: 1273] Update match states
     void UpdateMatches(float delta_time);
 };
 
-// [SEQUENCE: MVP14-720] PvP utilities
+// [SEQUENCE: 1274] PvP utilities
 class PvPUtilities {
 public:
     // Rating tiers
@@ -323,7 +324,7 @@ public:
     }
 };
 
-// [SEQUENCE: MVP14-721] PvP event types
+// [SEQUENCE: 1275] PvP event types
 enum class PvPEventType {
     KILL,
     DEATH,
@@ -335,7 +336,7 @@ enum class PvPEventType {
     FLAG_RETURNED
 };
 
-// [SEQUENCE: MVP14-722] PvP event
+// [SEQUENCE: 1276] PvP event
 struct PvPEvent {
     PvPEventType type;
     uint64_t source_player_id;

@@ -13,7 +13,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-28] Player input commands
+// [SEQUENCE: 3723] Player input commands
 struct PlayerInput {
     uint32_t sequence_number;
     uint32_t tick;
@@ -38,7 +38,7 @@ struct PlayerInput {
     uint32_t checksum;
 };
 
-// [SEQUENCE: MVP13-29] Predicted state
+// [SEQUENCE: 3724] Predicted state
 struct PredictedState {
     uint32_t tick;
     Vector3 position;
@@ -56,7 +56,7 @@ struct PredictedState {
     float animation_time;
 };
 
-// [SEQUENCE: MVP13-30] Server authoritative state
+// [SEQUENCE: 3725] Server authoritative state
 struct AuthoritativeState {
     uint32_t tick;
     uint32_t last_processed_input;
@@ -64,12 +64,12 @@ struct AuthoritativeState {
     std::chrono::steady_clock::time_point timestamp;
 };
 
-// [SEQUENCE: MVP13-31] Client prediction system
+// [SEQUENCE: 3726] Client prediction system
 class ClientPrediction {
 public:
     ClientPrediction(uint64_t player_id);
     
-    // [SEQUENCE: MVP13-32] Input handling
+    // [SEQUENCE: 3727] Input handling
     void ProcessInput(const PlayerInput& input);
     uint32_t GetNextSequenceNumber() { return next_sequence_++; }
     
@@ -129,10 +129,10 @@ private:
                                   const PredictedState& actual);
 };
 
-// [SEQUENCE: MVP13-33] Smoothing and interpolation
+// [SEQUENCE: 3728] Smoothing and interpolation
 class StateInterpolator {
 public:
-    // [SEQUENCE: MVP13-34] Interpolation modes
+    // [SEQUENCE: 3729] Interpolation modes
     enum class InterpolationMode {
         LINEAR,         // 선형 보간
         CUBIC,          // 3차 보간
@@ -171,10 +171,10 @@ private:
                                float t, InterpolationMode mode);
 };
 
-// [SEQUENCE: MVP13-35] Prediction manager (server-side)
+// [SEQUENCE: 3730] Prediction manager (server-side)
 class PredictionManager : public Singleton<PredictionManager> {
 public:
-    // [SEQUENCE: MVP13-36] Input validation
+    // [SEQUENCE: 3731] Input validation
     bool ValidateInput(uint64_t player_id, const PlayerInput& input);
     void ProcessPlayerInput(uint64_t player_id, const PlayerInput& input);
     
@@ -236,12 +236,12 @@ private:
     bool IsInputSequenceValid(uint64_t player_id, uint32_t sequence_number);
 };
 
-// [SEQUENCE: MVP13-37] Client-side prediction handler
+// [SEQUENCE: 3732] Client-side prediction handler
 class ClientPredictionHandler {
 public:
     ClientPredictionHandler(std::shared_ptr<Connection> connection);
     
-    // [SEQUENCE: MVP13-38] Input collection
+    // [SEQUENCE: 3733] Input collection
     void CollectInput();
     void SendInput(const PlayerInput& input);
     
@@ -279,7 +279,7 @@ private:
     uint32_t last_acknowledged_input_{0};
 };
 
-// [SEQUENCE: MVP13-39] Prediction utilities
+// [SEQUENCE: 3734] Prediction utilities
 namespace PredictionUtils {
     // Input compression
     std::vector<uint8_t> CompressInput(const PlayerInput& input);
@@ -311,10 +311,10 @@ namespace PredictionUtils {
     PredictionDebugInfo GenerateDebugInfo(const ClientPrediction& prediction);
 }
 
-// [SEQUENCE: MVP13-40] Ability prediction
+// [SEQUENCE: 3735] Ability prediction
 class AbilityPredictor {
 public:
-    // [SEQUENCE: MVP13-41] Ability prediction result
+    // [SEQUENCE: 3736] Ability prediction result
     struct PredictionResult {
         bool can_cast{false};
         float cast_time{0.0f};
@@ -342,7 +342,7 @@ private:
     std::unordered_map<uint32_t, AbilityData> ability_database_;
 };
 
-// [SEQUENCE: MVP13-42] Movement predictor
+// [SEQUENCE: 3737] Movement predictor
 class MovementPredictor {
 public:
     // Movement constraints

@@ -10,7 +10,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP15-1] House types and tiers
+// [SEQUENCE: 3268] House types and tiers
 enum class HouseType {
     ROOM,           // 단일 방
     SMALL_HOUSE,    // 작은 집
@@ -28,7 +28,7 @@ enum class HouseTier {
     LUXURY         // 럭셔리
 };
 
-// [SEQUENCE: MVP15-2] House location and plot
+// [SEQUENCE: 3269] House location and plot
 struct HousePlot {
     uint64_t plot_id;
     std::string zone_name;          // "residential_district_1"
@@ -44,7 +44,7 @@ struct HousePlot {
     uint32_t plot_number;
 };
 
-// [SEQUENCE: MVP15-3] House configuration
+// [SEQUENCE: 3270] House configuration
 struct HouseConfig {
     HouseType type;
     HouseTier tier;
@@ -72,7 +72,7 @@ struct HouseConfig {
     uint32_t max_guests{10};
 };
 
-// [SEQUENCE: MVP15-4] House room definition
+// [SEQUENCE: 3271] House room definition
 struct HouseRoom {
     uint32_t room_id;
     std::string room_name;          // "Living Room", "Bedroom"
@@ -92,58 +92,58 @@ struct HouseRoom {
     uint32_t furniture_limit{20};
 };
 
-// [SEQUENCE: MVP15-5] Player house instance
+// [SEQUENCE: 3272] Player house instance
 class PlayerHouse {
 public:
     PlayerHouse(uint64_t house_id, uint64_t owner_id, const HouseConfig& config);
     ~PlayerHouse() = default;
     
-    // [SEQUENCE: MVP15-6] House lifecycle
+    // [SEQUENCE: 3273] House lifecycle
     bool Initialize(const HousePlot& plot);
     void Update(float delta_time);
     void Save();
     void Load();
     
-    // [SEQUENCE: MVP15-7] Ownership management
+    // [SEQUENCE: 3274] Ownership management
     bool TransferOwnership(uint64_t new_owner_id);
     bool AddCoOwner(uint64_t player_id);
     bool RemoveCoOwner(uint64_t player_id);
     bool IsOwner(uint64_t player_id) const;
     bool HasAccess(uint64_t player_id) const;
     
-    // [SEQUENCE: MVP15-8] Room management
+    // [SEQUENCE: 3275] Room management
     HouseRoom* GetRoom(uint32_t room_id);
     std::vector<HouseRoom*> GetAllRooms();
     bool AddRoom(const HouseRoom& room);
     bool RemoveRoom(uint32_t room_id);
     
-    // [SEQUENCE: MVP15-9] Furniture placement
+    // [SEQUENCE: 3276] Furniture placement
     bool PlaceFurniture(uint64_t furniture_id, uint32_t room_id, 
                        const Vector3& position, float rotation);
     bool MoveFurniture(uint64_t furniture_id, const Vector3& new_position);
     bool RotateFurniture(uint64_t furniture_id, float rotation);
     bool RemoveFurniture(uint64_t furniture_id);
     
-    // [SEQUENCE: MVP15-10] House customization
+    // [SEQUENCE: 3277] House customization
     bool ChangeWallpaper(uint32_t room_id, uint32_t wallpaper_id);
     bool ChangeFlooring(uint32_t room_id, uint32_t flooring_id);
     bool ChangeLighting(uint32_t room_id, float level);
     bool SetAmbientSound(uint32_t room_id, uint32_t sound_id);
     
-    // [SEQUENCE: MVP15-11] Utilities and maintenance
+    // [SEQUENCE: 3278] Utilities and maintenance
     bool PayRent();
     bool PayTaxes();
     bool RepairDamage(float damage_amount);
     void CalculateUpkeep();
     
-    // [SEQUENCE: MVP15-12] Getters
+    // [SEQUENCE: 3279] Getters
     uint64_t GetHouseId() const { return house_id_; }
     uint64_t GetOwnerId() const { return owner_id_; }
     HouseType GetType() const { return config_.type; }
     HouseTier GetTier() const { return config_.tier; }
     const HousePlot& GetPlot() const { return plot_; }
     
-    // [SEQUENCE: MVP15-13] House statistics
+    // [SEQUENCE: 3280] House statistics
     uint32_t GetFurnitureCount() const;
     uint32_t GetVisitorCount() const { return current_visitors_.size(); }
     float GetCondition() const { return condition_; }
@@ -179,7 +179,7 @@ private:
     std::chrono::system_clock::time_point last_modified_;
 };
 
-// [SEQUENCE: MVP15-14] Housing system manager
+// [SEQUENCE: 3281] Housing system manager
 class HousingSystem {
 public:
     static HousingSystem& Instance() {
@@ -187,7 +187,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP15-15] House creation and deletion
+    // [SEQUENCE: 3282] House creation and deletion
     std::shared_ptr<PlayerHouse> CreateHouse(uint64_t owner_id, 
                                             const HouseConfig& config,
                                             const HousePlot& plot);
@@ -195,22 +195,22 @@ public:
     bool DeleteHouse(uint64_t house_id);
     bool AbandonHouse(uint64_t house_id);
     
-    // [SEQUENCE: MVP15-16] House access
+    // [SEQUENCE: 3283] House access
     std::shared_ptr<PlayerHouse> GetHouse(uint64_t house_id);
     std::shared_ptr<PlayerHouse> GetHouseByOwner(uint64_t owner_id);
     std::vector<std::shared_ptr<PlayerHouse>> GetHousesInZone(const std::string& zone);
     
-    // [SEQUENCE: MVP15-17] Plot management
+    // [SEQUENCE: 3284] Plot management
     std::vector<HousePlot> GetAvailablePlots(const std::string& zone = "");
     bool PurchasePlot(uint64_t player_id, uint64_t plot_id);
     bool ReleasePlot(uint64_t plot_id);
     
-    // [SEQUENCE: MVP15-18] House visiting
+    // [SEQUENCE: 3285] House visiting
     bool EnterHouse(uint64_t player_id, uint64_t house_id);
     bool ExitHouse(uint64_t player_id, uint64_t house_id);
     std::vector<uint64_t> GetVisitors(uint64_t house_id);
     
-    // [SEQUENCE: MVP15-19] House search
+    // [SEQUENCE: 3286] House search
     struct HouseSearchCriteria {
         std::optional<HouseType> type;
         std::optional<HouseTier> tier;
@@ -223,12 +223,12 @@ public:
     std::vector<std::shared_ptr<PlayerHouse>> SearchHouses(
         const HouseSearchCriteria& criteria);
     
-    // [SEQUENCE: MVP15-20] System management
+    // [SEQUENCE: 3287] System management
     void Update(float delta_time);
     void ProcessMonthlyPayments();
     void CalculatePropertyValues();
     
-    // [SEQUENCE: MVP15-21] Statistics
+    // [SEQUENCE: 3288] Statistics
     struct HousingStats {
         uint32_t total_houses;
         uint32_t occupied_plots;
@@ -260,7 +260,7 @@ private:
     mutable std::mutex plots_mutex_;
 };
 
-// [SEQUENCE: MVP15-22] House templates
+// [SEQUENCE: 3289] House templates
 class HouseTemplate {
 public:
     struct TemplateData {
@@ -280,7 +280,7 @@ private:
     static std::unordered_map<std::string, TemplateData> templates_;
 };
 
-// [SEQUENCE: MVP15-23] House upgrade system
+// [SEQUENCE: 3290] House upgrade system
 class HouseUpgradeSystem {
 public:
     struct UpgradeOption {
@@ -296,24 +296,24 @@ public:
         std::function<void(PlayerHouse&)> apply_upgrade;
     };
     
-    // [SEQUENCE: MVP15-24] Upgrade management
+    // [SEQUENCE: 3291] Upgrade management
     static std::vector<UpgradeOption> GetAvailableUpgrades(const PlayerHouse& house);
     static bool ApplyUpgrade(PlayerHouse& house, const std::string& upgrade_name);
     
-    // [SEQUENCE: MVP15-25] Tier upgrades
+    // [SEQUENCE: 3292] Tier upgrades
     static bool UpgradeTier(PlayerHouse& house);
     static uint64_t GetTierUpgradeCost(HouseTier current_tier);
     
-    // [SEQUENCE: MVP15-26] Room expansions
+    // [SEQUENCE: 3293] Room expansions
     static bool AddRoomExpansion(PlayerHouse& house, const std::string& room_type);
     static bool AddFloor(PlayerHouse& house);
     static bool AddBasement(PlayerHouse& house);
 };
 
-// [SEQUENCE: MVP15-27] House visitor management
+// [SEQUENCE: 3294] House visitor management
 class HouseVisitorManager {
 public:
-    // [SEQUENCE: MVP15-28] Visitor tracking
+    // [SEQUENCE: 3295] Visitor tracking
     struct VisitorInfo {
         uint64_t player_id;
         std::string player_name;
@@ -331,7 +331,7 @@ private:
     static std::unordered_map<uint64_t, std::vector<VisitorInfo>> visitor_history_;
 };
 
-// [SEQUENCE: MVP15-29] House utility functions
+// [SEQUENCE: 3296] House utility functions
 namespace HouseUtils {
     // Configuration helpers
     HouseConfig CreateDefaultConfig(HouseType type, HouseTier tier);

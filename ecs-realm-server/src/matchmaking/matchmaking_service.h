@@ -16,10 +16,10 @@
 
 namespace mmorpg::matchmaking {
 
-// [SEQUENCE: MVP13-1] Matchmaking service for competitive game modes
+// [SEQUENCE: 2629] Matchmaking service for competitive game modes
 // 매치메이킹 서비스 - 경쟁 게임 모드를 위한 플레이어 매칭
 
-// [SEQUENCE: MVP13-2] Match types and modes
+// [SEQUENCE: 2630] Match types and modes
 enum class MatchType {
     ARENA_1V1,          // 1대1 아레나
     ARENA_2V2,          // 2대2 아레나
@@ -33,12 +33,12 @@ enum class MatchType {
     CUSTOM              // 커스텀 매치
 };
 
-// [SEQUENCE: MVP13-3] Player matchmaking profile
+// [SEQUENCE: 2631] Player matchmaking profile
 struct MatchmakingProfile {
     uint64_t player_id;
     std::string player_name;
     
-    // [SEQUENCE: MVP13-4] Rating information
+    // [SEQUENCE: 2632] Rating information
     struct RatingInfo {
         int32_t current_rating{1500};      // 현재 레이팅 (ELO)
         int32_t peak_rating{1500};         // 최고 레이팅
@@ -55,7 +55,7 @@ struct MatchmakingProfile {
     
     std::unordered_map<MatchType, RatingInfo> ratings; // 매치 타입별 레이팅
     
-    // [SEQUENCE: MVP13-5] Player preferences
+    // [SEQUENCE: 2633] Player preferences
     struct Preferences {
         std::vector<MatchType> preferred_modes;     // 선호 게임 모드
         std::vector<uint32_t> blocked_players;      // 차단한 플레이어
@@ -64,7 +64,7 @@ struct MatchmakingProfile {
         bool allow_cross_region{false};             // 타 지역 매칭 허용
     } preferences;
     
-    // [SEQUENCE: MVP13-6] Current status
+    // [SEQUENCE: 2634] Current status
     struct Status {
         bool in_queue{false};                       // 큐 대기 중
         bool in_match{false};                       // 매치 진행 중
@@ -79,14 +79,14 @@ struct MatchmakingProfile {
     std::vector<uint32_t> recent_opponents;         // 최근 상대 (반복 매칭 방지)
 };
 
-// [SEQUENCE: MVP13-7] Match requirements
+// [SEQUENCE: 2635] Match requirements
 struct MatchRequirements {
     MatchType match_type;
     int32_t min_players;                            // 최소 플레이어 수
     int32_t max_players;                            // 최대 플레이어 수
     int32_t players_per_team;                       // 팀당 플레이어 수
     
-    // [SEQUENCE: MVP13-8] Rating constraints
+    // [SEQUENCE: 2636] Rating constraints
     struct RatingConstraints {
         int32_t initial_rating_range{100};          // 초기 레이팅 범위
         int32_t max_rating_range{500};              // 최대 레이팅 범위
@@ -94,7 +94,7 @@ struct MatchRequirements {
         bool strict_rating{false};                  // 엄격한 레이팅 매칭
     } rating_constraints;
     
-    // [SEQUENCE: MVP13-9] Team balancing
+    // [SEQUENCE: 2637] Team balancing
     struct TeamBalance {
         bool balance_by_rating{true};               // 레이팅으로 팀 밸런싱
         bool balance_by_roles{false};               // 역할로 팀 밸런싱
@@ -108,14 +108,14 @@ struct MatchRequirements {
     bool ranked_match{false};                       // 랭크 매치 여부
 };
 
-// [SEQUENCE: MVP13-10] Matchmaking queue entry
+// [SEQUENCE: 2638] Matchmaking queue entry
 struct QueueEntry {
     std::shared_ptr<MatchmakingProfile> player;
     MatchType match_type;
     std::chrono::steady_clock::time_point queue_time;
     int32_t expanded_rating_range{0};               // 확장된 레이팅 범위
     
-    // [SEQUENCE: MVP13-11] Calculate current acceptable rating range
+    // [SEQUENCE: 2639] Calculate current acceptable rating range
     int32_t GetAcceptableRatingRange(const MatchRequirements& requirements) const {
         auto elapsed = std::chrono::steady_clock::now() - queue_time;
         auto seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
@@ -151,13 +151,13 @@ struct QueueEntry {
     }
 };
 
-// [SEQUENCE: MVP13-12] Match group (potential match)
+// [SEQUENCE: 2640] Match group (potential match)
 struct MatchGroup {
     std::string match_id;
     MatchType match_type;
     std::vector<std::shared_ptr<QueueEntry>> players;
     
-    // [SEQUENCE: MVP13-13] Team assignments
+    // [SEQUENCE: 2641] Team assignments
     struct Team {
         std::string team_id;
         std::vector<uint64_t> player_ids;
@@ -176,7 +176,7 @@ struct MatchGroup {
     
     std::vector<Team> teams;
     
-    // [SEQUENCE: MVP13-14] Match quality metrics
+    // [SEQUENCE: 2642] Match quality metrics
     struct QualityMetrics {
         double rating_balance{0.0};     // 팀 밸런스 점수 (0-1)
         double wait_time_score{0.0};    // 대기 시간 점수 (0-1)
@@ -237,7 +237,7 @@ struct MatchGroup {
             return;
         }
         
-        // [SEQUENCE: MVP13-15] Sort by rating for balanced distribution
+        // [SEQUENCE: 2643] Sort by rating for balanced distribution
         std::vector<std::shared_ptr<QueueEntry>> sorted_players = players;
         std::sort(sorted_players.begin(), sorted_players.end(),
             [&](const auto& a, const auto& b) {
@@ -295,7 +295,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-16] Matchmaking service
+// [SEQUENCE: 2644] Matchmaking service
 class MatchmakingService {
 public:
     MatchmakingService() {
@@ -310,7 +310,7 @@ public:
         StopMatchmakingWorker();
     }
     
-    // [SEQUENCE: MVP13-17] Add player to matchmaking queue
+    // [SEQUENCE: 2645] Add player to matchmaking queue
     bool AddToQueue(std::shared_ptr<MatchmakingProfile> player, MatchType match_type) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         
@@ -351,7 +351,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP13-18] Remove player from queue
+    // [SEQUENCE: 2646] Remove player from queue
     bool RemoveFromQueue(uint64_t player_id) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         
@@ -380,7 +380,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP13-19] Get queue status
+    // [SEQUENCE: 2647] Get queue status
     struct QueueStatus {
         MatchType match_type;
         uint32_t players_in_queue;
@@ -423,13 +423,13 @@ public:
         return status;
     }
     
-    // [SEQUENCE: MVP13-20] Force match creation (for testing)
+    // [SEQUENCE: 2648] Force match creation (for testing)
     std::optional<MatchGroup> ForceCreateMatch(MatchType match_type) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         return TryCreateMatches(match_type);
     }
     
-    // [SEQUENCE: MVP13-21] Get player's current match
+    // [SEQUENCE: 2649] Get player's current match
     std::optional<uint64_t> GetPlayerMatch(uint64_t player_id) const {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         
@@ -450,7 +450,7 @@ private:
     std::atomic<bool> running_{false};
     std::thread worker_thread_;
     
-    // [SEQUENCE: MVP13-22] Initialize match requirements
+    // [SEQUENCE: 2650] Initialize match requirements
     void InitializeMatchRequirements() {
         // 1v1 Arena
         match_requirements_[MatchType::ARENA_1V1] = {
@@ -524,7 +524,7 @@ private:
         // 추가 매치 타입들도 비슷하게 설정...
     }
     
-    // [SEQUENCE: MVP13-23] Try to create matches from queue
+    // [SEQUENCE: 2651] Try to create matches from queue
     std::optional<MatchGroup> TryCreateMatches(MatchType match_type) {
         auto& queue = match_queues_[match_type];
         auto& requirements = match_requirements_[match_type];
@@ -534,7 +534,7 @@ private:
             return std::nullopt;
         }
         
-        // [SEQUENCE: MVP13-24] Find compatible players
+        // [SEQUENCE: 2652] Find compatible players
         std::vector<std::shared_ptr<QueueEntry>> candidates;
         
         // 가장 오래 기다린 플레이어부터 시작
@@ -566,7 +566,7 @@ private:
         return std::nullopt;
     }
     
-    // [SEQUENCE: MVP13-25] Create match from candidates
+    // [SEQUENCE: 2653] Create match from candidates
     std::optional<MatchGroup> CreateMatch(
         const std::vector<std::shared_ptr<QueueEntry>>& candidates,
         const MatchRequirements& requirements) {
@@ -605,7 +605,7 @@ private:
         return match;
     }
     
-    // [SEQUENCE: MVP13-26] Matchmaking worker thread
+    // [SEQUENCE: 2654] Matchmaking worker thread
     void StartMatchmakingWorker() {
         running_ = true;
         worker_thread_ = std::thread([this]() {
@@ -637,7 +637,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-27] Handle players waiting too long
+    // [SEQUENCE: 2655] Handle players waiting too long
     void HandleLongWaitPlayers(MatchType match_type) {
         auto& queue = match_queues_[match_type];
         auto& requirements = match_requirements_[match_type];
@@ -692,7 +692,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-28] Matchmaking statistics
+// [SEQUENCE: 2656] Matchmaking statistics
 class MatchmakingStatistics {
 public:
     struct Stats {

@@ -7,10 +7,10 @@
 #include "core/monitoring/server_monitor.h"
 #include "server/login/auth_handler.h"
 
-// [SEQUENCE: MVP1-56] Login server main entry point, including signal handling and logging.
-
+// [SEQUENCE: 1] Global server instance for signal handling
 std::shared_ptr<mmorpg::core::network::TcpServer> g_server;
 
+// [SEQUENCE: 2] Signal handler for graceful shutdown
 void SignalHandler(int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
         spdlog::info("Received shutdown signal, stopping server...");
@@ -20,6 +20,7 @@ void SignalHandler(int signal) {
     }
 }
 
+// [SEQUENCE: 3] Setup logging system
 void SetupLogging() {
     // Console sink with colors
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -42,6 +43,7 @@ void SetupLogging() {
     spdlog::info("Logging system initialized");
 }
 
+// [SEQUENCE: 4] Main entry point
 int main(int argc, char* argv[]) {
     try {
         // Setup logging

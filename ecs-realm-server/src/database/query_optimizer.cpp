@@ -8,7 +8,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-451] Query pattern analysis
+// [SEQUENCE: 3143] Query pattern analysis
 QueryPatternAnalyzer::QueryPattern QueryPatternAnalyzer::AnalyzeQuery(
     const std::string& query) {
     
@@ -75,7 +75,7 @@ QueryPatternAnalyzer::QueryPattern QueryPatternAnalyzer::AnalyzeQuery(
     return pattern;
 }
 
-// [SEQUENCE: MVP14-452] Suggest query optimizations
+// [SEQUENCE: 3144] Suggest query optimizations
 std::vector<std::string> QueryPatternAnalyzer::SuggestOptimizations(
     const QueryPattern& pattern) {
     
@@ -112,7 +112,7 @@ std::vector<std::string> QueryPatternAnalyzer::SuggestOptimizations(
     return suggestions;
 }
 
-// [SEQUENCE: MVP14-453] Record query execution for index analysis
+// [SEQUENCE: 3145] Record query execution for index analysis
 void IndexAdvisor::RecordQueryExecution(const std::string& query,
                                       const QueryPlan& plan,
                                       double execution_time_ms) {
@@ -141,7 +141,7 @@ void IndexAdvisor::RecordQueryExecution(const std::string& query,
     }
 }
 
-// [SEQUENCE: MVP14-454] Get index recommendations
+// [SEQUENCE: 3146] Get index recommendations
 std::vector<IndexAdvisor::IndexRecommendation> IndexAdvisor::GetRecommendations(
     const std::string& table_name) const {
     
@@ -201,7 +201,7 @@ std::vector<IndexAdvisor::IndexRecommendation> IndexAdvisor::GetRecommendations(
     return recommendations;
 }
 
-// [SEQUENCE: MVP14-455] Generate CREATE INDEX SQL
+// [SEQUENCE: 3147] Generate CREATE INDEX SQL
 std::string IndexAdvisor::IndexRecommendation::GetCreateIndexSQL() const {
     std::stringstream sql;
     
@@ -227,7 +227,7 @@ std::string IndexAdvisor::IndexRecommendation::GetCreateIndexSQL() const {
     return sql.str();
 }
 
-// [SEQUENCE: MVP14-456] Rewrite query for optimization
+// [SEQUENCE: 3148] Rewrite query for optimization
 std::string QueryRewriter::RewriteQuery(const std::string& query,
                                       const std::vector<RewriteRule>& rules) {
     std::string optimized = query;
@@ -261,7 +261,7 @@ std::string QueryRewriter::RewriteQuery(const std::string& query,
     return optimized;
 }
 
-// [SEQUENCE: MVP14-457] Optimize SELECT N+1 queries
+// [SEQUENCE: 3149] Optimize SELECT N+1 queries
 std::string QueryRewriter::OptimizeSelectN1(const std::string& query) {
     // Detect N+1 pattern and suggest batch query
     std::regex n1_pattern(R"(SELECT .* FROM (\w+) WHERE \w+_id = \?)", 
@@ -279,7 +279,7 @@ std::string QueryRewriter::OptimizeSelectN1(const std::string& query) {
     return query;
 }
 
-// [SEQUENCE: MVP14-458] Optimize pagination queries
+// [SEQUENCE: 3150] Optimize pagination queries
 std::string QueryRewriter::OptimizePagination(const std::string& query) {
     // Check for OFFSET pagination
     std::regex offset_pattern(R"(LIMIT\s+(\d+)\s+OFFSET\s+(\d+))", 
@@ -301,7 +301,7 @@ std::string QueryRewriter::OptimizePagination(const std::string& query) {
     return query;
 }
 
-// [SEQUENCE: MVP14-459] Check if query is cacheable
+// [SEQUENCE: 3151] Check if query is cacheable
 bool QueryCacheOptimizer::IsCacheable(const std::string& query) {
     std::string upper_query = query;
     std::transform(upper_query.begin(), upper_query.end(), 
@@ -324,7 +324,7 @@ bool QueryCacheOptimizer::IsCacheable(const std::string& query) {
     return true;
 }
 
-// [SEQUENCE: MVP14-460] Calculate optimal cache TTL
+// [SEQUENCE: 3152] Calculate optimal cache TTL
 std::chrono::seconds QueryCacheOptimizer::CalculateTTL(
     const std::string& query,
     const QueryPatternAnalyzer::QueryPattern& pattern) {
@@ -350,7 +350,7 @@ std::chrono::seconds QueryCacheOptimizer::CalculateTTL(
     return std::chrono::seconds(300);       // 5 minutes
 }
 
-// [SEQUENCE: MVP14-461] Optimize batch insert
+// [SEQUENCE: 3153] Optimize batch insert
 std::string BatchQueryOptimizer::OptimizeBatchInsert(
     const std::string& table,
     const std::vector<std::unordered_map<std::string, std::string>>& rows) {
@@ -396,7 +396,7 @@ std::string BatchQueryOptimizer::OptimizeBatchInsert(
     return sql.str();
 }
 
-// [SEQUENCE: MVP14-462] Record query execution statistics
+// [SEQUENCE: 3154] Record query execution statistics
 void QueryStatsCollector::RecordExecution(const std::string& query,
                                         double execution_time_ms,
                                         uint64_t rows_examined,
@@ -436,7 +436,7 @@ void QueryStatsCollector::RecordExecution(const std::string& query,
     }
 }
 
-// [SEQUENCE: MVP14-463] Get slow queries
+// [SEQUENCE: 3155] Get slow queries
 std::vector<QueryStatsCollector::QueryStats> QueryStatsCollector::GetSlowQueries(
     double threshold_ms, uint32_t limit) const {
     
@@ -464,7 +464,7 @@ std::vector<QueryStatsCollector::QueryStats> QueryStatsCollector::GetSlowQueries
     return slow_queries;
 }
 
-// [SEQUENCE: MVP14-464] Normalize query for statistics
+// [SEQUENCE: 3156] Normalize query for statistics
 std::string QueryStatsCollector::NormalizeQuery(const std::string& query) const {
     std::string normalized = query;
     
@@ -486,7 +486,7 @@ std::string QueryStatsCollector::NormalizeQuery(const std::string& query) const 
     return normalized;
 }
 
-// [SEQUENCE: MVP14-465] Main query optimization
+// [SEQUENCE: 3157] Main query optimization
 QueryPlan QueryOptimizer::OptimizeQuery(const std::string& query,
                                       const std::vector<OptimizationHint>& hints) {
     // Check cache first
@@ -550,7 +550,7 @@ QueryPlan QueryOptimizer::OptimizeQuery(const std::string& query,
     return plan;
 }
 
-// [SEQUENCE: MVP14-466] Execute query with optimization
+// [SEQUENCE: 3158] Execute query with optimization
 QueryResult QueryOptimizer::ExecuteOptimized(const std::string& query,
                                            const std::vector<std::string>& params) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -595,7 +595,7 @@ QueryResult QueryOptimizer::ExecuteOptimized(const std::string& query,
     return result;
 }
 
-// [SEQUENCE: MVP14-467] Get optimization suggestions
+// [SEQUENCE: 3159] Get optimization suggestions
 std::vector<std::string> QueryOptimizer::GetOptimizationSuggestions(
     const std::string& query) const {
     

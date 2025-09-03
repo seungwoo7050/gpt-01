@@ -6,16 +6,16 @@
 
 namespace mmorpg::tournament {
 
-// [SEQUENCE: MVP12-242] Tournament system integration
+// [SEQUENCE: 2870] Tournament system integration
 class TournamentIntegration {
 public:
-    // [SEQUENCE: MVP12-243] Initialize tournament system with game server
+    // [SEQUENCE: 2871] Initialize tournament system with game server
     static void InitializeWithGameServer(GameServer* server,
                                        TournamentSystem* tournament_system,
                                        ArenaSystem* arena_system,
                                        RankingService* ranking_service) {
         
-        // [SEQUENCE: MVP12-244] Handle tournament registration command
+        // [SEQUENCE: 2872] Handle tournament registration command
         server->RegisterCommand("tournament", [tournament_system, server](
             uint64_t player_id, const std::vector<std::string>& args) {
             
@@ -51,7 +51,7 @@ public:
             }
         });
         
-        // [SEQUENCE: MVP12-245] Handle arena match completion for tournaments
+        // [SEQUENCE: 2873] Handle arena match completion for tournaments
         arena_system->OnMatchComplete = [tournament_system](
             uint64_t arena_match_id,
             uint64_t winner_id,
@@ -62,12 +62,12 @@ public:
                 arena_match_id, winner_id, stats);
         };
         
-        // [SEQUENCE: MVP12-246] Create recurring tournaments
+        // [SEQUENCE: 2874] Create recurring tournaments
         CreateDailyTournaments(tournament_system);
         CreateWeeklyTournaments(tournament_system);
         CreateSpecialEventTournaments(tournament_system);
         
-        // [SEQUENCE: MVP12-247] Tournament notification system
+        // [SEQUENCE: 2875] Tournament notification system
         server->ScheduleRecurringTask("tournament_notifications",
             std::chrono::minutes(5), [tournament_system, server]() {
                 
@@ -97,7 +97,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP12-248] Show tournament help
+    // [SEQUENCE: 2876] Show tournament help
     static void ShowTournamentHelp(GameServer* server, uint64_t player_id) {
         std::stringstream help;
         help << "=== Tournament Commands ===\n"
@@ -110,7 +110,7 @@ private:
         server->SendMessage(player_id, help.str());
     }
     
-    // [SEQUENCE: MVP12-249] List available tournaments
+    // [SEQUENCE: 2877] List available tournaments
     static void ListTournaments(GameServer* server, uint64_t player_id,
                               TournamentSystem* tournament_system) {
         auto schedule = tournament_system->GetTournamentSchedule();
@@ -147,7 +147,7 @@ private:
         server->SendMessage(player_id, msg.str());
     }
     
-    // [SEQUENCE: MVP12-250] Show tournament information
+    // [SEQUENCE: 2878] Show tournament information
     static void ShowTournamentInfo(GameServer* server, uint64_t player_id,
                                  TournamentSystem* tournament_system,
                                  uint64_t tournament_id) {
@@ -205,7 +205,7 @@ private:
         server->SendMessage(player_id, info.str());
     }
     
-    // [SEQUENCE: MVP12-251] Register player for tournament
+    // [SEQUENCE: 2879] Register player for tournament
     static void RegisterForTournament(GameServer* server, uint64_t player_id,
                                     TournamentSystem* tournament_system,
                                     uint64_t tournament_id,
@@ -264,7 +264,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-252] Check in for tournament
+    // [SEQUENCE: 2880] Check in for tournament
     static void CheckInForTournament(GameServer* server, uint64_t player_id,
                                    TournamentSystem* tournament_system,
                                    uint64_t tournament_id) {
@@ -286,7 +286,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-253] Show tournament standings
+    // [SEQUENCE: 2881] Show tournament standings
     static void ShowTournamentStandings(GameServer* server, uint64_t player_id,
                                       TournamentSystem* tournament_system,
                                       uint64_t tournament_id) {
@@ -318,7 +318,7 @@ private:
         server->SendMessage(player_id, msg.str());
     }
     
-    // [SEQUENCE: MVP12-254] Create daily tournaments
+    // [SEQUENCE: 2882] Create daily tournaments
     static void CreateDailyTournaments(TournamentSystem* tournament_system) {
         // Daily 1v1 tournament
         TournamentConfig daily_1v1;
@@ -369,7 +369,7 @@ private:
         tournament_system->CreateTournament(daily_3v3);
     }
     
-    // [SEQUENCE: MVP12-255] Create weekly tournaments
+    // [SEQUENCE: 2883] Create weekly tournaments
     static void CreateWeeklyTournaments(TournamentSystem* tournament_system) {
         // Weekly championship - Saturday 6 PM
         TournamentConfig weekly_championship;
@@ -406,7 +406,7 @@ private:
         tournament_system->CreateTournament(weekly_championship);
     }
     
-    // [SEQUENCE: MVP12-256] Create special event tournaments
+    // [SEQUENCE: 2884] Create special event tournaments
     static void CreateSpecialEventTournaments(TournamentSystem* tournament_system) {
         // Monthly championship - First Saturday of month
         if (IsFirstSaturdayOfMonth()) {
@@ -443,7 +443,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-257] Format tournament listing
+    // [SEQUENCE: 2885] Format tournament listing
     static std::string FormatTournamentListing(
         const TournamentSystem::TournamentSchedule::ScheduledTournament& t) {
         std::stringstream ss;
@@ -570,10 +570,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-258] Tournament bracket algorithms
+// [SEQUENCE: 2886] Tournament bracket algorithms
 class BracketAlgorithms {
 public:
-    // [SEQUENCE: MVP12-259] Standard tournament seeding
+    // [SEQUENCE: 2887] Standard tournament seeding
     static std::vector<std::pair<uint64_t, uint64_t>> CreateStandardSeeding(
         const std::vector<uint64_t>& participants) {
         
@@ -595,7 +595,7 @@ public:
         return matches;
     }
     
-    // [SEQUENCE: MVP12-260] Swiss pairing algorithm
+    // [SEQUENCE: 2888] Swiss pairing algorithm
     static std::vector<std::pair<uint64_t, uint64_t>> CreateSwissPairing(
         const std::unordered_map<uint64_t, TournamentParticipant>& participants,
         uint32_t round) {
@@ -629,7 +629,7 @@ public:
         return matches;
     }
     
-    // [SEQUENCE: MVP12-261] Round robin scheduling
+    // [SEQUENCE: 2889] Round robin scheduling
     static std::vector<std::vector<std::pair<uint64_t, uint64_t>>> CreateRoundRobinSchedule(
         const std::vector<uint64_t>& participants) {
         
@@ -675,10 +675,10 @@ public:
     }
 };
 
-// [SEQUENCE: MVP12-262] Tournament analytics
+// [SEQUENCE: 2890] Tournament analytics
 class TournamentAnalytics {
 public:
-    // [SEQUENCE: MVP12-263] Log tournament completion
+    // [SEQUENCE: 2891] Log tournament completion
     static void LogTournamentCompletion(uint64_t tournament_id,
                                       const Tournament& tournament,
                                       const std::vector<std::pair<TournamentParticipant, uint32_t>>& final_standings) {
@@ -721,7 +721,7 @@ public:
         WriteAnalyticsLog("tournament_completions", log_entry);
     }
     
-    // [SEQUENCE: MVP12-264] Generate tournament report
+    // [SEQUENCE: 2892] Generate tournament report
     static TournamentReport GenerateTournamentReport(
         uint64_t tournament_id,
         const Tournament& tournament,

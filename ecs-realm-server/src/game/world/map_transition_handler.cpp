@@ -7,26 +7,26 @@
 
 namespace mmorpg::game::world {
 
-// [SEQUENCE: MVP7-152] Initiate map transition process
+// [SEQUENCE: 483] Initiate map transition process
 void MapTransitionHandler::InitiateTransition(core::ecs::EntityId entity_id,
                                              uint32_t target_map_id,
                                              const TransitionCallback& callback) {
     std::lock_guard<std::mutex> lock(transition_mutex_);
     
-    // [SEQUENCE: MVP7-153] Check if already in transition
+    // [SEQUENCE: 484] Check if already in transition
     if (IsInTransition(entity_id)) {
         callback({false, "Already in transition", 0, 0, 0, 0, 0});
         return;
     }
     
-    // [SEQUENCE: MVP7-154] Validate transition
+    // [SEQUENCE: 485] Validate transition
     std::string error_message;
     if (!ValidateTransition(entity_id, target_map_id, error_message)) {
         callback({false, error_message, 0, 0, 0, 0, 0});
         return;
     }
     
-    // [SEQUENCE: MVP7-155] Create transition info
+    // [SEQUENCE: 486] Create transition info
     TransitionInfo info;
     info.state = TransitionState::PREPARING;
     info.target_map_id = target_map_id;
@@ -41,7 +41,7 @@ void MapTransitionHandler::InitiateTransition(core::ecs::EntityId entity_id,
     
     transition_states_[entity_id] = std::move(info);
     
-    // [SEQUENCE: MVP7-156] Start transition process
+    // [SEQUENCE: 487] Start transition process
     spdlog::info("Starting map transition for entity {} from map {} to map {}", 
                  entity_id, info.source_map_id, target_map_id);
     
@@ -77,10 +77,10 @@ void MapTransitionHandler::InitiateTransition(core::ecs::EntityId entity_id,
     }
 }
 
-// [SEQUENCE: MVP7-157] Handle seamless transition at map boundary
+// [SEQUENCE: 488] Handle seamless transition at map boundary
 void MapTransitionHandler::HandleSeamlessTransition(core::ecs::EntityId entity_id,
                                                    const MapConfig::Connection& connection) {
-    // [SEQUENCE: MVP7-158] Seamless transition doesn't show loading screen
+    // [SEQUENCE: 489] Seamless transition doesn't show loading screen
     InitiateTransition(entity_id, connection.target_map_id,
         [entity_id, connection](const TransitionResult& result) {
             if (result.success) {
@@ -93,7 +93,7 @@ void MapTransitionHandler::HandleSeamlessTransition(core::ecs::EntityId entity_i
         });
 }
 
-// [SEQUENCE: MVP7-159] Force teleport to specific location
+// [SEQUENCE: 490] Force teleport to specific location
 void MapTransitionHandler::TeleportToMap(core::ecs::EntityId entity_id,
                                         uint32_t map_id,
                                         float x, float y, float z,
@@ -105,7 +105,7 @@ void MapTransitionHandler::TeleportToMap(core::ecs::EntityId entity_id,
         return;
     }
     
-    // [SEQUENCE: MVP7-160] Create transition with specific coordinates
+    // [SEQUENCE: 491] Create transition with specific coordinates
     TransitionInfo info;
     info.state = TransitionState::PREPARING;
     info.target_map_id = map_id;
@@ -130,14 +130,14 @@ void MapTransitionHandler::TeleportToMap(core::ecs::EntityId entity_id,
     transition_states_.erase(entity_id);
 }
 
-// [SEQUENCE: MVP7-161] Join or create instance for party/raid
+// [SEQUENCE: 492] Join or create instance for party/raid
 void MapTransitionHandler::JoinOrCreateInstance(core::ecs::EntityId entity_id,
                                                uint32_t map_id,
                                                uint32_t party_id,
                                                const TransitionCallback& callback) {
     auto& map_manager = MapManager::Instance();
     
-    // [SEQUENCE: MVP7-162] Look for existing instance with party members
+    // [SEQUENCE: 493] Look for existing instance with party members
     std::shared_ptr<MapInstance> target_instance;
     
     for (auto& instance : map_manager.GetAllInstances()) {
@@ -154,7 +154,7 @@ void MapTransitionHandler::JoinOrCreateInstance(core::ecs::EntityId entity_id,
         }
     }
     
-    // [SEQUENCE: MVP7-163] Create new instance if none found
+    // [SEQUENCE: 494] Create new instance if none found
     if (!target_instance) {
         target_instance = map_manager.CreateInstance(map_id);
         spdlog::info("Created new instance {} for party {}", 
@@ -169,7 +169,7 @@ void MapTransitionHandler::JoinOrCreateInstance(core::ecs::EntityId entity_id,
     }
 }
 
-// [SEQUENCE: MVP7-164] Cancel ongoing transition
+// [SEQUENCE: 495] Cancel ongoing transition
 void MapTransitionHandler::CancelTransition(core::ecs::EntityId entity_id) {
     std::lock_guard<std::mutex> lock(transition_mutex_);
     
@@ -183,7 +183,7 @@ void MapTransitionHandler::CancelTransition(core::ecs::EntityId entity_id) {
     }
 }
 
-// [SEQUENCE: MVP7-165] Save entity state before transition
+// [SEQUENCE: 496] Save entity state before transition
 bool MapTransitionHandler::SaveEntityState(core::ecs::EntityId entity_id) {
     // In a real implementation, this would:
     // 1. Save to database
@@ -200,11 +200,11 @@ bool MapTransitionHandler::SaveEntityState(core::ecs::EntityId entity_id) {
     return true;
 }
 
-// [SEQUENCE: MVP7-166] Load entity into new map
+// [SEQUENCE: 497] Load entity into new map
 bool MapTransitionHandler::LoadEntityToMap(core::ecs::EntityId entity_id,
                                           std::shared_ptr<MapInstance> target_map,
                                           float x, float y, float z) {
-    // [SEQUENCE: MVP7-167] Remove from current map
+    // [SEQUENCE: 498] Remove from current map
     auto* transform = ecs_world_.GetComponent<core::ecs::TransformComponent>(entity_id);
     if (transform && transform->map_id != target_map->GetMapId()) {
         auto& map_manager = MapManager::Instance();
@@ -216,7 +216,7 @@ bool MapTransitionHandler::LoadEntityToMap(core::ecs::EntityId entity_id,
         }
     }
     
-    // [SEQUENCE: MVP7-168] Update transform component
+    // [SEQUENCE: 499] Update transform component
     if (transform) {
         transform->position.x = x;
         transform->position.y = y;
@@ -225,11 +225,11 @@ bool MapTransitionHandler::LoadEntityToMap(core::ecs::EntityId entity_id,
         transform->instance_id = target_map->GetInstanceId();
     }
     
-    // [SEQUENCE: MVP7-169] Add to new map
+    // [SEQUENCE: 500] Add to new map
     target_map->AddEntity(entity_id, x, y, z);
     NotifyNearbyPlayers(entity_id, target_map, false);
     
-    // [SEQUENCE: MVP7-170] Send map change packet to client
+    // [SEQUENCE: 501] Send map change packet to client
     auto* network = ecs_world_.GetComponent<core::ecs::NetworkComponent>(entity_id);
     if (network && network->session) {
         proto::MapChangeNotification notification;
@@ -245,14 +245,14 @@ bool MapTransitionHandler::LoadEntityToMap(core::ecs::EntityId entity_id,
     return true;
 }
 
-// [SEQUENCE: MVP7-171] Notify nearby players of entity arrival/departure
+// [SEQUENCE: 502] Notify nearby players of entity arrival/departure
 void MapTransitionHandler::NotifyNearbyPlayers(core::ecs::EntityId entity_id,
                                               std::shared_ptr<MapInstance> map,
                                               bool is_leaving) {
     auto* transform = ecs_world_.GetComponent<core::ecs::TransformComponent>(entity_id);
     if (!transform) return;
     
-    // [SEQUENCE: MVP7-172] Get nearby entities
+    // [SEQUENCE: 503] Get nearby entities
     auto nearby = map->GetEntitiesInRadius(
         transform->position.x, 
         transform->position.y, 
@@ -282,18 +282,18 @@ void MapTransitionHandler::NotifyNearbyPlayers(core::ecs::EntityId entity_id,
     }
 }
 
-// [SEQUENCE: MVP7-173] Validate if transition is allowed
+// [SEQUENCE: 504] Validate if transition is allowed
 bool MapTransitionHandler::ValidateTransition(core::ecs::EntityId entity_id,
                                              uint32_t target_map_id,
                                              std::string& error_message) {
-    // [SEQUENCE: MVP7-174] Check entity exists
+    // [SEQUENCE: 505] Check entity exists
     auto* player = ecs_world_.GetComponent<PlayerComponent>(entity_id);
     if (!player) {
         error_message = "Entity is not a player";
         return false;
     }
     
-    // [SEQUENCE: MVP7-175] Check level requirements
+    // [SEQUENCE: 506] Check level requirements
     auto& map_manager = MapManager::Instance();
     auto target_config = map_manager.GetInstance(target_map_id);
     if (target_config) {
@@ -308,7 +308,7 @@ bool MapTransitionHandler::ValidateTransition(core::ecs::EntityId entity_id,
         }
     }
     
-    // [SEQUENCE: MVP7-176] Check combat state
+    // [SEQUENCE: 507] Check combat state
     if (player->in_combat) {
         error_message = "Cannot change maps while in combat";
         return false;
@@ -317,7 +317,7 @@ bool MapTransitionHandler::ValidateTransition(core::ecs::EntityId entity_id,
     return true;
 }
 
-// [SEQUENCE: MVP7-177] Get spawn position for map
+// [SEQUENCE: 508] Get spawn position for map
 std::tuple<float, float, float> MapTransitionHandler::GetSpawnPosition(
     uint32_t map_id, 
     const MapConfig::Connection* connection) {
@@ -331,7 +331,7 @@ std::tuple<float, float, float> MapTransitionHandler::GetSpawnPosition(
     
     const auto& config = map_instance->GetConfig();
     
-    // [SEQUENCE: MVP7-178] Use connection point if available
+    // [SEQUENCE: 509] Use connection point if available
     if (connection && !config.spawn_points.empty()) {
         // Find nearest spawn point to connection
         float min_dist = std::numeric_limits<float>::max();
@@ -352,7 +352,7 @@ std::tuple<float, float, float> MapTransitionHandler::GetSpawnPosition(
         return {best_spawn->x, best_spawn->y, best_spawn->z};
     }
     
-    // [SEQUENCE: MVP7-179] Use random spawn point
+    // [SEQUENCE: 510] Use random spawn point
     if (!config.spawn_points.empty()) {
         size_t index = rand() % config.spawn_points.size();
         const auto& spawn = config.spawn_points[index];
@@ -372,7 +372,7 @@ std::tuple<float, float, float> MapTransitionHandler::GetSpawnPosition(
     return {0, 0, 0};
 }
 
-// [SEQUENCE: MVP7-180] Check for transition timeouts
+// [SEQUENCE: 511] Check for transition timeouts
 void MapTransitionHandler::CheckTransitionTimeouts() {
     std::lock_guard<std::mutex> lock(transition_mutex_);
     

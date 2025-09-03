@@ -10,21 +10,21 @@
 
 namespace mmorpg::ui {
 
-// [SEQUENCE: MVP12-18] Inventory UI system for item management
+// [SEQUENCE: 2411] Inventory UI system for item management
 // 인벤토리 UI - 아이템 관리를 위한 사용자 인터페이스
 
-// [SEQUENCE: MVP12-19] Item slot for inventory grid
+// [SEQUENCE: 2412] Item slot for inventory grid
 class ItemSlot : public UIButton {
 public:
     ItemSlot(const std::string& name) : UIButton(name) {
-        // [SEQUENCE: MVP12-20] Create item icon
+        // [SEQUENCE: 2413] Create item icon
         item_icon_ = std::make_shared<UIImage>("ItemIcon");
         item_icon_->SetSize({44, 44});
         item_icon_->SetPosition({3, 3});
         item_icon_->SetVisibility(Visibility::HIDDEN);
         AddChild(item_icon_);
         
-        // [SEQUENCE: MVP12-21] Create quantity text
+        // [SEQUENCE: 2414] Create quantity text
         quantity_text_ = std::make_shared<UILabel>("Quantity");
         quantity_text_->SetTextAlign(UILabel::TextAlign::RIGHT);
         quantity_text_->SetPosition({26, 30});
@@ -33,7 +33,7 @@ public:
         quantity_text_->SetTextColor(Color::White());
         AddChild(quantity_text_);
         
-        // [SEQUENCE: MVP12-22] Create quality border
+        // [SEQUENCE: 2415] Create quality border
         quality_border_ = std::make_shared<UIPanel>("QualityBorder");
         quality_border_->SetSize({48, 48});
         quality_border_->SetPosition({1, 1});
@@ -41,7 +41,7 @@ public:
         quality_border_->SetBorderWidth(2.0f);
         AddChild(quality_border_);
         
-        // [SEQUENCE: MVP12-23] Create cooldown overlay
+        // [SEQUENCE: 2416] Create cooldown overlay
         cooldown_overlay_ = std::make_shared<UIPanel>("CooldownOverlay");
         cooldown_overlay_->SetSize({44, 44});
         cooldown_overlay_->SetPosition({3, 3});
@@ -60,7 +60,7 @@ public:
         SetSize({50, 50});
     }
     
-    // [SEQUENCE: MVP12-24] Set item in slot
+    // [SEQUENCE: 2417] Set item in slot
     void SetItem(const inventory::Item* item) {
         if (item) {
             item_id_ = item->item_id;
@@ -94,7 +94,7 @@ public:
         cooldown_overlay_->SetVisibility(Visibility::HIDDEN);
     }
     
-    // [SEQUENCE: MVP12-25] Drag and drop support
+    // [SEQUENCE: 2418] Drag and drop support
     void StartDrag() {
         if (item_id_ != 0) {
             is_dragging_ = true;
@@ -123,7 +123,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-26] Slot callbacks
+    // [SEQUENCE: 2419] Slot callbacks
     void SetSlotIndex(int index) { slot_index_ = index; }
     int GetSlotIndex() const { return slot_index_; }
     uint32_t GetItemId() const { return item_id_; }
@@ -187,7 +187,7 @@ private:
     std::function<void(int, int)> on_drag_end_;
     std::function<void(int)> on_right_click_;
     
-    // [SEQUENCE: MVP12-27] Set quality border color
+    // [SEQUENCE: 2420] Set quality border color
     void SetQualityBorder(inventory::ItemQuality quality) {
         Color border_color;
         
@@ -218,7 +218,7 @@ private:
         quality_border_->SetBorderColor(border_color);
     }
     
-    // [SEQUENCE: MVP12-28] Show item tooltip
+    // [SEQUENCE: 2421] Show item tooltip
     void ShowItemTooltip() {
         // Would fetch item data and create detailed tooltip
         std::string tooltip = "Item: " + std::to_string(item_id_) + "\n";
@@ -233,30 +233,30 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-29] Inventory window UI
+// [SEQUENCE: 2422] Inventory window UI
 class InventoryWindow : public UIWindow {
 public:
     InventoryWindow(const std::string& name) : UIWindow(name) {
         SetTitle("Inventory");
         SetSize({350, 450});
         
-        // [SEQUENCE: MVP12-30] Create bag tabs
+        // [SEQUENCE: 2423] Create bag tabs
         CreateBagTabs();
         
-        // [SEQUENCE: MVP12-31] Create inventory grid
+        // [SEQUENCE: 2424] Create inventory grid
         inventory_grid_ = std::make_shared<UIPanel>("InventoryGrid");
         inventory_grid_->SetPosition({10, 80});
         inventory_grid_->SetSize({330, 280});
         inventory_grid_->SetBackgroundColor({0.1f, 0.1f, 0.1f, 0.3f});
         AddChild(inventory_grid_);
         
-        // [SEQUENCE: MVP12-32] Create item slots
+        // [SEQUENCE: 2425] Create item slots
         CreateItemSlots();
         
-        // [SEQUENCE: MVP12-33] Create currency display
+        // [SEQUENCE: 2426] Create currency display
         CreateCurrencyDisplay();
         
-        // [SEQUENCE: MVP12-34] Create sort button
+        // [SEQUENCE: 2427] Create sort button
         sort_button_ = std::make_shared<UIButton>("SortButton");
         sort_button_->SetText("Sort");
         sort_button_->SetSize({60, 25});
@@ -265,7 +265,7 @@ public:
         AddChild(sort_button_);
     }
     
-    // [SEQUENCE: MVP12-35] Update inventory display
+    // [SEQUENCE: 2428] Update inventory display
     void UpdateInventory(const inventory::Inventory& inventory) {
         // Clear all slots first
         for (auto& slot : item_slots_) {
@@ -283,7 +283,7 @@ public:
         UpdateCurrency(inventory.currency);
     }
     
-    // [SEQUENCE: MVP12-36] Set inventory callbacks
+    // [SEQUENCE: 2429] Set inventory callbacks
     void SetOnItemMove(std::function<void(int, int)> callback) {
         on_item_move_ = callback;
         
@@ -321,7 +321,7 @@ private:
     std::function<void(int, int)> on_item_move_;
     std::function<void(int)> on_item_use_;
     
-    // [SEQUENCE: MVP12-37] Create item slot grid
+    // [SEQUENCE: 2430] Create item slot grid
     void CreateItemSlots() {
         float slot_size = 52.0f;  // 50 + 2 spacing
         
@@ -344,7 +344,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-38] Create bag tab buttons
+    // [SEQUENCE: 2431] Create bag tab buttons
     void CreateBagTabs() {
         float tab_width = 60.0f;
         
@@ -370,7 +370,7 @@ private:
         );
     }
     
-    // [SEQUENCE: MVP12-39] Create currency display
+    // [SEQUENCE: 2432] Create currency display
     void CreateCurrencyDisplay() {
         // Gold icon and label
         auto gold_icon = std::make_shared<UIImage>("GoldIcon");
@@ -412,14 +412,14 @@ private:
         AddChild(copper_label_);
     }
     
-    // [SEQUENCE: MVP12-40] Update currency display
+    // [SEQUENCE: 2433] Update currency display
     void UpdateCurrency(const inventory::Currency& currency) {
         gold_label_->SetText(std::to_string(currency.gold));
         silver_label_->SetText(std::to_string(currency.silver));
         copper_label_->SetText(std::to_string(currency.copper));
     }
     
-    // [SEQUENCE: MVP12-41] Switch active bag view
+    // [SEQUENCE: 2434] Switch active bag view
     void SwitchToBag(int bag_index) {
         current_bag_ = bag_index;
         
@@ -455,35 +455,35 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-42] Sort inventory items
+    // [SEQUENCE: 2435] Sort inventory items
     void SortInventory() {
         spdlog::info("Sorting inventory");
         // Would trigger inventory sort on server
     }
 };
 
-// [SEQUENCE: MVP12-43] Equipment window UI
+// [SEQUENCE: 2436] Equipment window UI
 class EquipmentWindow : public UIWindow {
 public:
     EquipmentWindow(const std::string& name) : UIWindow(name) {
         SetTitle("Character");
         SetSize({300, 400});
         
-        // [SEQUENCE: MVP12-44] Create character model area
+        // [SEQUENCE: 2437] Create character model area
         model_area_ = std::make_shared<UIPanel>("ModelArea");
         model_area_->SetPosition({75, 50});
         model_area_->SetSize({150, 200});
         model_area_->SetBackgroundColor({0.1f, 0.1f, 0.1f, 0.5f});
         AddChild(model_area_);
         
-        // [SEQUENCE: MVP12-45] Create equipment slots
+        // [SEQUENCE: 2438] Create equipment slots
         CreateEquipmentSlots();
         
-        // [SEQUENCE: MVP12-46] Create stats display
+        // [SEQUENCE: 2439] Create stats display
         CreateStatsDisplay();
     }
     
-    // [SEQUENCE: MVP12-47] Update equipment display
+    // [SEQUENCE: 2440] Update equipment display
     void UpdateEquipment(const std::unordered_map<inventory::EquipmentSlot, inventory::Item>& equipment) {
         for (const auto& [slot_type, item] : equipment) {
             auto it = equipment_slots_.find(slot_type);
@@ -511,7 +511,7 @@ private:
     std::unordered_map<inventory::EquipmentSlot, std::shared_ptr<ItemSlot>> equipment_slots_;
     std::unordered_map<std::string, std::shared_ptr<UILabel>> stat_labels_;
     
-    // [SEQUENCE: MVP12-48] Create equipment slot layout
+    // [SEQUENCE: 2441] Create equipment slot layout
     void CreateEquipmentSlots() {
         // Head slot
         CreateEquipmentSlot(inventory::EquipmentSlot::HEAD, {125, 50});
@@ -558,7 +558,7 @@ private:
         AddChild(slot);
     }
     
-    // [SEQUENCE: MVP12-49] Create character stats display
+    // [SEQUENCE: 2442] Create character stats display
     void CreateStatsDisplay() {
         float y_offset = 270;
         float line_height = 18;
@@ -600,17 +600,17 @@ private:
     };
 };
 
-// [SEQUENCE: MVP12-50] Bank window UI
+// [SEQUENCE: 2443] Bank window UI
 class BankWindow : public UIWindow {
 public:
     BankWindow(const std::string& name) : UIWindow(name) {
         SetTitle("Bank");
         SetSize({400, 500});
         
-        // [SEQUENCE: MVP12-51] Create bank tabs
+        // [SEQUENCE: 2444] Create bank tabs
         CreateBankTabs();
         
-        // [SEQUENCE: MVP12-52] Create bank grid
+        // [SEQUENCE: 2445] Create bank grid
         bank_grid_ = std::make_shared<UIPanel>("BankGrid");
         bank_grid_->SetPosition({10, 80});
         bank_grid_->SetSize({380, 350});
@@ -620,7 +620,7 @@ public:
         // Create bank slots (more than inventory)
         CreateBankSlots();
         
-        // [SEQUENCE: MVP12-53] Create deposit all button
+        // [SEQUENCE: 2446] Create deposit all button
         deposit_button_ = std::make_shared<UIButton>("DepositAll");
         deposit_button_->SetText("Deposit All");
         deposit_button_->SetSize({100, 25});
@@ -653,7 +653,7 @@ private:
     
     int current_tab_ = 0;
     
-    // [SEQUENCE: MVP12-54] Create bank slot grid
+    // [SEQUENCE: 2447] Create bank slot grid
     void CreateBankSlots() {
         float slot_size = 52.0f;
         
@@ -745,14 +745,14 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-55] Vendor window UI
+// [SEQUENCE: 2448] Vendor window UI
 class VendorWindow : public UIWindow {
 public:
     VendorWindow(const std::string& name) : UIWindow(name) {
         SetTitle("Vendor");
         SetSize({450, 500});
         
-        // [SEQUENCE: MVP12-56] Create vendor inventory
+        // [SEQUENCE: 2449] Create vendor inventory
         vendor_grid_ = std::make_shared<UIPanel>("VendorGrid");
         vendor_grid_->SetPosition({10, 50});
         vendor_grid_->SetSize({430, 300});
@@ -761,7 +761,7 @@ public:
         
         CreateVendorSlots();
         
-        // [SEQUENCE: MVP12-57] Create buyback tab
+        // [SEQUENCE: 2450] Create buyback tab
         buyback_button_ = std::make_shared<UIButton>("BuybackTab");
         buyback_button_->SetText("Buyback");
         buyback_button_->SetSize({80, 25});
@@ -769,7 +769,7 @@ public:
         buyback_button_->SetOnClick([this]() { ShowBuyback(); });
         AddChild(buyback_button_);
         
-        // [SEQUENCE: MVP12-58] Create repair buttons
+        // [SEQUENCE: 2451] Create repair buttons
         repair_button_ = std::make_shared<UIButton>("RepairAll");
         repair_button_->SetText("Repair All");
         repair_button_->SetSize({100, 25});
@@ -777,7 +777,7 @@ public:
         repair_button_->SetOnClick([this]() { RepairAll(); });
         AddChild(repair_button_);
         
-        // [SEQUENCE: MVP12-59] Create sell area
+        // [SEQUENCE: 2452] Create sell area
         CreateSellArea();
     }
     
@@ -882,7 +882,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-60] Inventory UI manager
+// [SEQUENCE: 2453] Inventory UI manager
 class InventoryUIManager {
 public:
     static InventoryUIManager& Instance() {
@@ -894,32 +894,32 @@ public:
         auto root = UIManager::Instance().GetRoot();
         if (!root) return;
         
-        // [SEQUENCE: MVP12-61] Create inventory window
+        // [SEQUENCE: 2454] Create inventory window
         inventory_window_ = std::make_shared<InventoryWindow>("InventoryWindow");
         inventory_window_->SetPosition({100, 100});
         inventory_window_->SetVisibility(Visibility::HIDDEN);
         root->AddChild(inventory_window_);
         
-        // [SEQUENCE: MVP12-62] Create equipment window
+        // [SEQUENCE: 2455] Create equipment window
         equipment_window_ = std::make_shared<EquipmentWindow>("EquipmentWindow");
         equipment_window_->SetPosition({500, 100});
         equipment_window_->SetVisibility(Visibility::HIDDEN);
         root->AddChild(equipment_window_);
         
-        // [SEQUENCE: MVP12-63] Create bank window
+        // [SEQUENCE: 2456] Create bank window
         bank_window_ = std::make_shared<BankWindow>("BankWindow");
         bank_window_->SetPosition({300, 50});
         bank_window_->SetVisibility(Visibility::HIDDEN);
         root->AddChild(bank_window_);
         
-        // [SEQUENCE: MVP12-64] Create vendor window
+        // [SEQUENCE: 2457] Create vendor window
         vendor_window_ = std::make_shared<VendorWindow>("VendorWindow");
         vendor_window_->SetPosition({250, 75});
         vendor_window_->SetVisibility(Visibility::HIDDEN);
         root->AddChild(vendor_window_);
     }
     
-    // [SEQUENCE: MVP12-65] Window visibility control
+    // [SEQUENCE: 2458] Window visibility control
     void ToggleInventory() {
         auto vis = inventory_window_->IsVisible() ? 
             Visibility::HIDDEN : Visibility::VISIBLE;
@@ -948,7 +948,7 @@ public:
         vendor_window_->SetVisibility(Visibility::HIDDEN);
     }
     
-    // [SEQUENCE: MVP12-66] Update methods
+    // [SEQUENCE: 2459] Update methods
     void UpdateInventory(const inventory::Inventory& inventory) {
         if (inventory_window_) {
             inventory_window_->UpdateInventory(inventory);
@@ -967,7 +967,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-67] Set callbacks
+    // [SEQUENCE: 2460] Set callbacks
     void SetOnItemMove(std::function<void(int, int)> callback) {
         if (inventory_window_) {
             inventory_window_->SetOnItemMove(callback);

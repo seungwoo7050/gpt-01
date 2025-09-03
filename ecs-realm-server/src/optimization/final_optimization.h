@@ -13,7 +13,7 @@
 
 namespace mmorpg::optimization {
 
-// [SEQUENCE: MVP14-598] Memory optimization settings 메모리 최적화 설정
+// [SEQUENCE: 3775] Memory optimization settings 메모리 최적화 설정
 struct MemoryOptimizationSettings {
     size_t object_pool_size{10000};          // Object pool capacity
     size_t string_pool_size{50000};          // String intern pool
@@ -24,7 +24,7 @@ struct MemoryOptimizationSettings {
     uint32_t gc_interval_ms{5000};           // Garbage collection interval
 };
 
-// [SEQUENCE: MVP14-599] CPU optimization settings CPU 최적화 설정
+// [SEQUENCE: 3776] CPU optimization settings CPU 최적화 설정
 struct CPUOptimizationSettings {
     uint32_t worker_thread_count{0};          // 0 = auto (CPU cores)
     uint32_t io_thread_count{2};              // I/O thread pool size
@@ -35,7 +35,7 @@ struct CPUOptimizationSettings {
     float load_balancing_threshold{0.8f};     // CPU load threshold
 };
 
-// [SEQUENCE: MVP14-600] Network optimization settings 네트워크 최적화 설정
+// [SEQUENCE: 3777] Network optimization settings 네트워크 최적화 설정
 struct NetworkOptimizationSettings {
     bool enable_compression{true};            // Packet compression
     bool enable_batching{true};               // Packet batching
@@ -46,10 +46,10 @@ struct NetworkOptimizationSettings {
     uint32_t recv_buffer_size{65536};         // 64KB receive buffer
 };
 
-// [SEQUENCE: MVP14-601] Final optimization manager 최종 최적화 관리자
+// [SEQUENCE: 3778] Final optimization manager 최종 최적화 관리자
 class FinalOptimization : public Singleton<FinalOptimization> {
 public:
-    // [SEQUENCE: MVP14-602] Optimization initialization 최적화 초기화
+    // [SEQUENCE: 3779] Optimization initialization 최적화 초기화
     void Initialize();
     void Shutdown();
     
@@ -81,7 +81,7 @@ public:
     void EnableFrustumCulling();
     void OptimizeLOD();
     
-    // [SEQUENCE: MVP14-603] Performance profiling 성능 프로파일링
+    // [SEQUENCE: 3780] Performance profiling 성능 프로파일링
     struct PerformanceProfile {
         float cpu_usage_percent;
         size_t memory_usage_bytes;
@@ -124,7 +124,7 @@ private:
     std::atomic<bool> running_{false};
 };
 
-// [SEQUENCE: MVP14-604] Memory pool manager 메모리 풀 관리자
+// [SEQUENCE: 3781] Memory pool manager 메모리 풀 관리자
 template<typename T>
 class MemoryPool {
 public:
@@ -157,7 +157,7 @@ private:
     mutable std::mutex mutex_;
 };
 
-// [SEQUENCE: MVP14-605] String interning pool 문자열 인터닝 풀
+// [SEQUENCE: 3782] String interning pool 문자열 인터닝 풀
 class StringPool {
 public:
     StringPool(size_t initial_capacity = 10000);
@@ -187,7 +187,7 @@ private:
     mutable std::shared_mutex mutex_;
 };
 
-// [SEQUENCE: MVP14-606] Parallel task executor 병렬 작업 실행기
+// [SEQUENCE: 3783] Parallel task executor 병렬 작업 실행기
 class ParallelExecutor {
 public:
     ParallelExecutor(size_t thread_count = 0);  // 0 = hardware concurrency
@@ -218,7 +218,7 @@ private:
     void WorkerThread();
 };
 
-// [SEQUENCE: MVP14-607] Cache manager 캐시 관리자
+// [SEQUENCE: 3784] Cache manager 캐시 관리자
 template<typename Key, typename Value>
 class CacheManager {
 public:
@@ -268,7 +268,7 @@ private:
     void Evict();
 };
 
-// [SEQUENCE: MVP14-608] SIMD optimizations SIMD 최적화
+// [SEQUENCE: 3785] SIMD optimizations SIMD 최적화
 namespace SIMD {
     // Vector math optimizations
     void AddVectors(const float* a, const float* b, float* result, size_t count);
@@ -284,7 +284,7 @@ namespace SIMD {
     void FindNearestNeighbors(const Vector3* positions, size_t count, uint32_t* indices, float* distances);
 }
 
-// [SEQUENCE: MVP14-609] Hot path optimizer 핫 패스 최적화기
+// [SEQUENCE: 3786] Hot path optimizer 핫 패스 최적화기
 class HotPathOptimizer {
 public:
     // Profile hot paths
@@ -316,7 +316,7 @@ private:
     std::atomic<bool> profiling_enabled_{false};
 };
 
-// [SEQUENCE: MVP14-610] Batch processor 배치 프로세서
+// [SEQUENCE: 3787] Batch processor 배치 프로세서
 template<typename T>
 class BatchProcessor {
 public:
@@ -345,7 +345,7 @@ private:
     std::mutex mutex_;
 };
 
-// [SEQUENCE: MVP14-611] Load balancer 로드 밸런서
+// [SEQUENCE: 3788] Load balancer 로드 밸런서
 class LoadBalancer {
 public:
     LoadBalancer(size_t worker_count);
@@ -377,7 +377,7 @@ private:
     void WorkerLoop(Worker* worker);
 };
 
-// [SEQUENCE: MVP14-612] Optimization utilities 최적화 유틸리티
+// [SEQUENCE: 3789] Optimization utilities 최적화 유틸리티
 namespace OptimizationUtils {
     // Memory utilities
     void WarmCache(void* data, size_t size);

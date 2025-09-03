@@ -1,14 +1,19 @@
 #include "game/handlers/auth_handler.h"
 #include "core/network/session.h"
 #include <spdlog/spdlog.h>
+// [SEQUENCE: 452] Phase 127: Security manager integration
 #include "../../core/security/security_manager.h"
-
-// [SEQUENCE: MVP1-62] Game server authentication handler implementation.
 
 namespace mmorpg::game::handlers {
 
+AuthHandler::AuthHandler(std::shared_ptr<auth::AuthService> auth_service, std::shared_ptr<network::SessionManager> session_manager)
+    : auth_service_(auth_service), session_manager_(session_manager) {
+}
+
+// [SEQUENCE: 393] Login request handler implementation
 void AuthHandler::HandleLoginRequest(core::network::SessionPtr session, 
                                     const mmorpg::proto::Packet& packet) {
+    // [SEQUENCE: 394] Parse login request
     mmorpg::proto::LoginRequest request;
     if (!request.ParseFromString(packet.payload())) {
         spdlog::error("Failed to parse LoginRequest from session {}", session->GetSessionId());
@@ -18,6 +23,7 @@ void AuthHandler::HandleLoginRequest(core::network::SessionPtr session,
     spdlog::info("Login request from {} for user {}", 
                  session->GetRemoteAddress(), request.username());
     
+    // [SEQUENCE: 453] Phase 127: Rate limiting check
     if (!core::security::SecurityManager::Instance().ValidateLoginAttempt(session->GetRemoteAddress())) {
         spdlog::warn("Login rate limit exceeded for IP: {}", session->GetRemoteAddress());
         
@@ -33,22 +39,27 @@ void AuthHandler::HandleLoginRequest(core::network::SessionPtr session,
         return;
     }
     
+    // [SEQUENCE: 395] Authenticate user
     auto result = auth_service_->Authenticate(
         request.username(), 
         request.password_hash(),
         session->GetRemoteAddress()
     );
     
+    // [SEQUENCE: 396] Build response
     mmorpg::proto::LoginResponse response;
     response.set_success(result.success);
     
     if (result.success) {
+        // [SEQUENCE: 397] Set JWT token in response
         response.set_session_token(result.access_token);
         response.set_player_id(result.player_id);
         
+        // [SEQUENCE: 398] Authenticate session with JWT
         if (session->Authenticate(result.access_token)) {
             spdlog::info("Session {} authenticated for player {}", 
                         session->GetSessionId(), result.player_id);
+            session_manager_->SetPlayerIdForSession(session->GetSessionId(), result.player_id);
         }
         
         // TODO: Add server list
@@ -57,9 +68,11 @@ void AuthHandler::HandleLoginRequest(core::network::SessionPtr session,
         response.set_error_message(result.error_message);
     }
     
+    // [SEQUENCE: 399] Send response
     session->SendPacket(mmorpg::proto::PACKET_LOGIN_RESPONSE, response);
 }
 
+// [SEQUENCE: 400] Logout request handler
 void AuthHandler::HandleLogoutRequest(core::network::SessionPtr session, 
                                      const mmorpg::proto::Packet& packet) {
     if (!session->IsAuthenticated()) {
@@ -73,16 +86,20 @@ void AuthHandler::HandleLogoutRequest(core::network::SessionPtr session,
         return;
     }
     
+    // [SEQUENCE: 401] Logout from auth service
     auth_service_->Logout(session->GetJwtToken());
     
+    // [SEQUENCE: 402] Build and send response
     mmorpg::proto::LogoutResponse response;
     response.set_success(true);
     
     session->SendPacket(mmorpg::proto::PACKET_LOGOUT_RESPONSE, response);
     
+    // [SEQUENCE: 403] Disconnect session
     session->Disconnect();
 }
 
+// [SEQUENCE: 404] Heartbeat handler
 void AuthHandler::HandleHeartbeatRequest(core::network::SessionPtr session, 
                                         const mmorpg::proto::Packet& packet) {
     mmorpg::proto::HeartbeatRequest request;
@@ -90,10 +107,12 @@ void AuthHandler::HandleHeartbeatRequest(core::network::SessionPtr session,
         return;
     }
     
+    // [SEQUENCE: 405] Calculate latency
     auto now = std::chrono::system_clock::now().time_since_epoch().count();
     auto latency_ns = now - request.timestamp();
     auto latency_ms = latency_ns / 1'000'000;
     
+    // [SEQUENCE: 406] Send response
     mmorpg::proto::HeartbeatResponse response;
     response.set_server_timestamp(now);
     response.set_latency_ms(static_cast<uint32_t>(latency_ms));

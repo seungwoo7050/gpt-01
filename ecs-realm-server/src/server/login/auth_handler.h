@@ -6,10 +6,9 @@
 #include "core/network/packet_handler.h"
 #include "proto/auth.pb.h"
 
-// [SEQUENCE: MVP1-57] Login server authentication packet handler.
-
 namespace mmorpg::server::login {
 
+// [SEQUENCE: 1] Simple player data for MVP1 (will be replaced with database later)
 struct PlayerData {
     uint64_t player_id;
     std::string username;
@@ -18,6 +17,7 @@ struct PlayerData {
     bool is_banned = false;
 };
 
+// [SEQUENCE: 2] Authentication handler for login/logout operations
 class AuthHandler {
 public:
     AuthHandler();

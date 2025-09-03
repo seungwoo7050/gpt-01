@@ -15,7 +15,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-1] Advanced packet types
+// [SEQUENCE: 3696] Advanced packet types
 enum class PacketPriority {
     CRITICAL,       // 게임 상태 필수 (전투, 이동)
     HIGH,           // 중요 업데이트 (인벤토리, 스탯)
@@ -32,7 +32,7 @@ enum class ReliabilityMode {
     RELIABLE_SEQUENCED      // 최신 것만 보장
 };
 
-// [SEQUENCE: MVP13-2] Packet queue entry
+// [SEQUENCE: 3697] Packet queue entry
 struct QueuedPacket {
     PacketPtr packet;
     PacketPriority priority;
@@ -42,7 +42,7 @@ struct QueuedPacket {
     uint32_t sequence_number{0};
 };
 
-// [SEQUENCE: MVP13-3] Network statistics
+// [SEQUENCE: 3698] Network statistics
 struct NetworkStats {
     // Bandwidth
     std::atomic<uint64_t> bytes_sent{0};
@@ -66,13 +66,13 @@ struct NetworkStats {
     std::atomic<float> compression_ratio{0.0f};
 };
 
-// [SEQUENCE: MVP13-4] Advanced connection
+// [SEQUENCE: 3699] Advanced connection
 class AdvancedConnection : public Connection {
 public:
     AdvancedConnection(boost::asio::ip::tcp::socket socket);
     virtual ~AdvancedConnection();
     
-    // [SEQUENCE: MVP13-5] Priority-based sending
+    // [SEQUENCE: 3700] Priority-based sending
     void SendPacket(PacketPtr packet, PacketPriority priority = PacketPriority::NORMAL,
                    ReliabilityMode reliability = ReliabilityMode::RELIABLE);
     
@@ -120,7 +120,7 @@ private:
     void EncryptPacket(PacketPtr& packet);
 };
 
-// [SEQUENCE: MVP13-6] Packet aggregator
+// [SEQUENCE: 3701] Packet aggregator
 class PacketAggregator {
 public:
     PacketAggregator(uint32_t max_size = 1400);  // MTU safe
@@ -146,10 +146,10 @@ private:
     static constexpr auto MAX_AGGREGATION_TIME = std::chrono::milliseconds(10);
 };
 
-// [SEQUENCE: MVP13-7] Interest management
+// [SEQUENCE: 3702] Interest management
 class InterestManager {
 public:
-    // [SEQUENCE: MVP13-8] Interest calculation
+    // [SEQUENCE: 3703] Interest calculation
     struct InterestLevel {
         float distance;
         uint8_t priority;
@@ -183,10 +183,10 @@ private:
     uint32_t GetSpatialHash(const Vector3& position) const;
 };
 
-// [SEQUENCE: MVP13-9] Delta compression
+// [SEQUENCE: 3704] Delta compression
 class DeltaCompressor {
 public:
-    // [SEQUENCE: MVP13-10] State snapshot
+    // [SEQUENCE: 3705] State snapshot
     struct StateSnapshot {
         uint32_t tick;
         std::unordered_map<std::string, std::any> values;
@@ -213,15 +213,15 @@ private:
     std::any DecodeDelta(const std::any& old_value, PacketReader& reader);
 };
 
-// [SEQUENCE: MVP13-11] Advanced network manager
+// [SEQUENCE: 3706] Advanced network manager
 class AdvancedNetworkManager : public Singleton<AdvancedNetworkManager> {
 public:
-    // [SEQUENCE: MVP13-12] Connection management
+    // [SEQUENCE: 3707] Connection management
     void RegisterConnection(std::shared_ptr<AdvancedConnection> connection);
     void UnregisterConnection(uint64_t connection_id);
     std::shared_ptr<AdvancedConnection> GetConnection(uint64_t connection_id);
     
-    // [SEQUENCE: MVP13-13] Broadcast optimization
+    // [SEQUENCE: 3708] Broadcast optimization
     void BroadcastPacket(PacketPtr packet, const Vector3& origin,
                         float radius = -1.0f,
                         PacketPriority priority = PacketPriority::NORMAL);
@@ -230,17 +230,17 @@ public:
                         const std::vector<uint64_t>& recipients,
                         PacketPriority priority = PacketPriority::NORMAL);
     
-    // [SEQUENCE: MVP13-14] Network optimization
+    // [SEQUENCE: 3709] Network optimization
     void EnablePacketAggregation(bool enable) { packet_aggregation_enabled_ = enable; }
     void EnableDeltaCompression(bool enable) { delta_compression_enabled_ = enable; }
     void EnableInterestManagement(bool enable) { interest_management_enabled_ = enable; }
     
-    // [SEQUENCE: MVP13-15] Bandwidth management
+    // [SEQUENCE: 3710] Bandwidth management
     void SetGlobalBandwidthLimit(uint64_t bytes_per_second);
     void SetPerConnectionLimit(uint32_t bytes_per_second);
     uint64_t GetCurrentBandwidthUsage() const;
     
-    // [SEQUENCE: MVP13-16] Lag compensation
+    // [SEQUENCE: 3711] Lag compensation
     void SetServerTickRate(uint32_t ticks_per_second);
     uint32_t GetServerTick() const { return current_tick_; }
     void RecordPlayerInput(uint64_t player_id, uint32_t tick,
@@ -300,7 +300,7 @@ private:
     void CleanupOldInputHistory();
 };
 
-// [SEQUENCE: MVP13-17] Packet batching
+// [SEQUENCE: 3712] Packet batching
 class PacketBatcher {
 public:
     PacketBatcher(uint32_t batch_size = 10, 
@@ -326,7 +326,7 @@ private:
     std::chrono::milliseconds timeout_;
 };
 
-// [SEQUENCE: MVP13-18] Network optimization utilities
+// [SEQUENCE: 3713] Network optimization utilities
 namespace NetworkOptimization {
     // Packet compression
     std::vector<uint8_t> CompressData(const std::vector<uint8_t>& data);
@@ -365,7 +365,7 @@ namespace NetworkOptimization {
     QualitySettings AdaptQualityToNetwork(const NetworkStats& stats);
 }
 
-// [SEQUENCE: MVP14-829] Reliable UDP implementation
+// [SEQUENCE: 3714] Reliable UDP implementation
 class ReliableUDP {
 public:
     ReliableUDP(boost::asio::io_context& io_context, uint16_t port);

@@ -8,13 +8,13 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-67] Lag compensation constructor
+// [SEQUENCE: 3762] Lag compensation constructor
 LagCompensation::LagCompensation() {
     last_snapshot_time_ = std::chrono::steady_clock::now();
     spdlog::info("[LagCompensation] System initialized");
 }
 
-// [SEQUENCE: MVP13-68] Record world snapshot
+// [SEQUENCE: 3763] Record world snapshot
 void LagCompensation::RecordSnapshot() {
     auto now = std::chrono::steady_clock::now();
     
@@ -82,7 +82,7 @@ void LagCompensation::CleanupOldSnapshots() {
     }
 }
 
-// [SEQUENCE: MVP13-69] Get snapshot at specific time
+// [SEQUENCE: 3764] Get snapshot at specific time
 std::optional<WorldSnapshot> LagCompensation::GetSnapshotAtTime(
     std::chrono::steady_clock::time_point target_time) {
     
@@ -147,7 +147,7 @@ std::optional<WorldSnapshot> LagCompensation::GetSnapshotAtTime(
     return std::nullopt;
 }
 
-// [SEQUENCE: MVP13-70] Interpolate between snapshots
+// [SEQUENCE: 3765] Interpolate between snapshots
 WorldSnapshot LagCompensation::InterpolateSnapshots(
     const WorldSnapshot& before,
     const WorldSnapshot& after,
@@ -179,7 +179,7 @@ WorldSnapshot LagCompensation::InterpolateSnapshots(
     return interpolated;
 }
 
-// [SEQUENCE: MVP13-71] Validate hit with lag compensation
+// [SEQUENCE: 3766] Validate hit with lag compensation
 HitValidation LagCompensation::ValidateHit(
     uint64_t attacker_id,
     uint64_t victim_id,
@@ -272,7 +272,7 @@ HitValidation LagCompensation::ValidateHit(
     return result;
 }
 
-// [SEQUENCE: MVP13-72] Movement validation
+// [SEQUENCE: 3767] Movement validation
 bool LagCompensation::ValidateMovement(
     uint64_t player_id,
     const Vector3& from_position,
@@ -334,7 +334,7 @@ bool LagCompensation::IsTimeValid(std::chrono::steady_clock::time_point time) co
     return true;
 }
 
-// [SEQUENCE: MVP13-73] Player latency tracking
+// [SEQUENCE: 3768] Player latency tracking
 void LagCompensation::UpdatePlayerLatency(uint64_t player_id, float latency_ms) {
     std::unique_lock lock(mutex_);
     player_latencies_[player_id] = latency_ms;
@@ -346,7 +346,7 @@ float LagCompensation::GetPlayerLatency(uint64_t player_id) const {
     return (it != player_latencies_.end()) ? it->second : -1.0f;
 }
 
-// [SEQUENCE: MVP13-74] Rewind context implementation
+// [SEQUENCE: 3769] Rewind context implementation
 RewindContext::RewindContext(std::chrono::steady_clock::time_point target_time)
     : target_time_(target_time) {
     
@@ -411,7 +411,7 @@ bool RewindContext::PerformRaycast(
     return hit_something;
 }
 
-// [SEQUENCE: MVP13-75] Hit registration implementation
+// [SEQUENCE: 3770] Hit registration implementation
 HitValidation HitRegistration::ProcessHitRequest(const HitRequest& request) {
     // Convert client timestamp to server time
     float client_latency = LagCompensation::Instance().GetPlayerLatency(request.attacker_id);
@@ -484,7 +484,7 @@ bool HitRegistration::IsDistanceValid(
     return distance <= max_distance * (1.0f + tolerance);
 }
 
-// [SEQUENCE: MVP13-76] Interpolation utilities
+// [SEQUENCE: 3771] Interpolation utilities
 namespace InterpolationUtils {
 
 WorldSnapshot::EntityState InterpolateEntityState(
@@ -538,7 +538,7 @@ float CalculateInterpolationFactor(
 
 } // namespace InterpolationUtils
 
-// [SEQUENCE: MVP13-77] Advanced lag compensation
+// [SEQUENCE: 3772] Advanced lag compensation
 AdvancedLagCompensation::AdvancedLagCompensation() {
     // Initialize with default settings
     settings_.max_rewind_time_ms = 1000.0f;
@@ -640,7 +640,7 @@ HitValidation AdvancedLagCompensation::ValidateWithPrediction(
     return result;
 }
 
-// [SEQUENCE: MVP13-78] Lag compensation utilities
+// [SEQUENCE: 3773] Lag compensation utilities
 namespace LagCompensationUtils {
 
 std::chrono::steady_clock::time_point ClientToServerTime(
@@ -675,7 +675,7 @@ float CalculateSpreadAtDistance(
 
 } // namespace LagCompensationUtils
 
-// [SEQUENCE: MVP13-79] Rollback networking implementation
+// [SEQUENCE: 3774] Rollback networking implementation
 void RollbackNetworking::AdvanceFrame() {
     current_frame_++;
     

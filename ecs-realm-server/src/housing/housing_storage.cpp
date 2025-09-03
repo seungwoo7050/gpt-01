@@ -7,7 +7,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-43] Storage container constructor
+// [SEQUENCE: 3473] Storage container constructor
 HousingStorageContainer::HousingStorageContainer(uint64_t container_id,
                                                const StorageContainerProperties& props)
     : container_id_(container_id)
@@ -19,7 +19,7 @@ HousingStorageContainer::HousingStorageContainer(uint64_t container_id,
     }
 }
 
-// [SEQUENCE: MVP14-44] Check if item can be stored
+// [SEQUENCE: 3474] Check if item can be stored
 bool HousingStorageContainer::CanStoreItem(uint32_t item_id, uint32_t quantity) const {
     // Check capacity
     if (GetUsedSlots() >= current_capacity_) {
@@ -41,7 +41,7 @@ bool HousingStorageContainer::CanStoreItem(uint32_t item_id, uint32_t quantity) 
     return true;
 }
 
-// [SEQUENCE: MVP14-45] Add item to container
+// [SEQUENCE: 3475] Add item to container
 bool HousingStorageContainer::AddItem(uint32_t item_id, uint32_t quantity,
                                     const ItemProperties& properties) {
     if (!CanStoreItem(item_id, quantity)) {
@@ -72,7 +72,7 @@ bool HousingStorageContainer::AddItem(uint32_t item_id, uint32_t quantity,
     return true;
 }
 
-// [SEQUENCE: MVP14-46] Remove item from container
+// [SEQUENCE: 3476] Remove item from container
 bool HousingStorageContainer::RemoveItem(uint32_t item_id, uint32_t quantity) {
     auto it = stored_items_.find(item_id);
     if (it == stored_items_.end()) {
@@ -94,7 +94,7 @@ bool HousingStorageContainer::RemoveItem(uint32_t item_id, uint32_t quantity) {
     return true;
 }
 
-// [SEQUENCE: MVP14-47] Transfer item between containers
+// [SEQUENCE: 3477] Transfer item between containers
 bool HousingStorageContainer::TransferItem(uint32_t item_id, uint32_t quantity,
                                          HousingStorageContainer& target) {
     auto it = stored_items_.find(item_id);
@@ -122,17 +122,17 @@ bool HousingStorageContainer::TransferItem(uint32_t item_id, uint32_t quantity,
     return true;
 }
 
-// [SEQUENCE: MVP14-48] Get used storage slots
+// [SEQUENCE: 3478] Get used storage slots
 uint32_t HousingStorageContainer::GetUsedSlots() const {
     return stored_items_.size();
 }
 
-// [SEQUENCE: MVP14-49] Get weight usage percentage
+// [SEQUENCE: 3479] Get weight usage percentage
 float HousingStorageContainer::GetWeightUsage() const {
     return (current_weight_ / max_weight_) * 100.0f;
 }
 
-// [SEQUENCE: MVP14-50] Get all stored items
+// [SEQUENCE: 3480] Get all stored items
 std::vector<HousingStorageContainer::StoredItem> 
 HousingStorageContainer::GetAllItems() const {
     std::vector<StoredItem> items;
@@ -145,7 +145,7 @@ HousingStorageContainer::GetAllItems() const {
     return items;
 }
 
-// [SEQUENCE: MVP14-51] Search items by name
+// [SEQUENCE: 3481] Search items by name
 std::vector<HousingStorageContainer::StoredItem> 
 HousingStorageContainer::SearchItems(const std::string& name_filter) const {
     std::vector<StoredItem> results;
@@ -159,7 +159,7 @@ HousingStorageContainer::SearchItems(const std::string& name_filter) const {
     return results;
 }
 
-// [SEQUENCE: MVP14-52] Auto-sort container items
+// [SEQUENCE: 3482] Auto-sort container items
 void HousingStorageContainer::AutoSort() {
     if (!properties_.auto_sort) {
         return;
@@ -169,19 +169,19 @@ void HousingStorageContainer::AutoSort() {
     spdlog::debug("[HOUSING_STORAGE] Auto-sorted container {}", container_id_);
 }
 
-// [SEQUENCE: MVP14-53] Compact storage space
+// [SEQUENCE: 3483] Compact storage space
 void HousingStorageContainer::CompactStorage() {
     MergeStacks();
     // Additional compaction logic
 }
 
-// [SEQUENCE: MVP14-54] Merge similar item stacks
+// [SEQUENCE: 3484] Merge similar item stacks
 void HousingStorageContainer::MergeStacks() {
     // In real implementation, would merge partial stacks of same items
     spdlog::debug("[HOUSING_STORAGE] Merged stacks in container {}", container_id_);
 }
 
-// [SEQUENCE: MVP14-55] Unlock container
+// [SEQUENCE: 3485] Unlock container
 bool HousingStorageContainer::Unlock(uint32_t key_item_id) {
     if (!is_locked_) {
         return true;
@@ -195,7 +195,7 @@ bool HousingStorageContainer::Unlock(uint32_t key_item_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-56] Check container trap
+// [SEQUENCE: 3486] Check container trap
 bool HousingStorageContainer::CheckTrap(uint64_t player_id) {
     if (!properties_.trap_enabled || trap_triggered_) {
         return true;
@@ -208,7 +208,7 @@ bool HousingStorageContainer::CheckTrap(uint64_t player_id) {
     return false;  // Trap activated
 }
 
-// [SEQUENCE: MVP14-57] Upgrade container capacity
+// [SEQUENCE: 3487] Upgrade container capacity
 void HousingStorageContainer::UpgradeCapacity(uint32_t additional_slots) {
     current_capacity_ += additional_slots;
     
@@ -216,7 +216,7 @@ void HousingStorageContainer::UpgradeCapacity(uint32_t additional_slots) {
                 container_id_, current_capacity_);
 }
 
-// [SEQUENCE: MVP14-58] Validate item restrictions
+// [SEQUENCE: 3488] Validate item restrictions
 bool HousingStorageContainer::ValidateItemRestrictions(uint32_t item_id) const {
     switch (properties_.restriction) {
         case StorageContainerProperties::RestrictionType::NONE:
@@ -233,7 +233,7 @@ bool HousingStorageContainer::ValidateItemRestrictions(uint32_t item_id) const {
     }
 }
 
-// [SEQUENCE: MVP14-59] Update container weight
+// [SEQUENCE: 3489] Update container weight
 void HousingStorageContainer::UpdateWeight() {
     current_weight_ = 0.0f;
     
@@ -243,7 +243,7 @@ void HousingStorageContainer::UpdateWeight() {
     }
 }
 
-// [SEQUENCE: MVP14-60] Storage room constructor
+// [SEQUENCE: 3490] Storage room constructor
 HousingStorageRoom::HousingStorageRoom(uint64_t room_id,
                                      const StorageRoomConfig& config)
     : room_id_(room_id)
@@ -254,7 +254,7 @@ HousingStorageRoom::HousingStorageRoom(uint64_t room_id,
     }
 }
 
-// [SEQUENCE: MVP14-61] Add container to room
+// [SEQUENCE: 3491] Add container to room
 bool HousingStorageRoom::AddContainer(std::shared_ptr<HousingStorageContainer> container,
                                     const Vector3& position) {
     if (containers_.size() >= config_.max_containers) {
@@ -275,7 +275,7 @@ bool HousingStorageRoom::AddContainer(std::shared_ptr<HousingStorageContainer> c
     return true;
 }
 
-// [SEQUENCE: MVP14-62] Remove container from room
+// [SEQUENCE: 3492] Remove container from room
 bool HousingStorageRoom::RemoveContainer(uint64_t container_id) {
     auto it = containers_.find(container_id);
     if (it == containers_.end()) {
@@ -286,7 +286,7 @@ bool HousingStorageRoom::RemoveContainer(uint64_t container_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-63] Get all containers in room
+// [SEQUENCE: 3493] Get all containers in room
 std::vector<std::shared_ptr<HousingStorageContainer>> 
 HousingStorageRoom::GetAllContainers() {
     std::vector<std::shared_ptr<HousingStorageContainer>> result;
@@ -299,7 +299,7 @@ HousingStorageRoom::GetAllContainers() {
     return result;
 }
 
-// [SEQUENCE: MVP14-64] Enable climate control
+// [SEQUENCE: 3494] Enable climate control
 void HousingStorageRoom::EnableClimateControl(float temperature, float humidity) {
     config_.climate_controlled = true;
     config_.temperature_control = temperature;
@@ -309,7 +309,7 @@ void HousingStorageRoom::EnableClimateControl(float temperature, float humidity)
                 room_id_, temperature, humidity);
 }
 
-// [SEQUENCE: MVP14-65] Auto-organize containers
+// [SEQUENCE: 3495] Auto-organize containers
 void HousingStorageRoom::AutoOrganizeContainers() {
     if (!config_.auto_organize) {
         return;
@@ -340,7 +340,7 @@ void HousingStorageRoom::AutoOrganizeContainers() {
                  containers_.size(), room_id_);
 }
 
-// [SEQUENCE: MVP14-66] Consolidate items across containers
+// [SEQUENCE: 3496] Consolidate items across containers
 void HousingStorageRoom::ConsolidateItems() {
     // Collect all items
     std::unordered_map<uint32_t, uint32_t> all_items;
@@ -381,19 +381,19 @@ void HousingStorageRoom::ConsolidateItems() {
     spdlog::info("[HOUSING_STORAGE] Consolidated items in room {}", room_id_);
 }
 
-// [SEQUENCE: MVP14-67] Grant room access
+// [SEQUENCE: 3497] Grant room access
 bool HousingStorageRoom::GrantAccess(uint64_t player_id, uint32_t permission_level) {
     access_permissions_[player_id] = permission_level;
     return true;
 }
 
-// [SEQUENCE: MVP14-68] Check room access
+// [SEQUENCE: 3498] Check room access
 bool HousingStorageRoom::HasAccess(uint64_t player_id) const {
     auto it = access_permissions_.find(player_id);
     return it != access_permissions_.end() && it->second > 0;
 }
 
-// [SEQUENCE: MVP14-69] Add node to storage network
+// [SEQUENCE: 3499] Add node to storage network
 void LinkedStorageNetwork::AddNode(const NetworkNode& node) {
     nodes_[node.container_id] = node;
     connections_[node.container_id] = std::set<uint64_t>();
@@ -402,7 +402,7 @@ void LinkedStorageNetwork::AddNode(const NetworkNode& node) {
                  node.container_id);
 }
 
-// [SEQUENCE: MVP14-70] Link storage nodes
+// [SEQUENCE: 3500] Link storage nodes
 void LinkedStorageNetwork::LinkNodes(uint64_t container_id_1, uint64_t container_id_2) {
     if (nodes_.find(container_id_1) == nodes_.end() ||
         nodes_.find(container_id_2) == nodes_.end()) {
@@ -416,7 +416,7 @@ void LinkedStorageNetwork::LinkNodes(uint64_t container_id_1, uint64_t container
                  container_id_1, container_id_2);
 }
 
-// [SEQUENCE: MVP14-71] Transfer item across network
+// [SEQUENCE: 3501] Transfer item across network
 bool LinkedStorageNetwork::TransferItemAcrossNetwork(uint64_t source_container,
                                                    uint64_t target_container,
                                                    uint32_t item_id,
@@ -434,7 +434,7 @@ bool LinkedStorageNetwork::TransferItemAcrossNetwork(uint64_t source_container,
     return true;
 }
 
-// [SEQUENCE: MVP14-72] Search items across network
+// [SEQUENCE: 3502] Search items across network
 std::vector<HousingStorageContainer::StoredItem> 
 LinkedStorageNetwork::SearchNetworkItems(uint64_t player_id,
                                         const std::string& search_term) {
@@ -452,7 +452,7 @@ LinkedStorageNetwork::SearchNetworkItems(uint64_t player_id,
     return results;
 }
 
-// [SEQUENCE: MVP14-73] Find path between network nodes
+// [SEQUENCE: 3503] Find path between network nodes
 std::vector<uint64_t> LinkedStorageNetwork::FindPath(uint64_t source, uint64_t target) {
     if (source == target) {
         return {source};
@@ -497,7 +497,7 @@ std::vector<uint64_t> LinkedStorageNetwork::FindPath(uint64_t source, uint64_t t
     return {};  // No path found
 }
 
-// [SEQUENCE: MVP14-74] Create storage container
+// [SEQUENCE: 3504] Create storage container
 std::shared_ptr<HousingStorageContainer> HousingStorageManager::CreateContainer(
     HousingStorageType type,
     const std::string& custom_name) {
@@ -525,7 +525,7 @@ std::shared_ptr<HousingStorageContainer> HousingStorageManager::CreateContainer(
     return container;
 }
 
-// [SEQUENCE: MVP14-75] Create storage room
+// [SEQUENCE: 3505] Create storage room
 std::shared_ptr<HousingStorageRoom> HousingStorageManager::CreateStorageRoom(
     uint64_t house_id,
     const HousingStorageRoom::StorageRoomConfig& config) {
@@ -541,7 +541,7 @@ std::shared_ptr<HousingStorageRoom> HousingStorageManager::CreateStorageRoom(
     return room;
 }
 
-// [SEQUENCE: MVP14-76] Register container template
+// [SEQUENCE: 3506] Register container template
 void HousingStorageManager::RegisterContainerTemplate(HousingStorageType type,
                                                     const StorageContainerProperties& props) {
     container_templates_[type] = props;
@@ -550,7 +550,7 @@ void HousingStorageManager::RegisterContainerTemplate(HousingStorageType type,
                  props.name);
 }
 
-// [SEQUENCE: MVP14-77] Initialize default templates
+// [SEQUENCE: 3507] Initialize default templates
 void HousingStorageManager::InitializeDefaultTemplates() {
     // Personal chest
     RegisterContainerTemplate(HousingStorageType::PERSONAL_CHEST, {
@@ -627,7 +627,7 @@ void HousingStorageManager::InitializeDefaultTemplates() {
     });
 }
 
-// [SEQUENCE: MVP14-78] Execute bulk transfer
+// [SEQUENCE: 3508] Execute bulk transfer
 bool HousingStorageManager::ExecuteBulkTransfer(const BulkTransferRequest& request) {
     auto source_it = all_containers_.find(request.source_container);
     auto target_it = all_containers_.find(request.target_container);
@@ -658,7 +658,7 @@ bool HousingStorageManager::ExecuteBulkTransfer(const BulkTransferRequest& reque
     return true;
 }
 
-// [SEQUENCE: MVP14-79] Storage utility functions
+// [SEQUENCE: 3509] Storage utility functions
 namespace StorageUtils {
 
 uint32_t CalculateUpgradeCost(HousingStorageType type,

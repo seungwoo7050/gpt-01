@@ -9,7 +9,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP15-64] Decoration categories
+// [SEQUENCE: 3331] Decoration categories
 enum class DecorationCategory {
     FURNITURE,      // 가구
     LIGHTING,       // 조명
@@ -22,7 +22,7 @@ enum class DecorationCategory {
     SPECIAL        // 특별 장식
 };
 
-// [SEQUENCE: MVP15-65] Decoration placement rules
+// [SEQUENCE: 3332] Decoration placement rules
 enum class PlacementRule {
     FLOOR_ONLY,     // 바닥에만
     WALL_ONLY,      // 벽에만
@@ -35,7 +35,7 @@ enum class PlacementRule {
     ROTATABLE      // 회전 가능
 };
 
-// [SEQUENCE: MVP15-66] Decoration item definition
+// [SEQUENCE: 3333] Decoration item definition
 struct DecorationItem {
     uint32_t item_id;
     std::string name;
@@ -71,17 +71,17 @@ struct DecorationItem {
     std::string particle_effect_name;
 };
 
-// [SEQUENCE: MVP15-67] Placed decoration instance
+// [SEQUENCE: 3334] Placed decoration instance
 class PlacedDecoration {
 public:
     PlacedDecoration(uint64_t instance_id, const DecorationItem& item);
     
-    // [SEQUENCE: MVP15-68] Decoration properties
+    // [SEQUENCE: 3335] Decoration properties
     uint64_t GetInstanceId() const { return instance_id_; }
     uint32_t GetItemId() const { return item_.item_id; }
     const DecorationItem& GetItem() const { return item_; }
     
-    // [SEQUENCE: MVP15-69] Transform management
+    // [SEQUENCE: 3336] Transform management
     void SetPosition(const Vector3& position) { position_ = position; }
     void SetRotation(const Quaternion& rotation) { rotation_ = rotation; }
     void SetScale(const Vector3& scale);
@@ -90,17 +90,17 @@ public:
     Quaternion GetRotation() const { return rotation_; }
     Vector3 GetScale() const { return scale_; }
     
-    // [SEQUENCE: MVP15-70] Visual customization
+    // [SEQUENCE: 3337] Visual customization
     void SetMaterialVariant(uint32_t variant_index);
     void SetTint(const Color& tint) { tint_color_ = tint; }
     void SetEmissiveIntensity(float intensity);
     
-    // [SEQUENCE: MVP15-71] Interaction
+    // [SEQUENCE: 3338] Interaction
     void SetInteractionEnabled(bool enabled) { interaction_enabled_ = enabled; }
     void SetCustomData(const std::string& key, const std::string& value);
     std::string GetCustomData(const std::string& key) const;
     
-    // [SEQUENCE: MVP15-72] State management
+    // [SEQUENCE: 3339] State management
     void SetVisible(bool visible) { is_visible_ = visible; }
     bool IsVisible() const { return is_visible_; }
     
@@ -129,7 +129,7 @@ private:
     std::unordered_map<std::string, std::string> custom_data_;
 };
 
-// [SEQUENCE: MVP15-73] Decoration placement validator
+// [SEQUENCE: 3340] Decoration placement validator
 class DecorationPlacementValidator {
 public:
     struct ValidationResult {
@@ -138,7 +138,7 @@ public:
         std::vector<std::string> warnings;
     };
     
-    // [SEQUENCE: MVP15-74] Validation methods
+    // [SEQUENCE: 3341] Validation methods
     static ValidationResult ValidatePlacement(
         const DecorationItem& item,
         const Vector3& position,
@@ -165,7 +165,7 @@ private:
     static bool IsOnCeiling(const Vector3& position, const HouseRoom& room);
 };
 
-// [SEQUENCE: MVP15-75] Decoration theme system
+// [SEQUENCE: 3342] Decoration theme system
 class DecorationTheme {
 public:
     struct ThemeData {
@@ -189,7 +189,7 @@ public:
         Color ambient_light_color{1, 1, 1, 1};
     };
     
-    // [SEQUENCE: MVP15-76] Theme management
+    // [SEQUENCE: 3343] Theme management
     static std::vector<ThemeData> GetAvailableThemes();
     static ThemeData GetTheme(const std::string& theme_name);
     static void ApplyTheme(PlayerHouse& house, const std::string& theme_name);
@@ -198,7 +198,7 @@ private:
     static std::unordered_map<std::string, ThemeData> themes_;
 };
 
-// [SEQUENCE: MVP15-77] Decoration preset system
+// [SEQUENCE: 3344] Decoration preset system
 class DecorationPreset {
 public:
     struct PresetData {
@@ -218,17 +218,17 @@ public:
         std::unordered_map<uint32_t, std::vector<PresetItem>> room_decorations;
     };
     
-    // [SEQUENCE: MVP15-78] Preset application
+    // [SEQUENCE: 3345] Preset application
     static std::vector<PresetData> GetPresetsForHouseType(HouseType type);
     static bool ApplyPreset(PlayerHouse& house, const std::string& preset_name);
     static PresetData CreateCustomPreset(const PlayerHouse& house, 
                                        const std::string& preset_name);
 };
 
-// [SEQUENCE: MVP15-79] Decoration effects system
+// [SEQUENCE: 3346] Decoration effects system
 class DecorationEffects {
 public:
-    // [SEQUENCE: MVP15-80] Light effects
+    // [SEQUENCE: 3347] Light effects
     struct LightEffect {
         Color color;
         float intensity;
@@ -238,7 +238,7 @@ public:
         bool cast_shadows{true};
     };
     
-    // [SEQUENCE: MVP15-81] Particle effects
+    // [SEQUENCE: 3348] Particle effects
     struct ParticleEffect {
         std::string effect_name;
         Vector3 emission_offset;
@@ -247,7 +247,7 @@ public:
         bool loop{true};
     };
     
-    // [SEQUENCE: MVP15-82] Sound effects
+    // [SEQUENCE: 3349] Sound effects
     struct SoundEffect {
         std::string sound_name;
         float volume{1.0f};
@@ -256,7 +256,7 @@ public:
         bool ambient{true};
     };
     
-    // [SEQUENCE: MVP15-83] Animation effects
+    // [SEQUENCE: 3350] Animation effects
     struct AnimationEffect {
         std::string animation_name;
         float speed{1.0f};
@@ -274,7 +274,7 @@ public:
                                    const AnimationEffect& effect);
 };
 
-// [SEQUENCE: MVP15-84] Decoration catalog
+// [SEQUENCE: 3351] Decoration catalog
 class DecorationCatalog {
 public:
     static DecorationCatalog& Instance() {
@@ -282,14 +282,14 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP15-85] Catalog management
+    // [SEQUENCE: 3352] Catalog management
     void RegisterItem(const DecorationItem& item);
     DecorationItem* GetItem(uint32_t item_id);
     
     std::vector<DecorationItem> GetItemsByCategory(DecorationCategory category);
     std::vector<DecorationItem> SearchItems(const std::string& query);
     
-    // [SEQUENCE: MVP15-86] Filtering
+    // [SEQUENCE: 3353] Filtering
     struct FilterCriteria {
         std::optional<DecorationCategory> category;
         std::optional<std::vector<PlacementRule>> required_rules;
@@ -307,12 +307,12 @@ private:
     std::unordered_map<DecorationCategory, std::vector<uint32_t>> items_by_category_;
 };
 
-// [SEQUENCE: MVP15-87] Decoration manager for houses
+// [SEQUENCE: 3354] Decoration manager for houses
 class HouseDecorationManager {
 public:
     HouseDecorationManager(PlayerHouse& house);
     
-    // [SEQUENCE: MVP15-88] Decoration placement
+    // [SEQUENCE: 3355] Decoration placement
     std::shared_ptr<PlacedDecoration> PlaceDecoration(
         uint32_t item_id,
         uint32_t room_id,
@@ -323,18 +323,18 @@ public:
     bool MoveDecoration(uint64_t instance_id, const Vector3& new_position);
     bool RotateDecoration(uint64_t instance_id, const Quaternion& rotation);
     
-    // [SEQUENCE: MVP15-89] Decoration queries
+    // [SEQUENCE: 3356] Decoration queries
     std::shared_ptr<PlacedDecoration> GetDecoration(uint64_t instance_id);
     std::vector<std::shared_ptr<PlacedDecoration>> GetRoomDecorations(uint32_t room_id);
     std::vector<std::shared_ptr<PlacedDecoration>> GetAllDecorations();
     
-    // [SEQUENCE: MVP15-90] Bulk operations
+    // [SEQUENCE: 3357] Bulk operations
     void ClearRoom(uint32_t room_id);
     void ClearAllDecorations();
     bool SaveLayout(const std::string& layout_name);
     bool LoadLayout(const std::string& layout_name);
     
-    // [SEQUENCE: MVP15-91] Statistics
+    // [SEQUENCE: 3358] Statistics
     struct DecorationStats {
         uint32_t total_decorations;
         std::unordered_map<DecorationCategory, uint32_t> by_category;
@@ -356,7 +356,7 @@ private:
     std::unordered_map<std::string, std::vector<PlacedDecoration>> saved_layouts_;
 };
 
-// [SEQUENCE: MVP15-92] Seasonal decoration manager
+// [SEQUENCE: 3359] Seasonal decoration manager
 class SeasonalDecorationManager {
 public:
     enum class Season {
@@ -367,7 +367,7 @@ public:
         SPECIAL_EVENT
     };
     
-    // [SEQUENCE: MVP15-93] Seasonal items
+    // [SEQUENCE: 3360] Seasonal items
     static std::vector<DecorationItem> GetSeasonalItems(Season season);
     static void EnableSeasonalItems(Season season);
     static void DisableSeasonalItems(Season previous_season);
@@ -376,12 +376,12 @@ public:
     static void AutoDecorateForSeason(PlayerHouse& house, Season season);
 };
 
-// [SEQUENCE: MVP15-94] Decoration interaction system
+// [SEQUENCE: 3361] Decoration interaction system
 class DecorationInteractionHandler {
 public:
     using InteractionCallback = std::function<void(Player&, PlacedDecoration&)>;
     
-    // [SEQUENCE: MVP15-95] Register interactions
+    // [SEQUENCE: 3362] Register interactions
     static void RegisterInteraction(uint32_t item_id, 
                                   const std::string& action_name,
                                   InteractionCallback callback);
@@ -396,7 +396,7 @@ private:
         std::unordered_map<std::string, InteractionCallback>> interactions_;
 };
 
-// [SEQUENCE: MVP15-96] Decoration utility functions
+// [SEQUENCE: 3363] Decoration utility functions
 namespace DecorationUtils {
     // Validation helpers
     bool IsValidPosition(const Vector3& position, const BoundingBox& room_bounds);

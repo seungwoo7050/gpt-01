@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP4-39] Death and resurrection system
 #pragma once
 
 #include <unordered_map>
@@ -9,10 +8,10 @@
 
 namespace mmorpg::game::combat {
 
+// [SEQUENCE: 1844] Death and resurrection system for character mortality
+// ýLü €\ Ü¤\<\ ­0 ¬Ý ˜¬
 
-// ï¿½Lï¿½ ï¿½\ Ü¤\<\ ï¿½ï¿½0 ï¿½ï¿½ ï¿½ï¿½
-
-
+// [SEQUENCE: 1845] Death state
 enum class DeathState {
     ALIVE,              // Normal state
     DYING,              // Taking fatal damage
@@ -22,7 +21,7 @@ enum class DeathState {
     RELEASED           // Released to graveyard
 };
 
-
+// [SEQUENCE: 1846] Death cause
 enum class DeathCause {
     DAMAGE,             // Normal combat damage
     FALLING,            // Fall damage
@@ -34,7 +33,7 @@ enum class DeathCause {
     DISCONNECT         // Died while offline
 };
 
-
+// [SEQUENCE: 1847] Resurrection type
 enum class ResurrectionType {
     SPELL,              // Player resurrection spell
     ITEM,               // Resurrection item
@@ -46,7 +45,7 @@ enum class ResurrectionType {
     SOULSTONE          // Pre-cast resurrection
 };
 
-
+// [SEQUENCE: 1848] Death penalties
 struct DeathPenalty {
     float durability_loss = 10.0f;      // % durability loss
     float resurrection_sickness = 75.0f;  // % stat reduction
@@ -57,7 +56,7 @@ struct DeathPenalty {
     float spirit_speed_bonus = 50.0f;    // % speed in ghost form
 };
 
-
+// [SEQUENCE: 1849] Corpse data
 struct Corpse {
     uint64_t corpse_id;
     uint64_t owner_id;
@@ -79,7 +78,7 @@ struct Corpse {
     bool resurrectable = true;          // Can be resurrected
     std::vector<uint64_t> items;        // Dropped items
     
-    
+    // [SEQUENCE: 1850] Check if corpse can be resurrected
     bool CanResurrect() const {
         if (!resurrectable) return false;
         
@@ -96,7 +95,7 @@ struct Corpse {
         return true;
     }
     
-    
+    // [SEQUENCE: 1851] Calculate decay time remaining
     std::chrono::seconds GetDecayTimeRemaining() const {
         auto now = std::chrono::system_clock::now();
         if (now >= decay_time) {
@@ -106,7 +105,7 @@ struct Corpse {
     }
 };
 
-
+// [SEQUENCE: 1852] Resurrection request
 struct ResurrectionRequest {
     uint64_t request_id;
     uint64_t caster_id;
@@ -131,7 +130,7 @@ struct ResurrectionRequest {
     }
 };
 
-
+// [SEQUENCE: 1853] Spirit healer
 struct SpiritHealer {
     uint64_t healer_id;
     float position_x;
@@ -145,12 +144,12 @@ struct SpiritHealer {
     std::chrono::minutes sickness_duration{10};
 };
 
-
+// [SEQUENCE: 1854] Death manager for entity
 class DeathManager {
 public:
     DeathManager(uint64_t entity_id) : entity_id_(entity_id) {}
     
-    
+    // [SEQUENCE: 1855] Process death
     void ProcessDeath(DeathCause cause, uint64_t killer_id = 0) {
         if (state_ != DeathState::ALIVE && state_ != DeathState::DYING) {
             return;  // Already dead
@@ -180,7 +179,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1856] Release spirit
     void ReleaseSpirit() {
         if (state_ != DeathState::DEAD) {
             return;
@@ -202,7 +201,7 @@ public:
         spdlog::info("Entity {} released spirit", entity_id_);
     }
     
-    
+    // [SEQUENCE: 1857] Request resurrection
     uint64_t CreateResurrectionRequest(uint64_t caster_id, ResurrectionType type,
                                        float health_pct = 50.0f, float mana_pct = 20.0f) {
         if (state_ != DeathState::DEAD && state_ != DeathState::SPIRIT) {
@@ -240,7 +239,7 @@ public:
         return request.request_id;
     }
     
-    
+    // [SEQUENCE: 1858] Accept resurrection
     bool AcceptResurrection(uint64_t request_id) {
         auto it = pending_resurrections_.find(request_id);
         if (it == pending_resurrections_.end()) {
@@ -266,13 +265,13 @@ public:
         return true;
     }
     
-    
+    // [SEQUENCE: 1859] Decline resurrection
     void DeclineResurrection(uint64_t request_id) {
         pending_resurrections_.erase(request_id);
         spdlog::info("Entity {} declined resurrection {}", entity_id_, request_id);
     }
     
-    
+    // [SEQUENCE: 1860] Spirit healer resurrection
     bool ResurrectAtSpiritHealer(const SpiritHealer& healer) {
         if (state_ != DeathState::SPIRIT) {
             return false;
@@ -310,7 +309,7 @@ public:
         return true;
     }
     
-    
+    // [SEQUENCE: 1861] Reclaim corpse (run back)
     bool ReclaimCorpse() {
         if (state_ != DeathState::SPIRIT || !corpse_) {
             return false;
@@ -338,7 +337,7 @@ public:
         return true;
     }
     
-    
+    // [SEQUENCE: 1862] Update death state
     void Update() {
         // Clean expired resurrection requests
         std::erase_if(pending_resurrections_, [](const auto& pair) {
@@ -410,7 +409,7 @@ private:
     std::function<void(uint64_t, DeathCause, uint64_t)> on_death_callback_;
     std::function<void(uint64_t, ResurrectionType)> on_resurrection_callback_;
     
-    
+    // [SEQUENCE: 1863] Create corpse
     void CreateCorpse() {
         static std::atomic<uint64_t> corpse_id_counter{1};
         
@@ -431,7 +430,7 @@ private:
         }
     }
     
-    
+    // [SEQUENCE: 1864] Apply death penalties
     void ApplyDeathPenalties() {
         // Durability loss
         if (death_penalty_.durability_loss > 0) {
@@ -449,7 +448,7 @@ private:
         }
     }
     
-    
+    // [SEQUENCE: 1865] Perform resurrection
     void PerformResurrection(const ResurrectionRequest& request) {
         // Restore health/mana
         SetHealthPercent(request.health_percent);
@@ -482,7 +481,7 @@ private:
         }
     }
     
-    
+    // [SEQUENCE: 1866] Apply resurrection sickness
     void ApplyResurrectionSickness() {
         has_resurrection_sickness_ = true;
         sickness_end_time_ = std::chrono::system_clock::now() + death_penalty_.sickness_duration;
@@ -491,7 +490,7 @@ private:
         ApplyStatModifier(-death_penalty_.resurrection_sickness);
     }
     
-    
+    // [SEQUENCE: 1867] Remove resurrection sickness
     void RemoveResurrectionSickness() {
         has_resurrection_sickness_ = false;
         
@@ -501,7 +500,7 @@ private:
         spdlog::info("Resurrection sickness removed from entity {}", entity_id_);
     }
     
-    
+    // [SEQUENCE: 1868] Decay corpse
     void DecayCorpse() {
         if (!corpse_) return;
         
@@ -514,7 +513,7 @@ private:
         spdlog::info("Corpse for entity {} decayed", entity_id_);
     }
     
-    
+    // [SEQUENCE: 1869] Apply spirit form
     void ApplySpiritForm() {
         // Increase movement speed
         ApplySpeedModifier(death_penalty_.spirit_speed_bonus);
@@ -526,7 +525,7 @@ private:
         ApplySpiritVisual();
     }
     
-    
+    // [SEQUENCE: 1870] Remove spirit form
     void RemoveSpiritForm() {
         RemoveSpeedModifier();
         SetUntargetable(false);
@@ -559,7 +558,7 @@ private:
     const SpiritHealer* FindNearestGraveyard() const;
 };
 
-
+// [SEQUENCE: 1871] Global death system
 class DeathSystem {
 public:
     static DeathSystem& Instance() {
@@ -567,7 +566,7 @@ public:
         return instance;
     }
     
-    
+    // [SEQUENCE: 1872] Initialize system
     void Initialize() {
         LoadSpiritHealers();
         LoadDeathPenalties();
@@ -575,7 +574,7 @@ public:
                     spirit_healers_.size());
     }
     
-    
+    // [SEQUENCE: 1873] Get or create death manager
     std::shared_ptr<DeathManager> GetManager(uint64_t entity_id) {
         auto it = entity_managers_.find(entity_id);
         if (it == entity_managers_.end()) {
@@ -586,7 +585,7 @@ public:
         return it->second;
     }
     
-    
+    // [SEQUENCE: 1874] Process entity death
     void ProcessDeath(uint64_t entity_id, DeathCause cause, uint64_t killer_id = 0) {
         auto manager = GetManager(entity_id);
         manager->ProcessDeath(cause, killer_id);
@@ -598,7 +597,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1875] Find nearby spirit healers
     std::vector<const SpiritHealer*> FindNearbyHealers(float x, float y, float z, 
                                                        float range = 1000.0f) const {
         std::vector<const SpiritHealer*> nearby;
@@ -617,7 +616,7 @@ public:
         return nearby;
     }
     
-    
+    // [SEQUENCE: 1876] Update all managers
     void UpdateAll() {
         for (auto& [entity_id, manager] : entity_managers_) {
             manager->Update();
@@ -630,7 +629,7 @@ public:
         });
     }
     
-    
+    // [SEQUENCE: 1877] Get death penalties
     const DeathPenalty& GetDeathPenalty() const {
         return death_penalty_;
     }
@@ -642,7 +641,7 @@ private:
     std::unordered_map<uint64_t, SpiritHealer> spirit_healers_;
     DeathPenalty death_penalty_;
     
-    
+    // [SEQUENCE: 1878] Load spirit healers
     void LoadSpiritHealers() {
         // Example spirit healers
         SpiritHealer healer1;
@@ -656,7 +655,7 @@ private:
         // TODO: Load from world data
     }
     
-    
+    // [SEQUENCE: 1879] Load death penalties
     void LoadDeathPenalties() {
         // Default penalties
         death_penalty_.durability_loss = 10.0f;
@@ -668,7 +667,7 @@ private:
     }
 };
 
-
+// [SEQUENCE: 1880] Stub implementations
 void DeathManager::GetEntityPosition(float& x, float& y, float& z) const {
     // TODO: Get from entity system
     x = y = z = 0.0f;

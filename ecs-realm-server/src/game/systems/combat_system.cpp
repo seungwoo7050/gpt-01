@@ -1,111 +1,148 @@
-#include "combat_system.h"
+#include "game/systems/combat_system.h"
 #include "core/ecs/world.h"
-#include "game/components/transform_component.h"
-#include "game/components/combat_stats_component.h"
+#include "game/components/combat_component.h"
 #include "game/components/health_component.h"
-#include "game/components/target_component.h"
+#include "game/components/transform_component.h"
+#include "game/components/network_component.h"
+#include <spdlog/spdlog.h>
 
 namespace mmorpg::game::systems {
 
-using namespace core::ecs;
-using namespace game::components;
-
-// [SEQUENCE: MVP9-10] System initialization
+// [SEQUENCE: 1] System initialization
 void CombatSystem::OnSystemInit() {
-    // Subscribe to events if needed
+    spdlog::info("CombatSystem initialized");
 }
 
-// [SEQUENCE: MVP9-11] System shutdown
+// [SEQUENCE: 2] System shutdown
 void CombatSystem::OnSystemShutdown() {
-    // Cleanup
+    spdlog::info("CombatSystem shutdown");
 }
 
-// [SEQUENCE: MVP9-12] Update all entities with combat logic
+// [SEQUENCE: 3] Main combat update
 void CombatSystem::Update(float delta_time) {
-    auto& world = World::Instance();
-    // Iterate over all entities that have a TargetComponent
-    for (EntityId entity : world.GetEntitiesWith<TargetComponent>()) {
+    auto* storage = GetComponentStorage();
+    if (!storage) return;
+    
+    auto* combat_storage = storage->GetStorage<components::CombatComponent>();
+    if (!combat_storage) return;
+    
+    // Process all entities with combat components
+    for (auto& [entity, combat] : combat_storage->GetAllComponents()) {
         ProcessEntityCombat(entity, delta_time);
     }
 }
 
-// [SEQUENCE: MVP9-13] Process combat for a single entity
-void CombatSystem::ProcessEntityCombat(EntityId entity, float delta_time) {
-    auto& world = World::Instance();
-    auto& target_comp = world.GetComponent<TargetComponent>(entity);
-
-    if (target_comp.auto_attacking && target_comp.current_target != 0) {
-        // Update auto-attack timer
-        target_comp.next_auto_attack_time -= std::chrono::duration<float>(delta_time);
-        if (target_comp.next_auto_attack_time.count() <= 0) {
-            ExecuteAttack(entity, target_comp.current_target);
-            
-            // Reset timer
-            auto& stats = world.GetComponent<CombatStatsComponent>(entity);
-            target_comp.next_auto_attack_time = std::chrono::duration<float>(1.0f / stats.attack_speed);
-        }
-    }
+// [SEQUENCE: 4] Start attack
+void CombatSystem::StartAttack(core::ecs::EntityId attacker, core::ecs::EntityId target) {
+    auto* combat = world_->GetComponent<components::CombatComponent>(attacker);
+    if (!combat) return;
+    
+    combat->current_target = target;
+    combat->is_attacking = true;
+    
+    spdlog::debug("Entity {} started attacking {}", attacker, target);
 }
 
-// [SEQUENCE: MVP9-14] Start an attack
-void CombatSystem::StartAttack(EntityId attacker, EntityId target) {
-    auto& world = World::Instance();
-    if (world.HasComponent<TargetComponent>(attacker)) {
-        auto& target_comp = world.GetComponent<TargetComponent>(attacker);
-        target_comp.current_target = target;
-        target_comp.auto_attacking = true;
-    }
+// [SEQUENCE: 5] Stop attack
+void CombatSystem::StopAttack(core::ecs::EntityId attacker) {
+    auto* combat = world_->GetComponent<components::CombatComponent>(attacker);
+    if (!combat) return;
+    
+    combat->current_target = 0;
+    combat->is_attacking = false;
+    
+    spdlog::debug("Entity {} stopped attacking", attacker);
 }
 
-// [SEQUENCE: MVP9-15] Stop an attack
-void CombatSystem::StopAttack(EntityId attacker) {
-    auto& world = World::Instance();
-    if (world.HasComponent<TargetComponent>(attacker)) {
-        auto& target_comp = world.GetComponent<TargetComponent>(attacker);
-        target_comp.auto_attacking = false;
-    }
-}
-
-// [SEQUENCE: MVP9-16] Execute a single attack
-void CombatSystem::ExecuteAttack(EntityId attacker, EntityId target) {
-    if (!IsTargetInRange(attacker, target)) {
+// [SEQUENCE: 6] Process entity combat state
+void CombatSystem::ProcessEntityCombat(core::ecs::EntityId entity, float delta_time) {
+    auto* combat = world_->GetComponent<components::CombatComponent>(entity);
+    if (!combat || !combat->is_attacking || combat->current_target == 0) {
         return;
     }
     
-    auto& world = World::Instance();
-    auto& attacker_stats = world.GetComponent<CombatStatsComponent>(attacker);
+    // Check if target is still valid
+    if (!world_->IsEntityValid(combat->current_target)) {
+        StopAttack(entity);
+        return;
+    }
     
-    // Simplified damage calculation for now
-    float damage = attacker_stats.attack_power;
+    // Check if target is in range
+    if (!IsTargetInRange(entity, combat->current_target)) {
+        // Target out of range, could trigger pursuit behavior
+        return;
+    }
     
-    ApplyDamage(target, damage);
+    // Check if can attack (cooldown)
+    if (combat->CanAttack()) {
+        ExecuteAttack(entity, combat->current_target);
+        combat->last_attack_time = std::chrono::steady_clock::now();
+    }
 }
 
-// [SEQUENCE: MVP9-17] Check attack range
-bool CombatSystem::IsTargetInRange(EntityId attacker, EntityId target) {
-    auto& world = World::Instance();
-    auto& t1 = world.GetComponent<TransformComponent>(attacker);
-    auto& t2 = world.GetComponent<TransformComponent>(target);
+// [SEQUENCE: 7] Execute attack
+void CombatSystem::ExecuteAttack(core::ecs::EntityId attacker, core::ecs::EntityId target) {
+    auto* attacker_combat = world_->GetComponent<components::CombatComponent>(attacker);
+    auto* target_combat = world_->GetComponent<components::CombatComponent>(target);
     
-    float dx = t1.x - t2.x;
-    float dy = t1.y - t2.y;
-    float dist_sq = dx * dx + dy * dy;
+    if (!attacker_combat) return;
     
-    auto& target_comp = world.GetComponent<TargetComponent>(attacker);
-    return dist_sq <= (target_comp.auto_attack_range * target_comp.auto_attack_range);
+    // Calculate damage
+    float base_damage = attacker_combat->CalculateDamage();
+    
+    // Apply target's defense if available
+    if (target_combat) {
+        base_damage = target_combat->CalculateDamageReduction(base_damage);
+    }
+    
+    // Apply damage
+    ApplyDamage(target, base_damage);
+    
+    // Mark for network update
+    auto* network = world_->GetComponent<components::NetworkComponent>(target);
+    if (network) {
+        network->MarkHealthDirty();
+    }
+    
+    spdlog::debug("Entity {} dealt {} damage to {}", attacker, base_damage, target);
 }
 
-// [SEQUENCE: MVP9-18] Apply damage to a target
-void CombatSystem::ApplyDamage(EntityId target, float damage) {
-    auto& world = World::Instance();
-    if (world.HasComponent<HealthComponent>(target)) {
-        auto& health = world.GetComponent<HealthComponent>(target);
-        health.current_health -= damage;
+// [SEQUENCE: 8] Check attack range
+bool CombatSystem::IsTargetInRange(core::ecs::EntityId attacker, core::ecs::EntityId target) {
+    auto* attacker_transform = world_->GetComponent<components::TransformComponent>(attacker);
+    auto* target_transform = world_->GetComponent<components::TransformComponent>(target);
+    auto* attacker_combat = world_->GetComponent<components::CombatComponent>(attacker);
+    
+    if (!attacker_transform || !target_transform || !attacker_combat) {
+        return false;
+    }
+    
+    float distance = core::utils::Vector3::Distance(
+        attacker_transform->position, 
+        target_transform->position
+    );
+    
+    return distance <= attacker_combat->attack_range;
+}
+
+// [SEQUENCE: 9] Apply damage to entity
+void CombatSystem::ApplyDamage(core::ecs::EntityId target, float damage) {
+    auto* health = world_->GetComponent<components::HealthComponent>(target);
+    if (!health) return;
+    
+    float actual_damage = health->TakeDamage(damage);
+    
+    // Check if entity died
+    if (health->is_dead) {
+        spdlog::info("Entity {} died", target);
         
-        if (health.current_health <= 0) {
-            // Handle death
-            health.current_health = 0;
+        // Mark for removal
+        auto* network = world_->GetComponent<components::NetworkComponent>(target);
+        if (network) {
+            network->needs_removal = true;
         }
+        
+        // Could trigger death events, loot drops, etc.
     }
 }
 

@@ -6,7 +6,7 @@
 
 namespace mmorpg::ai {
 
-// [SEQUENCE: MVP14-255] Sequence node implementation
+// [SEQUENCE: 3618] Sequence node implementation
 NodeStatus SequenceNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (children_.empty()) {
         return NodeStatus::SUCCESS;
@@ -41,7 +41,7 @@ void SequenceNode::Reset() {
     }
 }
 
-// [SEQUENCE: MVP14-256] Selector node implementation
+// [SEQUENCE: 3619] Selector node implementation
 NodeStatus SelectorNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (children_.empty()) {
         return NodeStatus::FAILURE;
@@ -76,7 +76,7 @@ void SelectorNode::Reset() {
     }
 }
 
-// [SEQUENCE: MVP14-257] Parallel node implementation
+// [SEQUENCE: 3620] Parallel node implementation
 NodeStatus ParallelNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (children_.empty()) {
         return NodeStatus::SUCCESS;
@@ -154,7 +154,7 @@ void ParallelNode::Reset() {
     }
 }
 
-// [SEQUENCE: MVP14-258] Repeater node implementation
+// [SEQUENCE: 3621] Repeater node implementation
 NodeStatus RepeaterNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (!child_) {
         return NodeStatus::FAILURE;
@@ -199,7 +199,7 @@ void RepeaterNode::Reset() {
     }
 }
 
-// [SEQUENCE: MVP14-259] Inverter node implementation
+// [SEQUENCE: 3622] Inverter node implementation
 NodeStatus InverterNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (!child_) {
         return NodeStatus::FAILURE;
@@ -217,7 +217,7 @@ NodeStatus InverterNode::Execute(NPC& npc, Blackboard& blackboard) {
     }
 }
 
-// [SEQUENCE: MVP14-260] Condition node implementation
+// [SEQUENCE: 3623] Condition node implementation
 NodeStatus ConditionNode::Execute(NPC& npc, Blackboard& blackboard) {
     if (!child_ || !condition_) {
         return NodeStatus::FAILURE;
@@ -230,7 +230,7 @@ NodeStatus ConditionNode::Execute(NPC& npc, Blackboard& blackboard) {
     return NodeStatus::FAILURE;
 }
 
-// [SEQUENCE: MVP14-261] Common behavior node implementations
+// [SEQUENCE: 3624] Common behavior node implementations
 namespace BehaviorNodes {
 
 BTNodePtr MoveToTarget(const std::string& target_key) {
@@ -386,7 +386,7 @@ BTNodePtr IsPlayerNearby(float radius) {
 
 } // namespace BehaviorNodes
 
-// [SEQUENCE: MVP14-262] Behavior tree builder implementation
+// [SEQUENCE: 3625] Behavior tree builder implementation
 BehaviorTreeBuilder& BehaviorTreeBuilder::Sequence(const std::string& name) {
     auto node = std::make_shared<SequenceNode>(name);
     
@@ -449,7 +449,7 @@ BTNodePtr BehaviorTreeBuilder::Build() {
     return root_;
 }
 
-// [SEQUENCE: MVP14-263] Behavior tree execution
+// [SEQUENCE: 3626] Behavior tree execution
 NodeStatus BehaviorTree::Tick(NPC& npc) {
     if (!root_) {
         return NodeStatus::FAILURE;
@@ -472,7 +472,7 @@ void BehaviorTree::RecordExecution(const std::string& node_name) {
     execution_path_.push_back(node_name);
 }
 
-// [SEQUENCE: MVP14-264] Common behavior implementations
+// [SEQUENCE: 3627] Common behavior implementations
 namespace CommonBehaviors {
 
 BTNodePtr CreateGuardBehavior(const Vector3& guard_position, float radius) {
@@ -556,7 +556,7 @@ BTNodePtr CreateMerchantBehavior() {
 
 } // namespace CommonBehaviors
 
-// [SEQUENCE: MVP14-265] Behavior tree factory implementation
+// [SEQUENCE: 3628] Behavior tree factory implementation
 void BehaviorTreeFactory::RegisterTree(const std::string& name,
                                      std::function<BTNodePtr()> creator) {
     tree_creators_[name] = creator;
@@ -587,7 +587,7 @@ void BehaviorTreeFactory::RegisterCommonTrees() {
     });
 }
 
-// [SEQUENCE: MVP14-266] Behavior tree utilities
+// [SEQUENCE: 3629] Behavior tree utilities
 namespace BTUtils {
 
 std::string VisualizeTree(BTNodePtr root, int indent) {

@@ -6,7 +6,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-154] Grant permission to player
+// [SEQUENCE: 3526] Grant permission to player
 void HouseAccessControl::GrantPermission(uint64_t player_id,
                                        const PermissionSet& permissions) {
     // Owner cannot have permissions changed
@@ -28,7 +28,7 @@ void HouseAccessControl::GrantPermission(uint64_t player_id,
                 static_cast<int>(permissions.level), player_id, house_id_);
 }
 
-// [SEQUENCE: MVP14-155] Revoke player permissions
+// [SEQUENCE: 3527] Revoke player permissions
 void HouseAccessControl::RevokePermission(uint64_t player_id) {
     if (player_id == owner_id_) {
         spdlog::warn("[HOUSING_PERMISSIONS] Cannot revoke owner permissions");
@@ -43,7 +43,7 @@ void HouseAccessControl::RevokePermission(uint64_t player_id) {
     }
 }
 
-// [SEQUENCE: MVP14-156] Update existing permissions
+// [SEQUENCE: 3528] Update existing permissions
 void HouseAccessControl::UpdatePermission(uint64_t player_id,
                                         const PermissionSet& permissions) {
     auto it = permissions_.find(player_id);
@@ -56,7 +56,7 @@ void HouseAccessControl::UpdatePermission(uint64_t player_id,
     }
 }
 
-// [SEQUENCE: MVP14-157] Check if player has access
+// [SEQUENCE: 3529] Check if player has access
 bool HouseAccessControl::HasAccess(uint64_t player_id) const {
     // Owner always has access
     if (player_id == owner_id_) {
@@ -83,7 +83,7 @@ bool HouseAccessControl::HasAccess(uint64_t player_id) const {
     return IsGuest(player_id);
 }
 
-// [SEQUENCE: MVP14-158] Check if player can perform action
+// [SEQUENCE: 3530] Check if player can perform action
 bool HouseAccessControl::CanPerformAction(uint64_t player_id,
                                         PermissionFlag action) const {
     // Owner can do everything
@@ -109,13 +109,13 @@ bool HouseAccessControl::CanPerformAction(uint64_t player_id,
     return false;
 }
 
-// [SEQUENCE: MVP14-159] Get player permissions
+// [SEQUENCE: 3531] Get player permissions
 PermissionSet* HouseAccessControl::GetPermissions(uint64_t player_id) {
     auto it = permissions_.find(player_id);
     return it != permissions_.end() ? &it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-160] Grant permissions to group
+// [SEQUENCE: 3532] Grant permissions to group
 void HouseAccessControl::GrantGroupPermission(const std::vector<uint64_t>& player_ids,
                                             const PermissionSet& permissions) {
     for (uint64_t player_id : player_ids) {
@@ -126,7 +126,7 @@ void HouseAccessControl::GrantGroupPermission(const std::vector<uint64_t>& playe
                 player_ids.size(), house_id_);
 }
 
-// [SEQUENCE: MVP14-161] Revoke all permissions
+// [SEQUENCE: 3533] Revoke all permissions
 void HouseAccessControl::RevokeAllPermissions() {
     size_t count = permissions_.size();
     permissions_.clear();
@@ -136,7 +136,7 @@ void HouseAccessControl::RevokeAllPermissions() {
                 count, house_id_);
 }
 
-// [SEQUENCE: MVP14-162] Get all permissions
+// [SEQUENCE: 3534] Get all permissions
 std::vector<std::pair<uint64_t, PermissionSet>> 
 HouseAccessControl::GetAllPermissions() const {
     std::vector<std::pair<uint64_t, PermissionSet>> result;
@@ -149,7 +149,7 @@ HouseAccessControl::GetAllPermissions() const {
     return result;
 }
 
-// [SEQUENCE: MVP14-163] Get players with specific level
+// [SEQUENCE: 3535] Get players with specific level
 std::vector<uint64_t> HouseAccessControl::GetPlayersWithLevel(
     HousingPermissionLevel level) const {
     
@@ -164,7 +164,7 @@ std::vector<uint64_t> HouseAccessControl::GetPlayersWithLevel(
     return result;
 }
 
-// [SEQUENCE: MVP14-164] Ban player from house
+// [SEQUENCE: 3536] Ban player from house
 void HouseAccessControl::BanPlayer(uint64_t player_id, const std::string& reason) {
     if (player_id == owner_id_) {
         spdlog::warn("[HOUSING_PERMISSIONS] Cannot ban house owner");
@@ -185,12 +185,12 @@ void HouseAccessControl::BanPlayer(uint64_t player_id, const std::string& reason
                 player_id, house_id_, reason);
 }
 
-// [SEQUENCE: MVP14-165] Check if player is banned
+// [SEQUENCE: 3537] Check if player is banned
 bool HouseAccessControl::IsBanned(uint64_t player_id) const {
     return banned_players_.find(player_id) != banned_players_.end();
 }
 
-// [SEQUENCE: MVP14-166] Add temporary guest
+// [SEQUENCE: 3538] Add temporary guest
 void HouseAccessControl::AddGuest(uint64_t player_id, std::chrono::hours duration) {
     if (IsBanned(player_id)) {
         spdlog::warn("[HOUSING_PERMISSIONS] Cannot add banned player as guest");
@@ -205,7 +205,7 @@ void HouseAccessControl::AddGuest(uint64_t player_id, std::chrono::hours duratio
                  player_id, house_id_, duration.count());
 }
 
-// [SEQUENCE: MVP14-167] Check if player is guest
+// [SEQUENCE: 3539] Check if player is guest
 bool HouseAccessControl::IsGuest(uint64_t player_id) const {
     auto it = guests_.find(player_id);
     if (it != guests_.end()) {
@@ -214,7 +214,7 @@ bool HouseAccessControl::IsGuest(uint64_t player_id) const {
     return false;
 }
 
-// [SEQUENCE: MVP14-168] Cleanup expired guests
+// [SEQUENCE: 3540] Cleanup expired guests
 void HouseAccessControl::CleanupExpiredGuests() {
     auto now = std::chrono::system_clock::now();
     
@@ -227,7 +227,7 @@ void HouseAccessControl::CleanupExpiredGuests() {
     }
 }
 
-// [SEQUENCE: MVP14-169] Validate time restrictions
+// [SEQUENCE: 3541] Validate time restrictions
 bool HouseAccessControl::ValidateTimeRestriction(const PermissionSet& perms) const {
     if (!perms.has_time_restriction) {
         return true;
@@ -237,7 +237,7 @@ bool HouseAccessControl::ValidateTimeRestriction(const PermissionSet& perms) con
     return now >= perms.access_start && now <= perms.access_end;
 }
 
-// [SEQUENCE: MVP14-170] Get visitor permission template
+// [SEQUENCE: 3542] Get visitor permission template
 PermissionSet PermissionTemplates::GetVisitorTemplate() {
     PermissionSet perms;
     perms.level = HousingPermissionLevel::VISITOR;
@@ -246,7 +246,7 @@ PermissionSet PermissionTemplates::GetVisitorTemplate() {
     return perms;
 }
 
-// [SEQUENCE: MVP14-171] Get friend permission template
+// [SEQUENCE: 3543] Get friend permission template
 PermissionSet PermissionTemplates::GetFriendTemplate() {
     PermissionSet perms = GetVisitorTemplate();
     perms.level = HousingPermissionLevel::FRIEND;
@@ -257,7 +257,7 @@ PermissionSet PermissionTemplates::GetFriendTemplate() {
     return perms;
 }
 
-// [SEQUENCE: MVP14-172] Get roommate permission template
+// [SEQUENCE: 3544] Get roommate permission template
 PermissionSet PermissionTemplates::GetRoommateTemplate() {
     PermissionSet perms = GetFriendTemplate();
     perms.level = HousingPermissionLevel::ROOMMATE;
@@ -269,7 +269,7 @@ PermissionSet PermissionTemplates::GetRoommateTemplate() {
     return perms;
 }
 
-// [SEQUENCE: MVP14-173] Create permission group
+// [SEQUENCE: 3545] Create permission group
 uint32_t PermissionGroups::CreateGroup(const std::string& name, uint64_t creator_id) {
     uint32_t group_id = next_group_id_++;
     
@@ -287,7 +287,7 @@ uint32_t PermissionGroups::CreateGroup(const std::string& name, uint64_t creator
     return group_id;
 }
 
-// [SEQUENCE: MVP14-174] Add member to group
+// [SEQUENCE: 3546] Add member to group
 void PermissionGroups::AddMember(uint32_t group_id, uint64_t player_id) {
     auto it = groups_.find(group_id);
     if (it == groups_.end()) {
@@ -303,7 +303,7 @@ void PermissionGroups::AddMember(uint32_t group_id, uint64_t player_id) {
     }
 }
 
-// [SEQUENCE: MVP14-175] Update sharing settings
+// [SEQUENCE: 3547] Update sharing settings
 void HouseSharingSystem::UpdateSharingSettings(uint64_t house_id,
                                               const SharingSettings& settings) {
     sharing_settings_[house_id] = settings;
@@ -312,7 +312,7 @@ void HouseSharingSystem::UpdateSharingSettings(uint64_t house_id,
                 house_id, static_cast<int>(settings.type));
 }
 
-// [SEQUENCE: MVP14-176] Record house visit
+// [SEQUENCE: 3548] Record house visit
 void HouseSharingSystem::RecordVisit(uint64_t house_id, uint64_t visitor_id) {
     visit_history_[house_id].push_back({
         .visitor_id = visitor_id,
@@ -326,7 +326,7 @@ void HouseSharingSystem::RecordVisit(uint64_t house_id, uint64_t visitor_id) {
     }
 }
 
-// [SEQUENCE: MVP14-177] Get visitor count
+// [SEQUENCE: 3549] Get visitor count
 uint32_t HouseSharingSystem::GetVisitorCount(uint64_t house_id,
                                             std::chrono::hours period) const {
     auto it = visit_history_.find(house_id);
@@ -346,7 +346,7 @@ uint32_t HouseSharingSystem::GetVisitorCount(uint64_t house_id,
     return count;
 }
 
-// [SEQUENCE: MVP14-178] Rate house
+// [SEQUENCE: 3550] Rate house
 void HouseSharingSystem::RateHouse(uint64_t house_id, uint64_t rater_id,
                                   uint8_t rating) {
     if (rating > 5) {
@@ -371,13 +371,13 @@ void HouseSharingSystem::RateHouse(uint64_t house_id, uint64_t rater_id,
                  rater_id, house_id, rating);
 }
 
-// [SEQUENCE: MVP14-179] Get house access control
+// [SEQUENCE: 3551] Get house access control
 HouseAccessControl* HousingPermissionManager::GetHouseAccess(uint64_t house_id) {
     auto it = house_access_.find(house_id);
     return it != house_access_.end() ? it->second.get() : nullptr;
 }
 
-// [SEQUENCE: MVP14-180] Create house access control
+// [SEQUENCE: 3552] Create house access control
 void HousingPermissionManager::CreateHouseAccess(uint64_t house_id, uint64_t owner_id) {
     auto access = std::make_unique<HouseAccessControl>();
     access->house_id_ = house_id;
@@ -389,7 +389,7 @@ void HousingPermissionManager::CreateHouseAccess(uint64_t house_id, uint64_t own
                 house_id, owner_id);
 }
 
-// [SEQUENCE: MVP14-181] Validate access
+// [SEQUENCE: 3553] Validate access
 bool HousingPermissionManager::ValidateAccess(uint64_t house_id, uint64_t player_id,
                                             PermissionFlag required_action) {
     auto* access = GetHouseAccess(house_id);
@@ -400,7 +400,7 @@ bool HousingPermissionManager::ValidateAccess(uint64_t house_id, uint64_t player
     return access->CanPerformAction(player_id, required_action);
 }
 
-// [SEQUENCE: MVP14-182] Apply template to house
+// [SEQUENCE: 3554] Apply template to house
 void HousingPermissionManager::ApplyTemplateToHouse(uint64_t house_id,
                                                   const std::string& template_name,
                                                   const std::vector<uint64_t>& player_ids) {
@@ -422,7 +422,7 @@ void HousingPermissionManager::ApplyTemplateToHouse(uint64_t house_id,
                 template_name, player_ids.size(), house_id);
 }
 
-// [SEQUENCE: MVP14-183] Lockdown house
+// [SEQUENCE: 3555] Lockdown house
 void HousingPermissionManager::LockdownHouse(uint64_t house_id) {
     auto* access = GetHouseAccess(house_id);
     if (!access) {
@@ -438,7 +438,7 @@ void HousingPermissionManager::LockdownHouse(uint64_t house_id) {
     spdlog::warn("[HOUSING_PERMISSIONS] House {} is now in lockdown mode", house_id);
 }
 
-// [SEQUENCE: MVP14-184] Permission utility functions
+// [SEQUENCE: 3556] Permission utility functions
 namespace PermissionUtils {
 
 bool IsHigherLevel(HousingPermissionLevel a, HousingPermissionLevel b) {

@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP4-37] Crowd control system (stuns, roots)
 #pragma once
 
 #include <unordered_map>
@@ -10,10 +9,10 @@
 
 namespace mmorpg::game::combat {
 
+// [SEQUENCE: 1729] Crowd control system for movement and action restrictions
+// 군중 제어 시스템으로 이동 및 행동 제한 관리
 
-
-
-
+// [SEQUENCE: 1730] Crowd control types
 enum class CrowdControlType : uint32_t {
     NONE = 0,
     STUN = 1 << 0,           // Cannot move or act
@@ -38,7 +37,7 @@ enum class CrowdControlType : uint32_t {
     GROUNDED = 1 << 19       // Cannot jump/fly
 };
 
-
+// [SEQUENCE: 1731] CC break type
 enum class CCBreakType {
     NONE,               // Cannot be broken
     DAMAGE,             // Breaks on damage
@@ -48,7 +47,7 @@ enum class CCBreakType {
     TIMER_ONLY          // Only expires with time
 };
 
-
+// [SEQUENCE: 1732] CC immunity type
 enum class CCImmunityType {
     NONE,
     TEMPORARY,          // Immunity after CC ends
@@ -56,7 +55,7 @@ enum class CCImmunityType {
     DIMINISHING         // Reduced duration each time
 };
 
-
+// [SEQUENCE: 1733] Crowd control effect
 struct CrowdControlEffect {
     uint64_t effect_id;
     CrowdControlType type;
@@ -85,12 +84,12 @@ struct CrowdControlEffect {
     bool can_be_cleansed = true;    // Removable by abilities
     uint32_t cleanse_tier = 1;      // Required cleanse level
     
-    
+    // [SEQUENCE: 1734] Check if expired
     bool IsExpired() const {
         return std::chrono::system_clock::now() >= end_time;
     }
     
-    
+    // [SEQUENCE: 1735] Update remaining duration
     void UpdateDuration() {
         auto now = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -99,7 +98,7 @@ struct CrowdControlEffect {
         remaining_duration = base_duration - elapsed;
     }
     
-    
+    // [SEQUENCE: 1736] Check if should break
     bool ShouldBreak(float damage = 0.0f, bool moved = false, bool acted = false) {
         switch (break_type) {
             case CCBreakType::DAMAGE:
@@ -117,10 +116,10 @@ struct CrowdControlEffect {
     }
 };
 
-
+// [SEQUENCE: 1737] Diminishing returns tracker
 class DiminishingReturns {
 public:
-    
+    // [SEQUENCE: 1738] Add CC application
     void AddApplication(CrowdControlType type) {
         auto& dr = dr_stacks_[type];
         dr.count++;
@@ -132,7 +131,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1739] Calculate duration modifier
     float GetDurationModifier(CrowdControlType type) {
         CleanupExpired();
         
@@ -151,7 +150,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1740] Check if immune
     bool IsImmune(CrowdControlType type) {
         auto it = dr_stacks_.find(type);
         return it != dr_stacks_.end() && it->second.count >= 4;
@@ -166,7 +165,7 @@ private:
     std::unordered_map<CrowdControlType, DRStack> dr_stacks_;
     static constexpr auto DR_RESET_TIME = std::chrono::seconds(18);
     
-    
+    // [SEQUENCE: 1741] Clean up expired DR stacks
     void CleanupExpired() {
         auto now = std::chrono::system_clock::now();
         
@@ -177,10 +176,10 @@ private:
     }
 };
 
-
+// [SEQUENCE: 1742] Crowd control state for an entity
 class CrowdControlState {
 public:
-    
+    // [SEQUENCE: 1743] Apply crowd control
     bool ApplyCC(const CrowdControlEffect& effect) {
         // Check immunity
         if (IsImmuneTo(effect.type)) {
@@ -219,7 +218,7 @@ public:
         return true;
     }
     
-    
+    // [SEQUENCE: 1744] Remove crowd control
     bool RemoveCC(uint64_t effect_id) {
         auto it = active_effects_.find(effect_id);
         if (it == active_effects_.end()) {
@@ -235,7 +234,7 @@ public:
         return true;
     }
     
-    
+    // [SEQUENCE: 1745] Cleanse crowd control
     uint32_t CleanseCC(uint32_t cleanse_level = 1, uint32_t max_count = 1) {
         std::vector<uint64_t> to_remove;
         
@@ -255,7 +254,7 @@ public:
         return static_cast<uint32_t>(to_remove.size());
     }
     
-    
+    // [SEQUENCE: 1746] Handle damage for break checks
     void OnDamageTaken(float damage) {
         std::vector<uint64_t> to_remove;
         
@@ -271,7 +270,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1747] Update active effects
     void Update() {
         // Remove expired effects
         std::vector<uint64_t> expired;
@@ -291,7 +290,7 @@ public:
         UpdateImmunities();
     }
     
-    
+    // [SEQUENCE: 1748] Check if can perform action
     bool CanMove() const {
         return !HasCCType(CrowdControlType::STUN) &&
                !HasCCType(CrowdControlType::ROOT) &&
@@ -319,7 +318,7 @@ public:
                !HasCCType(CrowdControlType::PACIFY);
     }
     
-    
+    // [SEQUENCE: 1749] Get movement speed modifier
     float GetMovementSpeedModifier() const {
         float modifier = 1.0f;
         
@@ -332,7 +331,7 @@ public:
         return modifier;
     }
     
-    
+    // [SEQUENCE: 1750] Get attack speed modifier
     float GetAttackSpeedModifier() const {
         float modifier = 1.0f;
         
@@ -364,7 +363,7 @@ public:
         return effects;
     }
     
-    
+    // [SEQUENCE: 1751] Grant temporary immunity
     void GrantImmunity(CrowdControlType type, std::chrono::seconds duration = std::chrono::seconds(2)) {
         immunity_timers_[type] = std::chrono::system_clock::now() + duration;
     }
@@ -377,7 +376,7 @@ private:
     // Immunity tracking
     std::unordered_map<CrowdControlType, std::chrono::system_clock::time_point> immunity_timers_;
     
-    
+    // [SEQUENCE: 1752] Update state flags
     void UpdateStateFlags() {
         current_cc_flags_ = 0;
         for (const auto& [id, effect] : active_effects_) {
@@ -385,7 +384,7 @@ private:
         }
     }
     
-    
+    // [SEQUENCE: 1753] Check immunity
     bool IsImmuneTo(CrowdControlType type) const {
         auto it = immunity_timers_.find(type);
         if (it != immunity_timers_.end()) {
@@ -394,7 +393,7 @@ private:
         return false;
     }
     
-    
+    // [SEQUENCE: 1754] Update immunities
     void UpdateImmunities() {
         auto now = std::chrono::system_clock::now();
         std::erase_if(immunity_timers_, [now](const auto& pair) {
@@ -403,7 +402,7 @@ private:
     }
 };
 
-
+// [SEQUENCE: 1755] Crowd control manager
 class CrowdControlManager {
 public:
     static CrowdControlManager& Instance() {
@@ -411,7 +410,7 @@ public:
         return instance;
     }
     
-    
+    // [SEQUENCE: 1756] Apply crowd control
     bool ApplyCC(uint64_t target_id, const CrowdControlEffect& effect) {
         auto& state = GetOrCreateState(target_id);
         
@@ -430,7 +429,7 @@ public:
         return success;
     }
     
-    
+    // [SEQUENCE: 1757] Create standard CC effects
     static CrowdControlEffect CreateStun(uint64_t source_id, uint32_t ability_id, 
                                         std::chrono::milliseconds duration) {
         CrowdControlEffect effect;
@@ -467,7 +466,7 @@ public:
         return effect;
     }
     
-    
+    // [SEQUENCE: 1758] Update all CC states
     void UpdateAll() {
         for (auto& [entity_id, state] : entity_states_) {
             state.Update();
@@ -479,7 +478,7 @@ public:
         });
     }
     
-    
+    // [SEQUENCE: 1759] Get entity CC state
     CrowdControlState* GetState(uint64_t entity_id) {
         auto it = entity_states_.find(entity_id);
         return (it != entity_states_.end()) ? &it->second : nullptr;

@@ -17,7 +17,7 @@
 
 namespace mmorpg::analytics {
 
-// [SEQUENCE: MVP14-677] 실시간 분석 엔진
+// [SEQUENCE: 966] 실시간 분석 엔진
 class RealtimeAnalyticsEngine {
 public:
     struct MetricValue {
@@ -96,7 +96,7 @@ public:
         Shutdown();
     }
 
-    // [SEQUENCE: MVP14-678] 이벤트 수집
+    // [SEQUENCE: 967] 이벤트 수집
     void RecordEvent(const EventData& event) {
         {
             std::lock_guard<std::mutex> lock(events_mutex_);
@@ -116,7 +116,7 @@ public:
         EvaluateAlertRules(event);
     }
 
-    // [SEQUENCE: MVP14-679] 게임 메트릭 기록
+    // [SEQUENCE: 968] 게임 메트릭 기록
     void RecordPlayerAction(const std::string& user_id, const std::string& action,
                            const std::unordered_map<std::string, std::variant<int64_t, double, std::string>>& properties = {}) {
         EventData event("player_action", "game_server");
@@ -164,7 +164,7 @@ public:
         UpdateAggregatedMetric(component + "_memory", memory_usage);
     }
 
-    // [SEQUENCE: MVP14-680] 실시간 대시보드 데이터
+    // [SEQUENCE: 969] 실시간 대시보드 데이터
     struct DashboardData {
         // 실시간 플레이어 통계
         uint64_t active_players{0};
@@ -226,7 +226,7 @@ public:
         return dashboard;
     }
 
-    // [SEQUENCE: MVP14-681] 알림 및 임계값 모니터링
+    // [SEQUENCE: 970] 알림 및 임계값 모니터링
     void AddAlertRule(const std::string& rule_id, const std::string& metric_name,
                      const std::string& condition, double threshold,
                      std::function<void(const std::string&)> callback) {
@@ -248,7 +248,7 @@ public:
         alert_rules_.erase(rule_id);
     }
 
-    // [SEQUENCE: MVP14-682] 고급 분석 기능
+    // [SEQUENCE: 971] 고급 분석 기능
     struct TrendAnalysis {
         std::string metric_name;
         double trend_coefficient; // 양수: 증가 추세, 음수: 감소 추세
@@ -304,7 +304,7 @@ public:
         return analysis;
     }
 
-    // [SEQUENCE: MVP14-683] 이상 탐지
+    // [SEQUENCE: 972] 이상 탐지
     struct AnomalyDetection {
         std::string metric_name;
         bool is_anomaly{false};
@@ -365,7 +365,7 @@ public:
         return result;
     }
 
-    // [SEQUENCE: MVP14-684] 데이터 내보내기 및 보고서
+    // [SEQUENCE: 973] 데이터 내보내기 및 보고서
     std::string GenerateReport(const std::string& format = "json", 
                               std::chrono::hours time_range = std::chrono::hours(24)) {
         std::lock_guard<std::mutex> lock(metrics_mutex_);
@@ -440,7 +440,7 @@ private:
     std::thread aggregation_thread_;
     std::thread anomaly_thread_;
 
-    // [SEQUENCE: MVP14-685] 내부 유틸리티 함수
+    // [SEQUENCE: 974] 내부 유틸리티 함수
     void InitializeMetrics() {
         std::vector<std::string> default_metrics = {
             "active_players", "server_cpu", "server_memory", 
@@ -564,7 +564,7 @@ private:
         return (it != daily_metrics_.end()) ? it->second : 0;
     }
 
-    // [SEQUENCE: MVP14-686] 통계 분석 함수
+    // [SEQUENCE: 975] 통계 분석 함수
     std::tuple<double, double, double> CalculateLinearRegression(const std::vector<double>& x, const std::vector<double>& y) {
         size_t n = x.size();
         if (n != y.size() || n < 2) {

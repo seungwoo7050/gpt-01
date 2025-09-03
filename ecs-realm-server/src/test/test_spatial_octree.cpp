@@ -5,7 +5,7 @@
 #include <chrono>
 #include <random>
 
-// [SEQUENCE: MVP3-61] test_spatial_octree.cpp: Test octree performance and correctness
+// [SEQUENCE: 1] Test octree performance and correctness
 int main() {
     using namespace mmorpg;
     
@@ -25,7 +25,7 @@ int main() {
     
     std::cout << "=== Octree Spatial Test ===\n";
     
-    // [SEQUENCE: MVP3-62] test_spatial_octree.cpp: Create test entities with 3D distribution
+    // [SEQUENCE: 2] Create test entities with 3D distribution
     constexpr size_t ENTITY_COUNT = 1000;
     std::vector<core::ecs::EntityId> entities;
     entities.reserve(ENTITY_COUNT);
@@ -51,7 +51,7 @@ int main() {
         world.AddComponent(entity, transform);
     }
     
-    // [SEQUENCE: MVP3-63] test_spatial_octree.cpp: Test spatial queries
+    // [SEQUENCE: 3] Test spatial queries
     std::cout << "\nTesting 3D spatial queries...\n";
     
     // Update spatial index
@@ -71,7 +71,7 @@ int main() {
               << nearby.size() << " entities found in "
               << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-64] test_spatial_octree.cpp: Test 3D box query
+    // [SEQUENCE: 4] Test 3D box query
     core::utils::Vector3 box_min(-200, -200, -100);
     core::utils::Vector3 box_max(200, 200, 100);
     
@@ -84,7 +84,7 @@ int main() {
     std::cout << "Box query: " << in_box.size() << " entities found in "
               << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-65] test_spatial_octree.cpp: Test vertical queries
+    // [SEQUENCE: 5] Test vertical queries
     core::utils::Vector3 ground_pos(0, 0, 0);
     
     start = std::chrono::high_resolution_clock::now();
@@ -106,7 +106,7 @@ int main() {
     std::cout << "Entities below ground: " << below.size() << " in "
               << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-66] test_spatial_octree.cpp: Test entity movement with large displacements
+    // [SEQUENCE: 6] Test entity movement with large displacements
     std::cout << "\nTesting 3D entity movement...\n";
     
     // Move entities with varying distances
@@ -130,7 +130,7 @@ int main() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Octree update after movement: " << duration.count() << " microseconds\n";
     
-    // [SEQUENCE: MVP3-67] test_spatial_octree.cpp: Octree statistics
+    // [SEQUENCE: 7] Octree statistics
     size_t total_nodes, leaf_nodes, tree_entities, depth;
     spatial->GetOctreeStats(total_nodes, leaf_nodes, tree_entities, depth);
     
@@ -145,7 +145,7 @@ int main() {
         std::cout << "Average entities per leaf: " << avg_per_leaf << "\n";
     }
     
-    // [SEQUENCE: MVP3-68] test_spatial_octree.cpp: Performance comparison message
+    // [SEQUENCE: 8] Performance comparison message
     std::cout << "\n=== Grid vs Octree Comparison ===\n";
     std::cout << "Grid advantages: Faster updates, predictable performance\n";
     std::cout << "Octree advantages: 3D queries, memory efficiency, sparse worlds\n";

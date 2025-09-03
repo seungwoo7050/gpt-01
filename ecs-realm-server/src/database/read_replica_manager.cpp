@@ -7,7 +7,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-347] Read replica implementation
+// [SEQUENCE: 3017] Read replica implementation
 ReadReplica::ReadReplica(const ReplicaConfig& config) 
     : config_(config) {
     
@@ -21,7 +21,7 @@ ReadReplica::~ReadReplica() {
     Disconnect();
 }
 
-// [SEQUENCE: MVP14-348] Connect to replica
+// [SEQUENCE: 3018] Connect to replica
 bool ReadReplica::Connect() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -49,7 +49,7 @@ bool ReadReplica::Connect() {
     return false;
 }
 
-// [SEQUENCE: MVP14-349] Execute query on replica
+// [SEQUENCE: 3019] Execute query on replica
 QueryResult ReadReplica::ExecuteQuery(const std::string& query,
                                     const std::vector<std::string>& params) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -82,7 +82,7 @@ QueryResult ReadReplica::ExecuteQuery(const std::string& query,
     }
 }
 
-// [SEQUENCE: MVP14-350] Health check implementation
+// [SEQUENCE: 3020] Health check implementation
 bool ReadReplica::PerformHealthCheck() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -125,14 +125,14 @@ bool ReadReplica::PerformHealthCheck() {
     }
 }
 
-// [SEQUENCE: MVP14-351] Get replication lag
+// [SEQUENCE: 3021] Get replication lag
 uint32_t ReadReplica::GetReplicationLag() {
     // In real implementation, query replica status
     // For now, simulate with random lag
     return std::rand() % 500;  // 0-500ms lag
 }
 
-// [SEQUENCE: MVP14-352] Update statistics
+// [SEQUENCE: 3022] Update statistics
 void ReadReplica::UpdateStats(const QueryResult& result, double query_time_ms) {
     stats_.queries_executed++;
     stats_.total_connections = connection_->GetActiveConnections();
@@ -152,7 +152,7 @@ void ReadReplica::UpdateStats(const QueryResult& result, double query_time_ms) {
     UpdateQueryTimePercentiles();
 }
 
-// [SEQUENCE: MVP14-353] Calculate percentiles
+// [SEQUENCE: 3023] Calculate percentiles
 void ReadReplica::UpdateQueryTimePercentiles() {
     if (recent_query_times_.empty()) return;
     
@@ -166,7 +166,7 @@ void ReadReplica::UpdateQueryTimePercentiles() {
     stats_.p99_query_time_ms = sorted[p99_idx];
 }
 
-// [SEQUENCE: MVP14-354] Calculate load score
+// [SEQUENCE: 3024] Calculate load score
 double ReadReplica::CalculateLoadScore() const {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -185,7 +185,7 @@ double ReadReplica::CalculateLoadScore() const {
             health_factor * 0.1);
 }
 
-// [SEQUENCE: MVP14-355] Add replica to pool
+// [SEQUENCE: 3025] Add replica to pool
 bool ReadReplicaPool::AddReplica(const ReplicaConfig& config) {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -204,14 +204,14 @@ bool ReadReplicaPool::AddReplica(const ReplicaConfig& config) {
     return false;
 }
 
-// [SEQUENCE: MVP14-356] Get replica based on strategy
+// [SEQUENCE: 3026] Get replica based on strategy
 ReadReplica* ReadReplicaPool::GetReplica(const std::string& query_hint) {
     std::lock_guard<std::mutex> lock(mutex_);
     
     return SelectReplica(query_hint);
 }
 
-// [SEQUENCE: MVP14-357] Select replica implementation
+// [SEQUENCE: 3027] Select replica implementation
 ReadReplica* ReadReplicaPool::SelectReplica(const std::string& query_hint) {
     // First check for dedicated replicas if hint provided
     if (!query_hint.empty()) {
@@ -245,7 +245,7 @@ ReadReplica* ReadReplicaPool::SelectReplica(const std::string& query_hint) {
     }
 }
 
-// [SEQUENCE: MVP14-358] Round robin selection
+// [SEQUENCE: 3028] Round robin selection
 ReadReplica* ReadReplicaPool::SelectRoundRobin() {
     auto healthy = GetHealthyReplicasUnsafe();
     if (healthy.empty()) return nullptr;
@@ -254,7 +254,7 @@ ReadReplica* ReadReplicaPool::SelectRoundRobin() {
     return healthy[index];
 }
 
-// [SEQUENCE: MVP14-359] Least connections selection
+// [SEQUENCE: 3029] Least connections selection
 ReadReplica* ReadReplicaPool::SelectLeastConnections() {
     auto healthy = GetHealthyReplicasUnsafe();
     if (healthy.empty()) return nullptr;
@@ -265,7 +265,7 @@ ReadReplica* ReadReplicaPool::SelectLeastConnections() {
         });
 }
 
-// [SEQUENCE: MVP14-360] Weighted selection
+// [SEQUENCE: 3030] Weighted selection
 ReadReplica* ReadReplicaPool::SelectWeighted() {
     auto healthy = GetHealthyReplicasUnsafe();
     if (healthy.empty()) return nullptr;
@@ -291,7 +291,7 @@ ReadReplica* ReadReplicaPool::SelectWeighted() {
     return healthy.back();
 }
 
-// [SEQUENCE: MVP14-361] Latency-based selection
+// [SEQUENCE: 3031] Latency-based selection
 ReadReplica* ReadReplicaPool::SelectByLatency() {
     auto healthy = GetHealthyReplicasUnsafe();
     if (healthy.empty()) return nullptr;
@@ -302,7 +302,7 @@ ReadReplica* ReadReplicaPool::SelectByLatency() {
         });
 }
 
-// [SEQUENCE: MVP14-362] Get healthy replicas
+// [SEQUENCE: 3032] Get healthy replicas
 std::vector<ReadReplica*> ReadReplicaPool::GetHealthyReplicasUnsafe() {
     std::vector<ReadReplica*> healthy;
     
@@ -316,7 +316,7 @@ std::vector<ReadReplica*> ReadReplicaPool::GetHealthyReplicasUnsafe() {
     return healthy;
 }
 
-// [SEQUENCE: MVP14-363] Perform health checks
+// [SEQUENCE: 3033] Perform health checks
 void ReadReplicaPool::PerformHealthChecks() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -327,7 +327,7 @@ void ReadReplicaPool::PerformHealthChecks() {
     UpdatePoolMetrics();
 }
 
-// [SEQUENCE: MVP14-364] Get pool statistics
+// [SEQUENCE: 3034] Get pool statistics
 ReadReplicaPool::PoolStats ReadReplicaPool::GetPoolStats() const {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -366,7 +366,7 @@ ReadReplicaPool::PoolStats ReadReplicaPool::GetPoolStats() const {
     return stats;
 }
 
-// [SEQUENCE: MVP14-365] Query type determination
+// [SEQUENCE: 3035] Query type determination
 QueryRouter::QueryType QueryRouter::DetermineQueryType(const std::string& query) {
     // Simple regex-based classification
     std::string upper_query = query;
@@ -391,7 +391,7 @@ QueryRouter::QueryType QueryRouter::DetermineQueryType(const std::string& query)
     return QueryType::UNKNOWN;
 }
 
-// [SEQUENCE: MVP14-366] Routing decision
+// [SEQUENCE: 3036] Routing decision
 bool QueryRouter::ShouldRouteToPrimary(QueryType type, ConsistencyLevel consistency) {
     // Always route writes and DDL to primary
     if (type == QueryType::WRITE || 
@@ -410,7 +410,7 @@ bool QueryRouter::ShouldRouteToPrimary(QueryType type, ConsistencyLevel consiste
     return true;
 }
 
-// [SEQUENCE: MVP14-367] Parse query hints
+// [SEQUENCE: 3037] Parse query hints
 QueryRouter::QueryHints QueryRouter::ParseQueryHints(const std::string& query) {
     QueryHints hints;
     
@@ -439,7 +439,7 @@ QueryRouter::QueryHints QueryRouter::ParseQueryHints(const std::string& query) {
     return hints;
 }
 
-// [SEQUENCE: MVP14-368] Manager initialization
+// [SEQUENCE: 3038] Manager initialization
 void ReadReplicaManager::Initialize(const std::vector<ReplicaConfig>& configs,
                                   LoadBalancingStrategy strategy) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -455,7 +455,7 @@ void ReadReplicaManager::Initialize(const std::vector<ReplicaConfig>& configs,
     spdlog::info("[REPLICA_MANAGER] Initialized with {} replicas", configs.size());
 }
 
-// [SEQUENCE: MVP14-369] Execute query with routing
+// [SEQUENCE: 3039] Execute query with routing
 QueryResult ReadReplicaManager::ExecuteQuery(const std::string& query,
                                            const std::vector<std::string>& params,
                                            QueryRouter::ConsistencyLevel consistency) {
@@ -499,7 +499,7 @@ QueryResult ReadReplicaManager::ExecuteQuery(const std::string& query,
     }
 }
 
-// [SEQUENCE: MVP14-370] Start health monitoring
+// [SEQUENCE: 3040] Start health monitoring
 void ReadReplicaManager::StartHealthMonitoring(std::chrono::seconds interval) {
     if (monitoring_active_) return;
     
@@ -512,7 +512,7 @@ void ReadReplicaManager::StartHealthMonitoring(std::chrono::seconds interval) {
                 interval.count());
 }
 
-// [SEQUENCE: MVP14-371] Monitoring loop
+// [SEQUENCE: 3041] Monitoring loop
 void ReadReplicaManager::MonitoringLoop(std::chrono::seconds interval) {
     while (monitoring_active_) {
         {
@@ -527,7 +527,7 @@ void ReadReplicaManager::MonitoringLoop(std::chrono::seconds interval) {
     }
 }
 
-// [SEQUENCE: MVP14-372] Configuration helpers
+// [SEQUENCE: 3042] Configuration helpers
 ReplicaConfig CreateSyncReplica(const std::string& host, uint16_t port,
                                const std::string& region) {
     ReplicaConfig config;

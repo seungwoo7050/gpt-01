@@ -12,10 +12,10 @@
 
 namespace mmorpg::ui {
 
-// [SEQUENCE: MVP12-68] Chat interface system for player communication
+// [SEQUENCE: 2461] Chat interface system for player communication
 // 채팅 인터페이스 - 플레이어 간 소통을 위한 UI 시스템
 
-// [SEQUENCE: MVP12-69] Chat message display
+// [SEQUENCE: 2462] Chat message display
 class ChatMessage {
 public:
     struct MessageData {
@@ -26,14 +26,14 @@ public:
         Color channel_color;
         bool is_system_message = false;
         
-        // [SEQUENCE: MVP12-70] Additional message properties
+        // [SEQUENCE: 2463] Additional message properties
         std::string sender_title;      // Guild rank, achievement title, etc.
         uint32_t sender_level = 0;
         bool is_gm = false;            // Game Master message
     };
     
     ChatMessage(const MessageData& data) : data_(data) {
-        // [SEQUENCE: MVP12-71] Format message for display
+        // [SEQUENCE: 2464] Format message for display
         formatted_text_ = FormatMessage();
         
         // Calculate message height based on text wrapping
@@ -44,7 +44,7 @@ public:
     float GetHeight() const { return height_; }
     const MessageData& GetData() const { return data_; }
     
-    // [SEQUENCE: MVP12-72] Check if message matches filter
+    // [SEQUENCE: 2465] Check if message matches filter
     bool MatchesFilter(const std::string& filter) const {
         if (filter.empty()) return true;
         
@@ -63,7 +63,7 @@ private:
     std::string formatted_text_;
     float height_ = 16.0f;  // Default single line height
     
-    // [SEQUENCE: MVP12-73] Format message with timestamp and channel
+    // [SEQUENCE: 2466] Format message with timestamp and channel
     std::string FormatMessage() {
         std::string result;
         
@@ -101,7 +101,7 @@ private:
         return result;
     }
     
-    // [SEQUENCE: MVP12-74] Get channel-specific prefix
+    // [SEQUENCE: 2467] Get channel-specific prefix
     std::string GetChannelPrefix() const {
         switch (data_.channel) {
             case social::ChatChannel::SAY:
@@ -141,21 +141,21 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-75] Chat display window
+// [SEQUENCE: 2468] Chat display window
 class ChatWindow : public UIPanel {
 public:
     ChatWindow(const std::string& name) : UIPanel(name) {
         SetSize({500, 300});
         SetBackgroundColor({0.0f, 0.0f, 0.0f, 0.7f});
         
-        // [SEQUENCE: MVP12-76] Create scrollable message area
+        // [SEQUENCE: 2469] Create scrollable message area
         message_area_ = std::make_shared<UIPanel>("MessageArea");
         message_area_->SetPosition({5, 5});
         message_area_->SetSize({490, 240});
         message_area_->SetBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         AddChild(message_area_);
         
-        // [SEQUENCE: MVP12-77] Create input box
+        // [SEQUENCE: 2470] Create input box
         input_box_ = std::make_shared<ChatInputBox>("InputBox");
         input_box_->SetPosition({5, 250});
         input_box_->SetSize({490, 25});
@@ -164,7 +164,7 @@ public:
         });
         AddChild(input_box_);
         
-        // [SEQUENCE: MVP12-78] Create channel selector
+        // [SEQUENCE: 2471] Create channel selector
         channel_selector_ = std::make_shared<UIButton>("ChannelSelector");
         channel_selector_->SetPosition({5, 280});
         channel_selector_->SetSize({80, 20});
@@ -188,7 +188,7 @@ public:
         AddChild(scroll_down_);
     }
     
-    // [SEQUENCE: MVP12-79] Add new message to chat
+    // [SEQUENCE: 2472] Add new message to chat
     void AddMessage(const ChatMessage::MessageData& data) {
         auto message = std::make_shared<ChatMessage>(data);
         messages_.push_back(message);
@@ -209,19 +209,19 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-80] Set active chat channel
+    // [SEQUENCE: 2473] Set active chat channel
     void SetActiveChannel(social::ChatChannel channel) {
         active_channel_ = channel;
         UpdateChannelButton();
     }
     
-    // [SEQUENCE: MVP12-81] Toggle channel visibility
+    // [SEQUENCE: 2474] Toggle channel visibility
     void SetChannelEnabled(social::ChatChannel channel, bool enabled) {
         enabled_channels_[channel] = enabled;
         UpdateMessageDisplay();
     }
     
-    // [SEQUENCE: MVP12-82] Set message received callback
+    // [SEQUENCE: 2475] Set message received callback
     void SetOnChatMessage(std::function<void(const std::string&, social::ChatChannel)> callback) {
         on_chat_message_ = callback;
     }
@@ -259,7 +259,7 @@ private:
     
     std::function<void(const std::string&, social::ChatChannel)> on_chat_message_;
     
-    // [SEQUENCE: MVP12-83] Update visible messages
+    // [SEQUENCE: 2476] Update visible messages
     void UpdateMessageDisplay() {
         // Clear existing labels
         for (auto& label : message_labels_) {
@@ -300,7 +300,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-84] Handle chat submission
+    // [SEQUENCE: 2477] Handle chat submission
     void OnChatSubmit(const std::string& text) {
         if (text.empty()) return;
         
@@ -318,7 +318,7 @@ private:
         input_box_->Clear();
     }
     
-    // [SEQUENCE: MVP12-85] Process chat commands
+    // [SEQUENCE: 2478] Process chat commands
     void ProcessCommand(const std::string& command) {
         // Parse command and arguments
         std::istringstream iss(command);
@@ -443,7 +443,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-86] Chat input box with text editing
+// [SEQUENCE: 2479] Chat input box with text editing
 class ChatInputBox : public UIElement {
 public:
     ChatInputBox(const std::string& name) : UIElement(name) {
@@ -471,7 +471,7 @@ public:
         AddChild(cursor_);
     }
     
-    // [SEQUENCE: MVP12-87] Text input handling
+    // [SEQUENCE: 2480] Text input handling
     void SetText(const std::string& text) {
         text_ = text;
         cursor_position_ = text.length();
@@ -600,13 +600,13 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-88] Chat tab system for multiple chat windows
+// [SEQUENCE: 2481] Chat tab system for multiple chat windows
 class ChatTabContainer : public UIPanel {
 public:
     ChatTabContainer(const std::string& name) : UIPanel(name) {
         SetSize({600, 350});
         
-        // [SEQUENCE: MVP12-89] Create tab bar
+        // [SEQUENCE: 2482] Create tab bar
         tab_bar_ = std::make_shared<UIPanel>("TabBar");
         tab_bar_->SetPosition({0, 0});
         tab_bar_->SetSize({600, 25});
@@ -622,7 +622,7 @@ public:
         SelectTab(0);
     }
     
-    // [SEQUENCE: MVP12-90] Create new chat tab
+    // [SEQUENCE: 2483] Create new chat tab
     void CreateTab(const std::string& name, const std::vector<std::string>& channels) {
         auto tab_button = std::make_shared<UIButton>("Tab_" + name);
         tab_button->SetText(name);
@@ -655,7 +655,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-91] Add message to all relevant tabs
+    // [SEQUENCE: 2484] Add message to all relevant tabs
     void AddMessage(const ChatMessage::MessageData& data) {
         for (auto& tab : tabs_) {
             tab.window->AddMessage(data);
@@ -719,13 +719,13 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-92] Combat log window
+// [SEQUENCE: 2485] Combat log window
 class CombatLogWindow : public ChatWindow {
 public:
     CombatLogWindow(const std::string& name) : ChatWindow(name) {
         SetTitle("Combat Log");
         
-        // [SEQUENCE: MVP12-93] Create filter buttons
+        // [SEQUENCE: 2486] Create filter buttons
         CreateFilterButtons();
         
         // Enable combat-related channels
@@ -737,7 +737,7 @@ public:
         buff_color_ = {0.5f, 0.5f, 1.0f, 1.0f};
     }
     
-    // [SEQUENCE: MVP12-94] Add combat event
+    // [SEQUENCE: 2487] Add combat event
     void AddCombatEvent(const std::string& event_type, const std::string& source,
                        const std::string& target, int amount, const std::string& ability = "") {
         
@@ -805,7 +805,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-95] Chat UI manager
+// [SEQUENCE: 2488] Chat UI manager
 class ChatUIManager {
 public:
     static ChatUIManager& Instance() {
@@ -817,13 +817,13 @@ public:
         auto root = UIManager::Instance().GetRoot();
         if (!root) return;
         
-        // [SEQUENCE: MVP12-96] Create main chat window
+        // [SEQUENCE: 2489] Create main chat window
         main_chat_ = std::make_shared<ChatTabContainer>("MainChat");
         main_chat_->SetPosition({10, 400});
         main_chat_->SetAnchor(AnchorType::BOTTOM_LEFT);
         root->AddChild(main_chat_);
         
-        // [SEQUENCE: MVP12-97] Create combat log
+        // [SEQUENCE: 2490] Create combat log
         combat_log_ = std::make_shared<CombatLogWindow>("CombatLog");
         combat_log_->SetPosition({620, 400});
         combat_log_->SetAnchor(AnchorType::BOTTOM_LEFT);
@@ -834,7 +834,7 @@ public:
         InitializeChannelColors();
     }
     
-    // [SEQUENCE: MVP12-98] Add chat message
+    // [SEQUENCE: 2491] Add chat message
     void AddChatMessage(const std::string& sender, const std::string& message,
                        social::ChatChannel channel) {
         
@@ -878,7 +878,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-99] Set chat message callback
+    // [SEQUENCE: 2492] Set chat message callback
     void SetOnChatMessage(std::function<void(const std::string&, social::ChatChannel)> callback) {
         on_chat_message_ = callback;
         

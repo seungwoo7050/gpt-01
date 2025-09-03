@@ -7,7 +7,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-20] Advanced connection implementation
+// [SEQUENCE: 3715] Advanced connection implementation
 AdvancedConnection::AdvancedConnection(boost::asio::ip::tcp::socket socket)
     : Connection(std::move(socket)) {
     
@@ -27,7 +27,7 @@ AdvancedConnection::~AdvancedConnection() {
                 stats_.packet_loss_rate.load());
 }
 
-// [SEQUENCE: MVP13-21] Priority-based packet sending
+// [SEQUENCE: 3716] Priority-based packet sending
 void AdvancedConnection::SendPacket(PacketPtr packet, PacketPriority priority,
                                    ReliabilityMode reliability) {
     if (!packet || !IsConnected()) {
@@ -141,7 +141,7 @@ void AdvancedConnection::EncryptPacket(PacketPtr& packet) {
     packet->SetFlag(PacketFlags::ENCRYPTED);
 }
 
-// [SEQUENCE: MVP13-22] Packet aggregator implementation
+// [SEQUENCE: 3717] Packet aggregator implementation
 PacketAggregator::PacketAggregator(uint32_t max_size)
     : max_size_(max_size) {
 }
@@ -215,7 +215,7 @@ bool PacketAggregator::ShouldFlush() const {
     return false;
 }
 
-// [SEQUENCE: MVP13-23] Interest manager implementation
+// [SEQUENCE: 3718] Interest manager implementation
 InterestManager::InterestLevel InterestManager::CalculateInterest(
     const Entity& observer, const Entity& target) {
     
@@ -311,7 +311,7 @@ uint32_t InterestManager::GetSpatialHash(const Vector3& position) const {
     return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
 }
 
-// [SEQUENCE: MVP13-24] Delta compressor implementation
+// [SEQUENCE: 3719] Delta compressor implementation
 PacketPtr DeltaCompressor::CreateDelta(const StateSnapshot& old_state,
                                       const StateSnapshot& new_state) {
     
@@ -394,7 +394,7 @@ void DeltaCompressor::EncodeDelta(const std::any& old_value, const std::any& new
     }
 }
 
-// [SEQUENCE: MVP13-25] Advanced network manager implementation
+// [SEQUENCE: 3720] Advanced network manager implementation
 AdvancedNetworkManager::AdvancedNetworkManager()
     : interest_manager_(std::make_unique<InterestManager>())
     , delta_compressor_(std::make_unique<DeltaCompressor>()) {
@@ -495,7 +495,7 @@ void AdvancedNetworkManager::CleanupOldInputHistory() {
     }
 }
 
-// [SEQUENCE: MVP13-26] Network optimization utilities
+// [SEQUENCE: 3721] Network optimization utilities
 namespace NetworkOptimization {
 
 std::vector<uint8_t> CompressData(const std::vector<uint8_t>& data) {
@@ -654,7 +654,7 @@ QualitySettings AdaptQualityToNetwork(const NetworkStats& stats) {
 
 } // namespace NetworkOptimization
 
-// [SEQUENCE: MVP13-27] Reliable UDP implementation
+// [SEQUENCE: 3722] Reliable UDP implementation
 ReliableUDP::ReliableUDP(boost::asio::io_context& io_context, uint16_t port)
     : socket_(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
     

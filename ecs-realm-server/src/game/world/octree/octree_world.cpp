@@ -6,7 +6,7 @@
 
 namespace mmorpg::game::world::octree {
 
-// [SEQUENCE: MVP3-24] octree_world.cpp: OctreeNode implementation
+// [SEQUENCE: 1] OctreeNode implementation
 OctreeWorld::OctreeNode::OctreeNode(const core::utils::Vector3& node_min,
                                     const core::utils::Vector3& node_max,
                                     size_t node_depth)
@@ -18,7 +18,7 @@ OctreeWorld::OctreeNode::OctreeNode(const core::utils::Vector3& node_min,
     center.z = (min.z + max.z) * 0.5f;
 }
 
-
+// [SEQUENCE: 2] Calculate child octant index (0-7)
 int OctreeWorld::OctreeNode::GetChildIndex(const core::utils::Vector3& position) const {
     int index = 0;
     if (position.x > center.x) index |= 1;
@@ -27,14 +27,14 @@ int OctreeWorld::OctreeNode::GetChildIndex(const core::utils::Vector3& position)
     return index;
 }
 
-
+// [SEQUENCE: 3] Check if point is inside node bounds
 bool OctreeWorld::OctreeNode::Contains(const core::utils::Vector3& point) const {
     return point.x >= min.x && point.x <= max.x &&
            point.y >= min.y && point.y <= max.y &&
            point.z >= min.z && point.z <= max.z;
 }
 
-
+// [SEQUENCE: 4] Check sphere-box intersection
 bool OctreeWorld::OctreeNode::IntersectsSphere(const core::utils::Vector3& sphere_center, 
                                                float radius) const {
     // Find closest point in box to sphere center
@@ -50,7 +50,7 @@ bool OctreeWorld::OctreeNode::IntersectsSphere(const core::utils::Vector3& spher
     return (dx * dx + dy * dy + dz * dz) <= (radius * radius);
 }
 
-
+// [SEQUENCE: 5] Check box-box intersection
 bool OctreeWorld::OctreeNode::IntersectsBox(const core::utils::Vector3& box_min,
                                            const core::utils::Vector3& box_max) const {
     return !(box_max.x < min.x || box_min.x > max.x ||
@@ -58,7 +58,7 @@ bool OctreeWorld::OctreeNode::IntersectsBox(const core::utils::Vector3& box_min,
              box_max.z < min.z || box_min.z > max.z);
 }
 
-// [SEQUENCE: MVP3-25] octree_world.cpp: OctreeWorld constructor
+// [SEQUENCE: 6] OctreeWorld constructor
 OctreeWorld::OctreeWorld(const Config& config) : config_(config) {
     // Create root node covering entire world
     root_ = std::make_unique<OctreeNode>(config.world_min, config.world_max, 0);
@@ -69,10 +69,10 @@ OctreeWorld::OctreeWorld(const Config& config) : config_(config) {
                  config.max_depth);
 }
 
-
+// [SEQUENCE: 7] Destructor
 OctreeWorld::~OctreeWorld() = default;
 
-// [SEQUENCE: MVP3-26] octree_world.cpp: Add entity to octree
+// [SEQUENCE: 8] Add entity to octree
 void OctreeWorld::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3& position) {
     if (!root_->Contains(position)) {
         spdlog::warn("Entity {} position {} outside world bounds", entity, position);
@@ -92,7 +92,7 @@ void OctreeWorld::AddEntity(core::ecs::EntityId entity, const core::utils::Vecto
                  entity, position.x, position.y, position.z);
 }
 
-
+// [SEQUENCE: 9] Remove entity from octree
 void OctreeWorld::RemoveEntity(core::ecs::EntityId entity) {
     OctreeNode* node = nullptr;
     
@@ -115,9 +115,9 @@ void OctreeWorld::RemoveEntity(core::ecs::EntityId entity) {
     spdlog::debug("Removed entity {} from octree", entity);
 }
 
-// [SEQUENCE: MVP3-28] octree_world.cpp: Update entity position
+// [SEQUENCE: 10] Update entity position
 void OctreeWorld::UpdateEntity(core::ecs::EntityId entity,
-                              const core::utils::Vector3& old_pos,
+                              [[maybe_unused]] const core::utils::Vector3& old_pos,
                               const core::utils::Vector3& new_pos) {
     
     // Check if still in same node (common case)
@@ -142,7 +142,7 @@ void OctreeWorld::UpdateEntity(core::ecs::EntityId entity,
     AddEntity(entity, new_pos);
 }
 
-// [SEQUENCE: MVP3-29] octree_world.cpp: Insert entity into node (recursive)
+// [SEQUENCE: 11] Insert entity into node (recursive)
 void OctreeWorld::InsertEntity(OctreeNode* node, core::ecs::EntityId entity,
                               const core::utils::Vector3& position) {
     std::lock_guard<std::mutex> lock(node->mutex);
@@ -184,7 +184,7 @@ void OctreeWorld::InsertEntity(OctreeNode* node, core::ecs::EntityId entity,
     }
 }
 
-
+// [SEQUENCE: 12] Remove entity from node
 void OctreeWorld::RemoveEntity(OctreeNode* node, core::ecs::EntityId entity) {
     std::lock_guard<std::mutex> lock(node->mutex);
     
@@ -196,7 +196,7 @@ void OctreeWorld::RemoveEntity(OctreeNode* node, core::ecs::EntityId entity) {
     }
 }
 
-// [SEQUENCE: MVP3-30] octree_world.cpp: Split node into 8 children
+// [SEQUENCE: 13] Split node into 8 children
 void OctreeWorld::SplitNode(OctreeNode* node) {
     node->is_leaf = false;
     
@@ -242,7 +242,7 @@ void OctreeWorld::SplitNode(OctreeNode* node) {
                  node->depth, entities_copy.size());
 }
 
-
+// [SEQUENCE: 14] Try to merge node if children have few entities
 void OctreeWorld::TryMergeNode(OctreeNode* node) {
     // Count total entities in all children
     size_t total_entities = 0;
@@ -279,7 +279,7 @@ void OctreeWorld::TryMergeNode(OctreeNode* node) {
     }
 }
 
-// [SEQUENCE: MVP3-31] octree_world.cpp: Get entities within radius (recursive)
+// [SEQUENCE: 15] Get entities within radius
 std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesInRadius(
     const core::utils::Vector3& center, float radius) const {
     
@@ -290,7 +290,7 @@ std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesInRadius(
     return results;
 }
 
-
+// [SEQUENCE: 16] Recursive radius query
 void OctreeWorld::QueryRadius(const OctreeNode* node, const core::utils::Vector3& center,
                              float radius, std::vector<core::ecs::EntityId>& results) const {
     
@@ -338,7 +338,7 @@ void OctreeWorld::QueryRadius(const OctreeNode* node, const core::utils::Vector3
     }
 }
 
-// [SEQUENCE: MVP3-32] octree_world.cpp: Get entities in box (recursive)
+// [SEQUENCE: 17] Get entities in box
 std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesInBox(
     const core::utils::Vector3& box_min, const core::utils::Vector3& box_max) const {
     
@@ -349,6 +349,7 @@ std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesInBox(
     return results;
 }
 
+// [SEQUENCE: 18] Recursive box query
 void OctreeWorld::QueryBox(const OctreeNode* node, const core::utils::Vector3& box_min,
                           const core::utils::Vector3& box_max,
                           std::vector<core::ecs::EntityId>& results) const {
@@ -391,6 +392,7 @@ void OctreeWorld::QueryBox(const OctreeNode* node, const core::utils::Vector3& b
     }
 }
 
+// [SEQUENCE: 19] Get tree statistics
 void OctreeWorld::GetTreeStats(size_t& total_nodes, size_t& leaf_nodes, 
                               size_t& entities) const {
     total_nodes = 0;
@@ -402,6 +404,7 @@ void OctreeWorld::GetTreeStats(size_t& total_nodes, size_t& leaf_nodes,
     }
 }
 
+// [SEQUENCE: 20] Recursive statistics collection
 void OctreeWorld::CollectStats(const OctreeNode* node, size_t& total_nodes,
                               size_t& leaf_nodes, size_t& entities) const {
     std::lock_guard<std::mutex> lock(node->mutex);
@@ -422,23 +425,23 @@ void OctreeWorld::CollectStats(const OctreeNode* node, size_t& total_nodes,
     }
 }
 
-
+// [SEQUENCE: 21] Get entity count
 size_t OctreeWorld::GetEntityCount() const {
     std::lock_guard<std::mutex> lock(entity_map_mutex_);
     return entity_data_.size();
 }
 
-
+// [SEQUENCE: 22] Placeholder implementations for additional features
 std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesInFrustum(
-    const core::utils::Vector3& origin, const core::utils::Vector3& direction,
-    float fov, float near_dist, float far_dist) const {
+    [[maybe_unused]] const core::utils::Vector3& origin, [[maybe_unused]] const core::utils::Vector3& direction,
+    [[maybe_unused]] float fov, [[maybe_unused]] float near_dist, [[maybe_unused]] float far_dist) const {
     // TODO: Implement frustum culling
     return {};
 }
 
 std::vector<core::ecs::EntityId> OctreeWorld::GetEntitiesAlongRay(
-    const core::utils::Vector3& origin, const core::utils::Vector3& direction,
-    float max_distance) const {
+    [[maybe_unused]] const core::utils::Vector3& origin, [[maybe_unused]] const core::utils::Vector3& direction,
+    [[maybe_unused]] float max_distance) const {
     // TODO: Implement ray traversal
     return {};
 }
@@ -506,7 +509,4 @@ size_t OctreeWorld::GetDepth() const {
     return max_depth;
 }
 
-} // namespace mmorpg::game::world::octreectreepth;
-}
-
-} // namespace mmorpg::game::world::octree
+} // namespace mmorpg::game::world::octreeespace mmorpg::game::world::octree

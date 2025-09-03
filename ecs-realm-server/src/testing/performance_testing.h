@@ -14,7 +14,7 @@
 
 namespace mmorpg::testing {
 
-// [SEQUENCE: MVP17-39] Performance test types 성능 테스트 타입
+// [SEQUENCE: 3801] Performance test types 성능 테스트 타입
 enum class TestType {
     LOAD_TEST,              // 부하 테스트
     STRESS_TEST,            // 스트레스 테스트
@@ -26,7 +26,7 @@ enum class TestType {
     CONCURRENCY_TEST        // 동시성 테스트
 };
 
-// [SEQUENCE: MVP17-40] Test scenario definition 테스트 시나리오 정의
+// [SEQUENCE: 3802] Test scenario definition 테스트 시나리오 정의
 struct TestScenario {
     std::string name;
     TestType type;
@@ -54,7 +54,7 @@ struct TestScenario {
     } criteria;
 };
 
-// [SEQUENCE: MVP17-41] Performance metrics 성능 메트릭
+// [SEQUENCE: 3803] Performance metrics 성능 메트릭
 struct PerformanceMetrics {
     // 응답 시간
     struct ResponseTime {
@@ -105,7 +105,7 @@ struct PerformanceMetrics {
     } game;
 };
 
-// [SEQUENCE: MVP17-42] Virtual user for load testing 부하 테스트용 가상 사용자
+// [SEQUENCE: 3804] Virtual user for load testing 부하 테스트용 가상 사용자
 class VirtualUser {
 public:
     VirtualUser(uint64_t user_id, const TestScenario::UserBehavior& behavior);
@@ -155,10 +155,10 @@ private:
     void PerformRandomAction();
 };
 
-// [SEQUENCE: MVP17-43] Performance test framework 성능 테스트 프레임워크
+// [SEQUENCE: 3805] Performance test framework 성능 테스트 프레임워크
 class PerformanceTestFramework : public Singleton<PerformanceTestFramework> {
 public:
-    // [SEQUENCE: MVP17-44] Test execution 테스트 실행
+    // [SEQUENCE: 3806] Test execution 테스트 실행
     void RunTest(const TestScenario& scenario);
     void StopTest();
     bool IsTestRunning() const { return test_running_; }
@@ -221,7 +221,7 @@ private:
     void UpdateThroughput();
 };
 
-// [SEQUENCE: MVP17-45] Load generator 부하 생성기
+// [SEQUENCE: 3807] Load generator 부하 생성기
 class LoadGenerator {
 public:
     LoadGenerator(uint32_t thread_count = 4);
@@ -264,7 +264,7 @@ private:
     uint32_t CalculateDelay(LoadPattern pattern, uint32_t elapsed_seconds);
 };
 
-// [SEQUENCE: MVP17-46] Benchmark suite 벤치마크 스위트
+// [SEQUENCE: 3808] Benchmark suite 벤치마크 스위트
 class BenchmarkSuite {
 public:
     // 개별 벤치마크
@@ -304,7 +304,7 @@ private:
     double CalculateStandardDeviation(const std::vector<double>& times, double avg);
 };
 
-// [SEQUENCE: MVP17-47] Stress test scenarios 스트레스 테스트 시나리오
+// [SEQUENCE: 3809] Stress test scenarios 스트레스 테스트 시나리오
 namespace StressTestScenarios {
     // 대규모 전투
     TestScenario CreateMassiveCombatScenario();
@@ -325,7 +325,7 @@ namespace StressTestScenarios {
     TestScenario CreateWorldEventScenario();
 }
 
-// [SEQUENCE: MVP17-48] Performance monitoring 성능 모니터링
+// [SEQUENCE: 3810] Performance monitoring 성능 모니터링
 class PerformanceMonitor {
 public:
     // 메트릭 수집 시작
@@ -357,7 +357,7 @@ private:
     void CheckThresholds(const PerformanceMetrics& metrics);
 };
 
-// [SEQUENCE: MVP17-49] Test utilities 테스트 유틸리티
+// [SEQUENCE: 3811] Test utilities 테스트 유틸리티
 namespace TestUtils {
     // 테스트 데이터 생성
     std::vector<std::string> GenerateRandomUsernames(uint32_t count);

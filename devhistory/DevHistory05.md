@@ -32,3 +32,38 @@ These systems manage the logic for various PvP modes.
 
 ## [SEQUENCE: MVP5-18] Build System (`CMakeLists.txt`)
 *   `[SEQUENCE: MVP5-19]` Updated to include the source files for the guild and PvP systems in the `mmorpg_game` library.
+
+## [SEQUENCE: MVP5-20] Integration of Legacy Manager Systems
+To bring the full suite of guild and PvP features online, the legacy, non-ECS manager systems (`GuildManager` and `PvPManager`) were integrated into the application.
+
+*   **`[SEQUENCE: MVP5-21]` `game_server.cpp`:** The `PvPManager` is updated in the main game loop to handle matchmaking and other time-based PvP activities.
+*   **`[SEQUENCE: MVP5-22]` `guild_handler.h` & `.cpp`:** A new packet handler was created to process guild-related packets and call the appropriate methods on the `GuildManager` singleton.
+*   **`[SEQUENCE: MVP5-23]` `pvp_handler.h` & `.cpp`:** A new packet handler was created to process PvP-related packets and call the appropriate methods on the `PvPManager` singleton.
+*   **`[SEQUENCE: MVP5-24]` `session_manager.h` & `.cpp`:** The `SessionManager` was updated to track the mapping between session IDs and player IDs, enabling handlers to identify the player associated with a session.
+
+## [SEQUENCE: MVP5-25] Unit Tests (`tests/unit/`)
+*   `[SEQUENCE: MVP5-26]` `test_guild_system.cpp`: Unit tests were added to verify the functionality of the `GuildManager`, including creating guilds, inviting and accepting invites, and leaving guilds.
+*   `[SEQUENCE: MVP5-27]` `test_pvp_system.cpp`: Unit tests were added to verify the functionality of the `PvPManager`, including sending, accepting, and declining duel requests.
+
+## [SEQUENCE: MVP5-30] Build Verification
+
+After completing all the refactoring and implementation tasks for MVP 5, a full build and test cycle was performed to ensure the stability and correctness of the codebase.
+
+### Build Process
+
+The build process for MVP 5 follows the same procedure as MVP 4:
+
+1.  **Install Dependencies**: From the `ecs-realm-server` directory, run `conan install .`.
+2.  **Configure CMake**: Create a `build` directory, `cd` into it, and run `cmake .. -DCMAKE_TOOLCHAIN_FILE=../conan_toolchain.cmake`.
+3.  **Build and Test**: Run `make && ./unit_tests`.
+
+### Final Build Result
+
+*   **Execution Command**: `cd ecs-realm-server && conan install . && mkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../conan_toolchain.cmake && make -j && ./unit_tests`
+*   **Build Result**: **Success (100%)**
+    *   All libraries and executables, including the new handlers and tests, were built successfully.
+    *   All 33 unit tests passed, confirming that the guild and PvP features are working as expected.
+
+### Conclusion
+
+The successful build and test run confirms that the goals of MVP 5 have been met. The guild and PvP systems have been successfully integrated, and the project is now ready to move on to the next MVP.

@@ -1,3 +1,4 @@
+// [SEQUENCE: MVP1-26] packet.proto: 모든 메시지를 감싸는 최상위 Packet 래퍼를 정의합니다.
 syntax = "proto3";
 
 package mmorpg.proto;
@@ -24,12 +25,18 @@ enum PacketType {
     PACKET_CHAT_MESSAGE = 2006;
     
     // Guild packets (3000-3099)
+    // [SEQUENCE: MVP5-29]
     PACKET_GUILD_CREATE_REQUEST = 3000;
     PACKET_GUILD_CREATE_RESPONSE = 3001;
     PACKET_GUILD_INVITE_REQUEST = 3002;
     PACKET_GUILD_INVITE_RESPONSE = 3003;
     PACKET_GUILD_WAR_REQUEST = 3004;
     PACKET_GUILD_WAR_RESPONSE = 3005;
+    PACKET_GUILD_INVITE_ACCEPT_REQUEST = 3006;
+    PACKET_GUILD_LEAVE_REQUEST = 3007;
+    PACKET_GUILD_LEAVE_REQUEST = 3007;
+    PACKET_DUEL_ACCEPT_REQUEST = 3008;
+    PACKET_DUEL_DECLINE_REQUEST = 3009;
 }
 
 message PacketHeader {
@@ -43,4 +50,40 @@ message PacketHeader {
 message Packet {
     PacketHeader header = 1;
     bytes payload = 2; // Serialized message data
+}
+
+message HeartbeatResponse {
+    uint64 timestamp = 1;
+}
+
+// [SEQUENCE: MVP5-28]
+message GuildCreateRequest {
+    string guild_name = 1;
+    repeated uint64 charter_signers = 2;
+}
+
+// [SEQUENCE: MVP5-28]
+message GuildInviteRequest {
+    uint32 guild_id = 1;
+    uint64 target_id = 2;
+    string target_name = 3;
+}
+
+// [SEQUENCE: MVP5-28]
+message GuildInviteAcceptRequest {
+    uint32 guild_id = 1;
+}
+
+// [SEQUENCE: MVP5-28]
+message GuildLeaveRequest {
+}
+
+// [SEQUENCE: MVP5-28]
+message DuelAcceptRequest {
+    uint64 challenger_id = 1;
+}
+
+// [SEQUENCE: MVP5-28]
+message DuelDeclineRequest {
+    uint64 challenger_id = 1;
 }

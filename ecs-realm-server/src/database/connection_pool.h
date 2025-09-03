@@ -9,11 +9,20 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include "../core/types.h"
+#include <unordered_map>
+#include <list>
+#include "core/ecs/types.h"
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-468] Connection state
+struct QueryResult {
+    bool success{false};
+    std::vector<std::vector<std::string>> rows;
+    uint64_t rows_affected{0};
+    std::string error_message;
+};
+
+// [SEQUENCE: 3160] Connection state
 enum class ConnectionState {
     IDLE,           // 유휴 상태
     IN_USE,         // 사용 중
@@ -22,7 +31,7 @@ enum class ConnectionState {
     CLOSED          // 닫힘
 };
 
-// [SEQUENCE: MVP14-469] Connection pool configuration
+// [SEQUENCE: 3161] Connection pool configuration
 struct ConnectionPoolConfig {
     // Basic settings
     std::string host;
@@ -60,7 +69,7 @@ struct ConnectionPoolConfig {
     std::string ssl_ca_path;                   // SSL CA 경로
 };
 
-// [SEQUENCE: MVP14-470] Connection statistics
+// [SEQUENCE: 3162] Connection statistics
 struct ConnectionStats {
     // Pool metrics
     std::atomic<uint32_t> total_connections{0};
@@ -82,6 +91,45 @@ struct ConnectionStats {
     std::atomic<uint64_t> connection_failures{0};
     std::atomic<uint64_t> validation_failures{0};
     std::atomic<uint64_t> borrow_failures{0};
+
+    ConnectionStats() = default;
+
+    ConnectionStats(const ConnectionStats& other)
+        : total_connections(other.total_connections.load())
+        , active_connections(other.active_connections.load())
+        , idle_connections(other.idle_connections.load())
+        , connections_created(other.connections_created.load())
+        , connections_destroyed(other.connections_destroyed.load())
+        , connections_borrowed(other.connections_borrowed.load())
+        , connections_returned(other.connections_returned.load())
+        , wait_time_total_ms(other.wait_time_total_ms.load())
+        , wait_count(other.wait_count.load())
+        , timeout_count(other.timeout_count.load())
+        , connection_failures(other.connection_failures.load())
+        , validation_failures(other.validation_failures.load())
+        , borrow_failures(other.borrow_failures.load())
+    {
+    }
+
+    ConnectionStats& operator=(const ConnectionStats& other) {
+        if (this == &other) {
+            return *this;
+        }
+        total_connections = other.total_connections.load();
+        active_connections = other.active_connections.load();
+        idle_connections = other.idle_connections.load();
+        connections_created = other.connections_created.load();
+        connections_destroyed = other.connections_destroyed.load();
+        connections_borrowed = other.connections_borrowed.load();
+        connections_returned = other.connections_returned.load();
+        wait_time_total_ms = other.wait_time_total_ms.load();
+        wait_count = other.wait_count.load();
+        timeout_count = other.timeout_count.load();
+        connection_failures = other.connection_failures.load();
+        validation_failures = other.validation_failures.load();
+        borrow_failures = other.borrow_failures.load();
+        return *this;
+    }
     
     double GetAvgWaitTimeMs() const {
         return wait_count > 0 ? 
@@ -95,40 +143,40 @@ struct ConnectionStats {
     }
 };
 
-// [SEQUENCE: MVP14-471] Database connection wrapper
+// [SEQUENCE: 3163] Database connection wrapper
 class PooledConnection {
 public:
     PooledConnection(uint64_t id, const ConnectionPoolConfig& config);
     ~PooledConnection();
     
-    // [SEQUENCE: MVP14-472] Connection lifecycle
+    // [SEQUENCE: 3164] Connection lifecycle
     bool Connect();
     void Disconnect();
     bool IsConnected() const;
     bool Validate();
     
-    // [SEQUENCE: MVP14-473] Query execution
+    // [SEQUENCE: 3165] Query execution
     QueryResult Execute(const std::string& query, 
                        const std::vector<std::string>& params = {});
     
-    // [SEQUENCE: MVP14-474] Prepared statements
+    // [SEQUENCE: 3166] Prepared statements
     bool Prepare(const std::string& stmt_id, const std::string& query);
     QueryResult ExecutePrepared(const std::string& stmt_id,
                                const std::vector<std::string>& params = {});
     
-    // [SEQUENCE: MVP14-475] Transaction support
+    // [SEQUENCE: 3167] Transaction support
     bool BeginTransaction();
     bool Commit();
     bool Rollback();
     bool IsInTransaction() const { return in_transaction_; }
     
-    // [SEQUENCE: MVP14-476] Connection info
+    // [SEQUENCE: 3168] Connection info
     uint64_t GetId() const { return id_; }
     ConnectionState GetState() const { return state_; }
     std::chrono::system_clock::time_point GetCreatedTime() const { return created_time_; }
     std::chrono::system_clock::time_point GetLastUsedTime() const { return last_used_time_; }
     
-    // [SEQUENCE: MVP14-477] State management
+    // [SEQUENCE: 3169] State management
     void SetState(ConnectionState state) { state_ = state; }
     void UpdateLastUsed() { last_used_time_ = std::chrono::system_clock::now(); }
     
@@ -156,33 +204,36 @@ private:
     mutable std::mutex mutex_;
 };
 
-// [SEQUENCE: MVP14-478] Connection pool implementation
+// [SEQUENCE: MVP1-37] Connection pool implementation
 class ConnectionPool {
 public:
+    // [SEQUENCE: MVP1-38] `ConnectionPool::ConnectionPool()`: 설정에 따라 커넥션 풀을 초기화합니다.
     ConnectionPool(const ConnectionPoolConfig& config);
     ~ConnectionPool();
     
-    // [SEQUENCE: MVP14-479] Pool lifecycle
+    // [SEQUENCE: 3171] Pool lifecycle
     bool Initialize();
     void Shutdown();
     
-    // [SEQUENCE: MVP14-480] Connection management
+    // [SEQUENCE: 3172] Connection management
+    // [SEQUENCE: MVP1-39] `ConnectionPool::Acquire()`: 풀에서 사용 가능한 연결을 가져옵니다.
     std::shared_ptr<PooledConnection> Acquire();
+    // [SEQUENCE: MVP1-40] `ConnectionPool::Release()`: 사용이 끝난 연결을 풀에 반환합니다.
     void Release(std::shared_ptr<PooledConnection> conn);
     
-    // [SEQUENCE: MVP14-481] Pool operations
+    // [SEQUENCE: 3173] Pool operations
     void ValidateConnections();
     void EvictExpiredConnections();
     void ExpandPool(uint32_t additional_connections);
     void ShrinkPool(uint32_t target_size);
     
-    // [SEQUENCE: MVP14-482] Statistics
+    // [SEQUENCE: 3174] Statistics
     ConnectionStats GetStats() const { return stats_; }
     uint32_t GetActiveCount() const { return stats_.active_connections; }
     uint32_t GetIdleCount() const { return stats_.idle_connections; }
     uint32_t GetTotalCount() const { return stats_.total_connections; }
     
-    // [SEQUENCE: MVP14-483] Health check
+    // [SEQUENCE: 3175] Health check
     struct HealthStatus {
         bool healthy{true};
         uint32_t active_connections{0};
@@ -215,22 +266,22 @@ private:
     // Connection ID generator
     std::atomic<uint64_t> next_connection_id_{1};
     
-    // [SEQUENCE: MVP14-484] Create new connection
+    // [SEQUENCE: 3176] Create new connection
     std::shared_ptr<PooledConnection> CreateConnection();
     
-    // [SEQUENCE: MVP14-485] Destroy connection
+    // [SEQUENCE: 3177] Destroy connection
     void DestroyConnection(std::shared_ptr<PooledConnection> conn);
     
-    // [SEQUENCE: MVP14-486] Background tasks
+    // [SEQUENCE: 3178] Background tasks
     void ValidationLoop();
     void EvictionLoop();
     
-    // [SEQUENCE: MVP14-487] Wait for available connection
+    // [SEQUENCE: 3179] Wait for available connection
     std::shared_ptr<PooledConnection> WaitForConnection(
         std::chrono::milliseconds timeout);
 };
 
-// [SEQUENCE: MVP14-488] Connection pool manager (manages multiple pools)
+// [SEQUENCE: 3180] Connection pool manager (manages multiple pools)
 class ConnectionPoolManager {
 public:
     static ConnectionPoolManager& Instance() {
@@ -238,7 +289,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-489] Pool management
+    // [SEQUENCE: 3181] Pool management
     void CreatePool(const std::string& pool_name, 
                    const ConnectionPoolConfig& config);
     
@@ -246,12 +297,12 @@ public:
     
     void DestroyPool(const std::string& pool_name);
     
-    // [SEQUENCE: MVP14-490] Global operations
+    // [SEQUENCE: 3182] Global operations
     void ShutdownAll();
     
     std::unordered_map<std::string, ConnectionStats> GetAllStats() const;
     
-    // [SEQUENCE: MVP14-491] Health monitoring
+    // [SEQUENCE: 3183] Health monitoring
     struct GlobalHealthStatus {
         std::unordered_map<std::string, ConnectionPool::HealthStatus> pool_health;
         uint32_t total_active_connections{0};
@@ -269,7 +320,7 @@ private:
     mutable std::mutex manager_mutex_;
 };
 
-// [SEQUENCE: MVP14-492] Connection guard (RAII for automatic release)
+// [SEQUENCE: 3184] Connection guard (RAII for automatic release)
 class ConnectionGuard {
 public:
     ConnectionGuard(std::shared_ptr<ConnectionPool> pool)
@@ -301,11 +352,12 @@ private:
     std::shared_ptr<PooledConnection> conn_;
 };
 
-// [SEQUENCE: MVP14-493] Connection pool monitoring
+// [SEQUENCE: 3185] Connection pool monitoring
 class ConnectionPoolMonitor {
 public:
-    // [SEQUENCE: MVP14-494] Monitor configuration
+    // [SEQUENCE: 3186] Monitor configuration
     struct MonitorConfig {
+        MonitorConfig() = default;
         std::chrono::seconds check_interval{60};      // 1분 체크 주기
         double high_utilization_threshold{0.8};       // 80% 이상 경고
         double low_utilization_threshold{0.1};        // 10% 이하 경고
@@ -313,11 +365,11 @@ public:
         uint32_t max_connection_age_minutes{60};      // 1시간 이상 연결 경고
     };
     
-    // [SEQUENCE: MVP14-495] Start monitoring
-    void StartMonitoring(const MonitorConfig& config = {});
+    // [SEQUENCE: 3187] Start monitoring
+    void StartMonitoring(const MonitorConfig& config);
     void StopMonitoring();
     
-    // [SEQUENCE: MVP14-496] Get alerts
+    // [SEQUENCE: 3188] Get alerts
     struct Alert {
         enum Type {
             HIGH_UTILIZATION,      // 높은 사용률
@@ -349,12 +401,12 @@ private:
     mutable std::mutex alerts_mutex_;
 };
 
-// [SEQUENCE: MVP14-497] Prepared statement cache
+// [SEQUENCE: 3189] Prepared statement cache
 class PreparedStatementCache {
 public:
     PreparedStatementCache(size_t max_size = 256) : max_size_(max_size) {}
     
-    // [SEQUENCE: MVP14-498] Cache operations
+    // [SEQUENCE: 3190] Cache operations
     bool Add(const std::string& query, void* stmt);
     void* Get(const std::string& query);
     void Remove(const std::string& query);
@@ -378,7 +430,7 @@ private:
     void EvictLRU();
 };
 
-// [SEQUENCE: MVP14-499] Connection pool utilities
+// [SEQUENCE: 3191] Connection pool utilities
 namespace ConnectionPoolUtils {
     // Create default configurations
     ConnectionPoolConfig CreateDefaultConfig(const std::string& host,

@@ -1,11 +1,12 @@
-// [SEQUENCE: MVP4-8] A new component to represent a projectile in the world.
 #pragma once
 
-#include "core/ecs/types.h"
+#include "core/ecs/component.h"
 #include "core/utils/vector3.h"
+#include "core/ecs/types.h"
 
 namespace mmorpg::game::components {
 
+// [SEQUENCE: MVP4-8]
 struct ProjectileComponent {
     core::ecs::EntityId owner;
     core::utils::Vector3 velocity;
@@ -13,10 +14,10 @@ struct ProjectileComponent {
     float range;
     float traveled;
     float damage;
-    float radius;  // Collision radius
+    float radius;
     bool is_physical;
-    bool piercing;  // Goes through enemies
+    bool piercing;
     uint32_t skill_id;
 };
 
-} // namespace mmorpg::game::components
+}

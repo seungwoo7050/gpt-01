@@ -10,10 +10,10 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-133] Mail system for asynchronous player communication
+// [SEQUENCE: 1662] Mail system for asynchronous player communication
 // 메일 시스템으로 비동기 플레이어 커뮤니케이션 관리
 
-// [SEQUENCE: MVP11-134] Mail type
+// [SEQUENCE: 1663] Mail type
 enum class MailType {
     PLAYER,         // Player to player mail
     SYSTEM,         // System generated mail
@@ -24,7 +24,7 @@ enum class MailType {
     EVENT           // Event reward mail
 };
 
-// [SEQUENCE: MVP11-135] Mail flags
+// [SEQUENCE: 1664] Mail flags
 enum class MailFlag : uint32_t {
     NONE = 0,
     UNREAD = 1 << 0,
@@ -36,7 +36,7 @@ enum class MailFlag : uint32_t {
     GOLD_ATTACHED = 1 << 6
 };
 
-// [SEQUENCE: MVP11-136] Mail attachment
+// [SEQUENCE: 1665] Mail attachment
 struct MailAttachment {
     enum class Type {
         ITEM,
@@ -52,7 +52,7 @@ struct MailAttachment {
     bool is_taken = false;
 };
 
-// [SEQUENCE: MVP11-137] Mail message
+// [SEQUENCE: 1666] Mail message
 struct Mail {
     uint64_t mail_id;
     MailType type = MailType::PLAYER;
@@ -82,32 +82,32 @@ struct Mail {
     // Flags
     uint32_t flags = static_cast<uint32_t>(MailFlag::UNREAD);
     
-    // [SEQUENCE: MVP11-138] Check if mail has flag
+    // [SEQUENCE: 1667] Check if mail has flag
     bool HasFlag(MailFlag flag) const {
         return (flags & static_cast<uint32_t>(flag)) != 0;
     }
     
-    // [SEQUENCE: MVP11-139] Set flag
+    // [SEQUENCE: 1668] Set flag
     void SetFlag(MailFlag flag) {
         flags |= static_cast<uint32_t>(flag);
     }
     
-    // [SEQUENCE: MVP11-140] Remove flag
+    // [SEQUENCE: 1669] Remove flag
     void RemoveFlag(MailFlag flag) {
         flags &= ~static_cast<uint32_t>(flag);
     }
     
-    // [SEQUENCE: MVP11-141] Check if expired
+    // [SEQUENCE: 1670] Check if expired
     bool IsExpired() const {
         return std::chrono::system_clock::now() > expire_time;
     }
     
-    // [SEQUENCE: MVP11-142] Has attachments
+    // [SEQUENCE: 1671] Has attachments
     bool HasAttachments() const {
         return !attachments.empty() || cod_amount > 0;
     }
     
-    // [SEQUENCE: MVP11-143] Can be deleted
+    // [SEQUENCE: 1672] Can be deleted
     bool CanBeDeleted() const {
         // Can't delete if has untaken attachments
         for (const auto& attachment : attachments) {
@@ -119,7 +119,7 @@ struct Mail {
     }
 };
 
-// [SEQUENCE: MVP11-144] Mailbox for a player
+// [SEQUENCE: 1673] Mailbox for a player
 class Mailbox {
 public:
     static constexpr size_t MAX_MAILS = 100;
@@ -127,7 +127,7 @@ public:
     
     Mailbox(uint64_t owner_id) : owner_id_(owner_id) {}
     
-    // [SEQUENCE: MVP11-145] Add mail
+    // [SEQUENCE: 1674] Add mail
     bool AddMail(const Mail& mail) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -151,7 +151,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-146] Get mail
+    // [SEQUENCE: 1675] Get mail
     Mail* GetMail(uint64_t mail_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -163,7 +163,7 @@ public:
         return &it->second;
     }
     
-    // [SEQUENCE: MVP11-147] Read mail
+    // [SEQUENCE: 1676] Read mail
     bool ReadMail(uint64_t mail_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -181,7 +181,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-148] Delete mail
+    // [SEQUENCE: 1677] Delete mail
     bool DeleteMail(uint64_t mail_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -205,7 +205,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-149] Take attachment
+    // [SEQUENCE: 1678] Take attachment
     bool TakeAttachment(uint64_t mail_id, size_t attachment_index) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -229,7 +229,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-150] Pay COD
+    // [SEQUENCE: 1679] Pay COD
     bool PayCOD(uint64_t mail_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -252,7 +252,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-151] Get all mails
+    // [SEQUENCE: 1680] Get all mails
     std::vector<Mail> GetMails(bool include_deleted = false) const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -277,7 +277,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP11-152] Clean expired mails
+    // [SEQUENCE: 1681] Clean expired mails
     void CleanExpiredMails() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -316,16 +316,16 @@ public:
     size_t GetMailCount() const { 
         std::lock_guard<std::mutex> lock(mutex_);
         return mails_.size(); 
-    } 
+    }
     
     size_t GetUnreadCount() const { 
         return unread_count_; 
-    } 
+    }
     
     bool IsFull() const { 
         std::lock_guard<std::mutex> lock(mutex_);
         return mails_.size() >= MAX_MAILS; 
-    } 
+    }
     
 private:
     uint64_t owner_id_;
@@ -336,7 +336,7 @@ private:
     
     std::atomic<size_t> unread_count_{0};
     
-    // [SEQUENCE: MVP11-153] Get mails received today
+    // [SEQUENCE: 1682] Get mails received today
     size_t GetMailsReceivedToday() const {
         auto today_start = std::chrono::system_clock::now();
         today_start -= std::chrono::duration_cast<std::chrono::system_clock::duration>(
@@ -353,11 +353,11 @@ private:
         return count;
     }
     
-    // [SEQUENCE: MVP11-154] Return mail to sender
+    // [SEQUENCE: 1683] Return mail to sender
     void ReturnMail(const Mail& original_mail);  // Implemented by MailManager
 };
 
-// [SEQUENCE: MVP11-155] Mail manager
+// [SEQUENCE: 1684] Mail manager
 class MailManager {
 public:
     static MailManager& Instance() {
@@ -365,7 +365,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-156] Send mail
+    // [SEQUENCE: 1685] Send mail
     bool SendMail(uint64_t sender_id, const std::string& sender_name,
                   uint64_t recipient_id, const std::string& recipient_name,
                   const std::string& subject, const std::string& body,
@@ -416,7 +416,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-157] Send system mail
+    // [SEQUENCE: 1686] Send system mail
     bool SendSystemMail(uint64_t recipient_id, const std::string& recipient_name,
                        const std::string& subject, const std::string& body,
                        const std::vector<MailAttachment>& attachments = {}) {
@@ -442,7 +442,7 @@ public:
         return mailbox->AddMail(mail);
     }
     
-    // [SEQUENCE: MVP11-158] Return mail
+    // [SEQUENCE: 1687] Return mail
     bool ReturnMail(uint64_t mail_id, uint64_t owner_id) {
         auto mailbox = GetMailbox(owner_id);
         if (!mailbox) {
@@ -487,7 +487,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-159] Get player mailbox
+    // [SEQUENCE: 1688] Get player mailbox
     std::shared_ptr<Mailbox> GetMailbox(uint64_t player_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -499,7 +499,7 @@ public:
         return it->second;
     }
     
-    // [SEQUENCE: MVP11-160] Get or create mailbox
+    // [SEQUENCE: 1689] Get or create mailbox
     std::shared_ptr<Mailbox> GetOrCreateMailbox(uint64_t player_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -513,7 +513,7 @@ public:
         return it->second;
     }
     
-    // [SEQUENCE: MVP11-161] Clean all expired mails
+    // [SEQUENCE: 1690] Clean all expired mails
     void CleanupExpiredMails() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -524,7 +524,7 @@ public:
         spdlog::info("Cleaned up expired mails");
     }
     
-    // [SEQUENCE: MVP11-162] Mass mail (GM function)
+    // [SEQUENCE: 1691] Mass mail (GM function)
     void SendMassMail(const std::string& subject, const std::string& body,
                      const std::vector<MailAttachment>& attachments = {}) {
         // TODO: Get all active players and send mail to each
@@ -550,12 +550,12 @@ private:
     };
     std::deque<MailLog> mail_history_;
     
-    // [SEQUENCE: MVP11-163] Generate mail ID
+    // [SEQUENCE: 1692] Generate mail ID
     uint64_t GenerateMailId() {
         return next_mail_id_++;
     }
     
-    // [SEQUENCE: MVP11-164] Validate mail
+    // [SEQUENCE: 1693] Validate mail
     bool ValidateMail(uint64_t sender_id, uint64_t recipient_id,
                      const std::vector<MailAttachment>& attachments) {
         // Can't mail to self
@@ -577,7 +577,7 @@ private:
         return true;
     }
     
-    // [SEQUENCE: MVP11-165] Log mail
+    // [SEQUENCE: 1694] Log mail
     void LogMail(const Mail& mail) {
         MailLog log;
         log.mail_id = mail.mail_id;
@@ -596,7 +596,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-166] Mail templates for common system mails
+// [SEQUENCE: 1695] Mail templates for common system mails
 class MailTemplates {
 public:
     // Quest completion mail
@@ -646,3 +646,5 @@ public:
                                              subject, body, rewards);
     }
 };
+
+} // namespace mmorpg::game::social

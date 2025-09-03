@@ -6,7 +6,7 @@
 
 namespace mmorpg::game::combat {
 
-// [SEQUENCE: MVP9-48] ComboController - Process input
+// [SEQUENCE: 1215] ComboController - Process input
 bool ComboController::ProcessInput(ComboInput input) {
     auto now = std::chrono::steady_clock::now();
     
@@ -65,7 +65,7 @@ bool ComboController::ProcessInput(ComboInput input) {
     return true;
 }
 
-// [SEQUENCE: MVP9-49] ComboController - Cancel combo
+// [SEQUENCE: 1216] ComboController - Cancel combo
 void ComboController::CancelCombo() {
     if (state_ != ComboState::IDLE) {
         spdlog::debug("Entity {} cancelled combo", entity_id_);
@@ -74,7 +74,7 @@ void ComboController::CancelCombo() {
     }
 }
 
-// [SEQUENCE: MVP9-50] ComboController - Interrupt combo
+// [SEQUENCE: 1217] ComboController - Interrupt combo
 void ComboController::InterruptCombo() {
     if (state_ == ComboState::IN_PROGRESS) {
         spdlog::debug("Entity {} combo interrupted", entity_id_);
@@ -83,7 +83,7 @@ void ComboController::InterruptCombo() {
     }
 }
 
-// [SEQUENCE: MVP9-51] ComboController - Register hit
+// [SEQUENCE: 1218] ComboController - Register hit
 void ComboController::RegisterHit(uint64_t target_id, float damage) {
     if (state_ == ComboState::IN_PROGRESS) {
         progress_.hit_count++;
@@ -94,7 +94,7 @@ void ComboController::RegisterHit(uint64_t target_id, float damage) {
     }
 }
 
-// [SEQUENCE: MVP9-52] ComboController - Try finish combo
+// [SEQUENCE: 1219] ComboController - Try finish combo
 bool ComboController::TryFinishCombo() {
     if (state_ != ComboState::IN_PROGRESS || progress_.current_combo_id == 0) {
         return false;
@@ -128,7 +128,7 @@ bool ComboController::TryFinishCombo() {
     return false;
 }
 
-// [SEQUENCE: MVP9-53] ComboController - Set available combos
+// [SEQUENCE: 1220] ComboController - Set available combos
 void ComboController::SetAvailableCombos(const std::vector<uint32_t>& combo_ids) {
     available_combos_.clear();
     available_combos_.insert(combo_ids.begin(), combo_ids.end());
@@ -136,12 +136,12 @@ void ComboController::SetAvailableCombos(const std::vector<uint32_t>& combo_ids)
     spdlog::debug("Entity {} has {} available combos", entity_id_, available_combos_.size());
 }
 
-// [SEQUENCE: MVP9-54] ComboController - Is combo available
+// [SEQUENCE: 1221] ComboController - Is combo available
 bool ComboController::IsComboAvailable(uint32_t combo_id) const {
     return available_combos_.find(combo_id) != available_combos_.end();
 }
 
-// [SEQUENCE: MVP9-55] ComboController - Update
+// [SEQUENCE: 1222] ComboController - Update
 void ComboController::Update(float delta_time) {
     if (state_ != ComboState::IN_PROGRESS) {
         return;
@@ -172,7 +172,7 @@ void ComboController::Update(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP9-56] ComboController - Get time until timeout
+// [SEQUENCE: 1223] ComboController - Get time until timeout
 float ComboController::GetTimeUntilTimeout() const {
     if (state_ != ComboState::IN_PROGRESS || !progress_.current_node) {
         return 0.0f;
@@ -185,7 +185,7 @@ float ComboController::GetTimeUntilTimeout() const {
     return std::max(0.0f, progress_.current_node->time_window - time_since_last);
 }
 
-// [SEQUENCE: MVP9-57] ComboController - Check combo completion
+// [SEQUENCE: 1224] ComboController - Check combo completion
 void ComboController::CheckComboCompletion() {
     if (progress_.current_node && progress_.current_node->combo_id != 0) {
         // Check if this is a complete combo
@@ -210,7 +210,7 @@ void ComboController::CheckComboCompletion() {
     }
 }
 
-// [SEQUENCE: MVP9-58] ComboController - Apply combo effects
+// [SEQUENCE: 1225] ComboController - Apply combo effects
 void ComboController::ApplyComboEffects(uint32_t combo_id) {
     const auto* combo_def = ComboManager::Instance().GetCombo(combo_id);
     if (!combo_def) {
@@ -230,7 +230,7 @@ void ComboController::ApplyComboEffects(uint32_t combo_id) {
     spdlog::info("Applied combo {} effects to entity {}", combo_id, entity_id_);
 }
 
-// [SEQUENCE: MVP9-59] ComboManager - Register combo
+// [SEQUENCE: 1226] ComboManager - Register combo
 void ComboManager::RegisterCombo(const ComboDefinition& combo) {
     combo_definitions_[combo.combo_id] = combo;
     AddComboToTree(combo);
@@ -238,13 +238,13 @@ void ComboManager::RegisterCombo(const ComboDefinition& combo) {
     spdlog::info("Registered combo: {} (ID: {})", combo.combo_name, combo.combo_id);
 }
 
-// [SEQUENCE: MVP9-60] ComboManager - Get combo
+// [SEQUENCE: 1227] ComboManager - Get combo
 const ComboDefinition* ComboManager::GetCombo(uint32_t combo_id) const {
     auto it = combo_definitions_.find(combo_id);
     return (it != combo_definitions_.end()) ? &it->second : nullptr;
 }
 
-// [SEQUENCE: MVP9-61] ComboManager - Build combo tree
+// [SEQUENCE: 1228] ComboManager - Build combo tree
 void ComboManager::BuildComboTree() {
     combo_tree_root_ = std::make_shared<ComboNode>();
     combo_tree_root_->input = ComboInput::LIGHT_ATTACK;  // Placeholder
@@ -257,7 +257,7 @@ void ComboManager::BuildComboTree() {
     spdlog::info("Built combo tree with {} combos", combo_definitions_.size());
 }
 
-// [SEQUENCE: MVP9-62] ComboManager - Add combo to tree
+// [SEQUENCE: 1229] ComboManager - Add combo to tree
 void ComboManager::AddComboToTree(const ComboDefinition& combo) {
     if (!combo_tree_root_) {
         combo_tree_root_ = std::make_shared<ComboNode>();
@@ -289,7 +289,7 @@ void ComboManager::AddComboToTree(const ComboDefinition& combo) {
     }
 }
 
-// [SEQUENCE: MVP9-63] ComboManager - Create controller
+// [SEQUENCE: 1230] ComboManager - Create controller
 std::shared_ptr<ComboController> ComboManager::CreateController(uint64_t entity_id) {
     auto controller = std::make_shared<ComboController>(entity_id);
     controller->combo_tree_root_ = combo_tree_root_;
@@ -299,26 +299,26 @@ std::shared_ptr<ComboController> ComboManager::CreateController(uint64_t entity_
     return controller;
 }
 
-// [SEQUENCE: MVP9-64] ComboManager - Get controller
+// [SEQUENCE: 1231] ComboManager - Get controller
 std::shared_ptr<ComboController> ComboManager::GetController(uint64_t entity_id) const {
     auto it = controllers_.find(entity_id);
     return (it != controllers_.end()) ? it->second : nullptr;
 }
 
-// [SEQUENCE: MVP9-65] ComboManager - Remove controller
+// [SEQUENCE: 1232] ComboManager - Remove controller
 void ComboManager::RemoveController(uint64_t entity_id) {
     controllers_.erase(entity_id);
     spdlog::debug("Removed combo controller for entity {}", entity_id);
 }
 
-// [SEQUENCE: MVP9-66] ComboManager - Update
+// [SEQUENCE: 1233] ComboManager - Update
 void ComboManager::Update(float delta_time) {
     for (auto& [entity_id, controller] : controllers_) {
         controller->Update(delta_time);
     }
 }
 
-// [SEQUENCE: MVP9-67] ComboManager - Get combos for class
+// [SEQUENCE: 1234] ComboManager - Get combos for class
 std::vector<uint32_t> ComboManager::GetCombosForClass(uint32_t class_id) const {
     std::vector<uint32_t> result;
     
@@ -331,7 +331,7 @@ std::vector<uint32_t> ComboManager::GetCombosForClass(uint32_t class_id) const {
     return result;
 }
 
-// [SEQUENCE: MVP9-68] ComboManager - Get combos for level
+// [SEQUENCE: 1235] ComboManager - Get combos for level
 std::vector<uint32_t> ComboManager::GetCombosForLevel(uint32_t level) const {
     std::vector<uint32_t> result;
     
@@ -344,7 +344,7 @@ std::vector<uint32_t> ComboManager::GetCombosForLevel(uint32_t level) const {
     return result;
 }
 
-// [SEQUENCE: MVP9-69] ComboStatistics - Record combo execution
+// [SEQUENCE: 1236] ComboStatistics - Record combo execution
 void ComboStatistics::RecordComboExecution(const ComboEvent& event) {
     // Global stats
     combo_executions_[event.combo_id]++;
@@ -358,19 +358,19 @@ void ComboStatistics::RecordComboExecution(const ComboEvent& event) {
                                          static_cast<uint32_t>(event.hit_count));
 }
 
-// [SEQUENCE: MVP9-70] ComboStatistics - Record combo failure
+// [SEQUENCE: 1237] ComboStatistics - Record combo failure
 void ComboStatistics::RecordComboFailure(uint64_t entity_id, uint32_t partial_combo_id) {
     combo_attempts_[partial_combo_id]++;
     player_stats_[entity_id].failed_combos++;
 }
 
-// [SEQUENCE: MVP9-71] ComboStatistics - Get combo execution count
+// [SEQUENCE: 1238] ComboStatistics - Get combo execution count
 uint32_t ComboStatistics::GetComboExecutionCount(uint32_t combo_id) const {
     auto it = combo_executions_.find(combo_id);
     return (it != combo_executions_.end()) ? it->second : 0;
 }
 
-// [SEQUENCE: MVP9-72] ComboStatistics - Get combo success rate
+// [SEQUENCE: 1239] ComboStatistics - Get combo success rate
 float ComboStatistics::GetComboSuccessRate(uint32_t combo_id) const {
     auto exec_it = combo_executions_.find(combo_id);
     auto attempt_it = combo_attempts_.find(combo_id);
@@ -383,7 +383,7 @@ float ComboStatistics::GetComboSuccessRate(uint32_t combo_id) const {
     return static_cast<float>(executions) / attempt_it->second;
 }
 
-// [SEQUENCE: MVP9-73] ComboStatistics - Get player combo count
+// [SEQUENCE: 1240] ComboStatistics - Get player combo count
 uint32_t ComboStatistics::GetPlayerComboCount(uint64_t entity_id) const {
     auto it = player_stats_.find(entity_id);
     return (it != player_stats_.end()) ? it->second.total_combos : 0;

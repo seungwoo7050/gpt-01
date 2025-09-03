@@ -15,10 +15,10 @@
 
 namespace mmorpg::ranking {
 
-// [SEQUENCE: MVP13-29] Comprehensive ranking system for competitive modes
+// [SEQUENCE: 2679] Comprehensive ranking system for competitive modes
 // 종합 랭킹 시스템 - 경쟁 모드를 위한 순위 관리
 
-// [SEQUENCE: MVP13-30] Ranking categories
+// [SEQUENCE: 2680] Ranking categories
 enum class RankingCategory {
     ARENA_1V1,              // 1대1 아레나 랭킹
     ARENA_2V2,              // 2대2 아레나 랭킹
@@ -36,7 +36,7 @@ enum class RankingCategory {
     CUSTOM                  // 커스텀 랭킹
 };
 
-// [SEQUENCE: MVP13-31] Time periods for rankings
+// [SEQUENCE: 2681] Time periods for rankings
 enum class RankingPeriod {
     DAILY,                  // 일간 랭킹
     WEEKLY,                 // 주간 랭킹
@@ -45,13 +45,13 @@ enum class RankingPeriod {
     ALL_TIME                // 전체 기간 랭킹
 };
 
-// [SEQUENCE: MVP13-32] Player rank information
+// [SEQUENCE: 2682] Player rank information
 struct PlayerRankInfo {
     uint64_t player_id;
     std::string player_name;
     std::string guild_name;
     
-    // [SEQUENCE: MVP13-33] Rank data
+    // [SEQUENCE: 2683] Rank data
     struct RankData {
         uint32_t rank{0};                   // 현재 순위
         uint32_t previous_rank{0};          // 이전 순위
@@ -77,7 +77,7 @@ struct PlayerRankInfo {
         }
     };
     
-    // [SEQUENCE: MVP13-34] Additional statistics
+    // [SEQUENCE: 2684] Additional statistics
     struct Statistics {
         uint64_t total_damage_dealt{0};     // 총 가한 피해
         uint64_t total_damage_taken{0};     // 총 받은 피해
@@ -101,7 +101,7 @@ struct PlayerRankInfo {
     RankData rank_data;
     Statistics stats;
     
-    // [SEQUENCE: MVP13-35] Display information
+    // [SEQUENCE: 2685] Display information
     std::string class_name;                 // 직업
     uint32_t level{1};                      // 레벨
     std::string title;                      // 칭호
@@ -113,7 +113,7 @@ struct PlayerRankInfo {
     }
 };
 
-// [SEQUENCE: MVP13-36] Ranking tier system
+// [SEQUENCE: 2686] Ranking tier system
 enum class RankingTier {
     UNRANKED,               // 언랭크 (배치 전)
     BRONZE,                 // 브론즈 (1000-1199)
@@ -126,7 +126,7 @@ enum class RankingTier {
     CHALLENGER              // 챌린저 (2400+)
 };
 
-// [SEQUENCE: MVP13-37] Tier requirements and rewards
+// [SEQUENCE: 2687] Tier requirements and rewards
 struct TierInfo {
     RankingTier tier;
     int32_t min_rating;
@@ -134,7 +134,7 @@ struct TierInfo {
     std::string tier_name;
     std::string icon_path;
     
-    // [SEQUENCE: MVP13-38] Tier rewards
+    // [SEQUENCE: 2688] Tier rewards
     struct Rewards {
         uint32_t currency_bonus{0};         // 통화 보너스
         float experience_multiplier{1.0f};   // 경험치 배율
@@ -143,7 +143,7 @@ struct TierInfo {
         bool seasonal_mount{false};         // 시즌 탈것
     } rewards;
     
-    // [SEQUENCE: MVP13-39] Tier decay settings
+    // [SEQUENCE: 2689] Tier decay settings
     struct Decay {
         bool enabled{false};                // 티어 하락 활성화
         uint32_t inactive_days{14};         // 비활성 기간
@@ -152,7 +152,7 @@ struct TierInfo {
     } decay;
 };
 
-// [SEQUENCE: MVP13-40] Season information
+// [SEQUENCE: 2690] Season information
 struct SeasonInfo {
     uint32_t season_id;
     std::string season_name;
@@ -160,7 +160,7 @@ struct SeasonInfo {
     std::chrono::system_clock::time_point end_date;
     bool is_active{true};
     
-    // [SEQUENCE: MVP13-41] Season rewards
+    // [SEQUENCE: 2691] Season rewards
     struct SeasonRewards {
         std::unordered_map<RankingTier, std::vector<uint32_t>> tier_rewards;
         std::vector<uint32_t> participation_rewards;
@@ -181,7 +181,7 @@ struct SeasonInfo {
     }
 };
 
-// [SEQUENCE: MVP13-42] Ranking service
+// [SEQUENCE: 2692] Ranking service
 class RankingService {
 public:
     RankingService() {
@@ -193,7 +193,7 @@ public:
         StopDecayWorker();
     }
     
-    // [SEQUENCE: MVP13-43] Update player ranking
+    // [SEQUENCE: 2693] Update player ranking
     void UpdatePlayerRanking(uint64_t player_id, 
                            RankingCategory category,
                            int32_t rating_change,
@@ -218,7 +218,7 @@ public:
             it->rank_data.rating += rating_change;
         }
         
-        // [SEQUENCE: MVP13-44] Update statistics
+        // [SEQUENCE: 2694] Update statistics
         auto& rank_data = it->rank_data;
         
         if (is_win) {
@@ -246,7 +246,7 @@ public:
                     rating_change > 0 ? "+" : "", rating_change);
     }
     
-    // [SEQUENCE: MVP13-45] Get player rank
+    // [SEQUENCE: 2695] Get player rank
     std::optional<PlayerRankInfo> GetPlayerRank(uint64_t player_id, 
                                                RankingCategory category) const {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
@@ -269,7 +269,7 @@ public:
         return std::nullopt;
     }
     
-    // [SEQUENCE: MVP13-46] Get top players
+    // [SEQUENCE: 2696] Get top players
     std::vector<PlayerRankInfo> GetTopPlayers(RankingCategory category, 
                                              uint32_t count = 100) const {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
@@ -286,7 +286,7 @@ public:
                                          rankings.begin() + count);
     }
     
-    // [SEQUENCE: MVP13-47] Get rankings by period
+    // [SEQUENCE: 2697] Get rankings by period
     std::vector<PlayerRankInfo> GetPeriodRankings(RankingCategory category,
                                                  RankingPeriod period,
                                                  uint32_t count = 100) const {
@@ -307,7 +307,7 @@ public:
                                          rankings.begin() + count);
     }
     
-    // [SEQUENCE: MVP13-48] Get player tier
+    // [SEQUENCE: 2698] Get player tier
     RankingTier GetPlayerTier(uint64_t player_id, 
                              RankingCategory category) const {
         auto rank_info = GetPlayerRank(player_id, category);
@@ -318,7 +318,7 @@ public:
         return GetTierByRating(rank_info->rank_data.rating);
     }
     
-    // [SEQUENCE: MVP13-49] Search rankings
+    // [SEQUENCE: 2699] Search rankings
     std::vector<PlayerRankInfo> SearchRankings(RankingCategory category,
                                               const std::string& player_name) const {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
@@ -338,7 +338,7 @@ public:
         return results;
     }
     
-    // [SEQUENCE: MVP13-50] Get tier distribution
+    // [SEQUENCE: 2700] Get tier distribution
     std::unordered_map<RankingTier, uint32_t> GetTierDistribution(
         RankingCategory category) const {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
@@ -356,7 +356,7 @@ public:
         return distribution;
     }
     
-    // [SEQUENCE: MVP13-51] Start new season
+    // [SEQUENCE: 2701] Start new season
     void StartNewSeason(const SeasonInfo& season) {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
         
@@ -400,7 +400,7 @@ private:
     std::atomic<bool> decay_worker_running_{false};
     std::thread decay_worker_thread_;
     
-    // [SEQUENCE: MVP13-52] Initialize tier information
+    // [SEQUENCE: 2702] Initialize tier information
     void InitializeTiers() {
         tier_info_[RankingTier::BRONZE] = {
             .tier = RankingTier::BRONZE,
@@ -555,7 +555,7 @@ private:
         };
     }
     
-    // [SEQUENCE: MVP13-53] Recalculate ranks
+    // [SEQUENCE: 2703] Recalculate ranks
     void RecalculateRanks(RankingCategory category) {
         auto& rankings = category_rankings_[category];
         
@@ -571,7 +571,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-54] Get tier by rating
+    // [SEQUENCE: 2704] Get tier by rating
     RankingTier GetTierByRating(int32_t rating) const {
         if (rating < 1000) return RankingTier::UNRANKED;
         if (rating < 1200) return RankingTier::BRONZE;
@@ -584,7 +584,7 @@ private:
         return RankingTier::CHALLENGER;
     }
     
-    // [SEQUENCE: MVP13-55] Update player tier
+    // [SEQUENCE: 2705] Update player tier
     void UpdatePlayerTier(uint64_t player_id, RankingCategory category, 
                          int32_t new_rating) {
         auto old_tier = GetPlayerTier(player_id, category);
@@ -601,7 +601,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-56] Decay worker thread
+    // [SEQUENCE: 2706] Decay worker thread
     void StartDecayWorker() {
         decay_worker_running_ = true;
         decay_worker_thread_ = std::thread([this]() {
@@ -626,7 +626,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-57] Process rating decay
+    // [SEQUENCE: 2707] Process rating decay
     void ProcessRatingDecay() {
         std::lock_guard<std::mutex> lock(rankings_mutex_);
         
@@ -670,7 +670,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-58] End current season
+    // [SEQUENCE: 2708] End current season
     void EndCurrentSeason() {
         if (!current_season_.has_value()) return;
         
@@ -724,10 +724,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-59] Ranking statistics and analytics
+// [SEQUENCE: 2709] Ranking statistics and analytics
 class RankingAnalytics {
 public:
-    // [SEQUENCE: MVP13-60] Rating progression tracking
+    // [SEQUENCE: 2710] Rating progression tracking
     struct RatingProgression {
         uint64_t player_id;
         RankingCategory category;
@@ -765,7 +765,7 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP13-61] Match history analysis
+    // [SEQUENCE: 2711] Match history analysis
     struct MatchHistory {
         struct Match {
             std::chrono::system_clock::time_point timestamp;
@@ -817,7 +817,7 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP13-62] Generate player report
+    // [SEQUENCE: 2712] Generate player report
     struct PlayerReport {
         PlayerRankInfo rank_info;
         RatingProgression progression;
@@ -860,7 +860,7 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP13-63] Season statistics
+    // [SEQUENCE: 2713] Season statistics
     struct SeasonStatistics {
         uint32_t season_id;
         std::unordered_map<RankingTier, uint32_t> final_distribution;
@@ -907,3 +907,5 @@ public:
         }
     };
 };
+
+} // namespace mmorpg::ranking

@@ -7,7 +7,7 @@
 
 namespace mmorpg::game::components {
 
-// [SEQUENCE: MVP5-18] Match types for different PvP modes
+// [SEQUENCE: 1] Match types for different PvP modes
 enum class MatchType {
     ARENA_1V1,
     ARENA_2V2,
@@ -20,7 +20,7 @@ enum class MatchType {
     TOURNAMENT
 };
 
-
+// [SEQUENCE: 2] Match states
 enum class MatchState {
     WAITING_FOR_PLAYERS,
     STARTING,          // Countdown phase
@@ -30,7 +30,7 @@ enum class MatchState {
     COMPLETED
 };
 
-// [SEQUENCE: MVP5-20] Team information
+// [SEQUENCE: 3] Team information
 struct TeamInfo {
     uint32_t team_id;
     std::vector<core::ecs::EntityId> members;
@@ -40,7 +40,7 @@ struct TeamInfo {
     bool ready = false;
 };
 
-// [SEQUENCE: MVP5-21] Individual player match data
+// [SEQUENCE: 4] Individual player match data
 struct PlayerMatchData {
     core::ecs::EntityId player_id;
     uint32_t team_id;
@@ -54,70 +54,45 @@ struct PlayerMatchData {
     bool is_disconnected = false;
 };
 
-// [SEQUENCE: MVP5-22] Component to manage match state and participants
+// [SEQUENCE: 5] Match component for tracking PvP matches
 struct MatchComponent {
-    // [SEQUENCE: MVP5-23] Match types for different PvP modes
-    enum class MatchType {
-        NONE,
-        DUEL,
-        ARENA_1V1,
-        ARENA_2V2,
-        ARENA_3V3,
-        GUILD_WAR
-    };
-
-    // [SEQUENCE: MVP5-24] Match state
-    enum class State {
-        PREPARING,
-        IN_PROGRESS,
-        FINISHED
-    };
-
-    // [SEQUENCE: MVP5-25] Match data
-    MatchType type = MatchType::NONE;
-    State state = State::PREPARING;
-    std::chrono::steady_clock::time_point start_time;
-    std::chrono::steady_clock::time_point end_time;
-    uint32_t winning_team = 0;
-
-    // [SEQUENCE: MVP5-26] Teams and players
-    std::vector<core::ecs::EntityId> team1;
-    std::vector<core::ecs::EntityId> team2;
-
-    // [SEQUENCE: MVP5-27] Match objectives
-    uint32_t team1_score = 0;
-    uint32_t team2_score = 0;
-
-    // [SEQUENCE: MVP5-28] Match configuration
-    uint32_t time_limit_seconds = 600; // 10 minutes
-    uint32_t score_limit = 5;
-
-    // [SEQUENCE: MVP5-29] Spectator support
+    // [SEQUENCE: 6] Match identification
+    uint64_t match_id = 0;
+    MatchType match_type = MatchType::ARENA_1V1;
+    MatchState state = MatchState::WAITING_FOR_PLAYERS;
+    
+    // [SEQUENCE: 7] Teams
+    std::vector<TeamInfo> teams;
+    std::unordered_map<core::ecs::EntityId, PlayerMatchData> player_data;
+    
+    // [SEQUENCE: 8] Match timing
+    std::chrono::steady_clock::time_point match_start_time;
+    std::chrono::steady_clock::time_point match_end_time;
+    float match_duration = 300.0f;      // 5 minutes default
+    float overtime_duration = 60.0f;    // 1 minute overtime
+    float countdown_remaining = 10.0f;  // Pre-match countdown
+    
+    // [SEQUENCE: 9] Victory conditions
+    uint32_t score_limit = 0;           // 0 = no limit
+    uint32_t kill_limit = 0;            // 0 = no limit
+    bool sudden_death = false;          // First kill wins
+    
+    // [SEQUENCE: 10] Arena-specific settings
+    bool gear_normalized = true;        // Equalize gear
+    bool consumables_allowed = false;   // Potions, etc.
+    uint32_t arena_map_id = 1;         // Which arena
+    
+    // [SEQUENCE: 11] Match results
+    uint32_t winning_team_id = 0;
+    std::vector<core::ecs::EntityId> mvp_players;
+    std::unordered_map<core::ecs::EntityId, int32_t> rating_changes;
+    
+    // [SEQUENCE: 12] Spectator support
     std::vector<core::ecs::EntityId> spectators;
+    bool allow_spectators = true;
+    float spectator_delay = 2.0f;       // Seconds
 };
 
 
-
-} // namespace mmorpg::game::components
-   // 0-100%
-    std::vector<core::ecs::EntityId> capturing_players;
-    
-    // [SEQUENCE: MVP5-34] Objectives
-    struct Objective {
-        uint32_t objective_id;
-        core::utils::Vector3 position;
-        uint32_t controlling_team = 0;
-        float capture_radius = 10.0f;
-        uint32_t point_value = 1;
-    };
-    std::vector<Objective> objectives;
-    
-    // [SEQUENCE: MVP5-35] Zone bonuses
-    float experience_bonus = 1.0f;      // XP multiplier
-    float honor_bonus = 1.0f;           // Honor multiplier
-    std::vector<uint32_t> buff_ids;     // Active zone buffs
-};
-
-} // namespace mmorpg::game::components
 
 } // namespace mmorpg::game::components

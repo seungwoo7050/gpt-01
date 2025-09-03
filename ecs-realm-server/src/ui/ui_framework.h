@@ -11,10 +11,10 @@
 
 namespace mmorpg::ui {
 
-// [SEQUENCE: MVP12-0-1] UI framework for client-side interface
-// UI l - t|t x0t| \ Ü¤\
+// [SEQUENCE: 2363] UI framework for client-side interface
+// UI „Ìl - t|t¸¸ x0˜t¤| \ Ü¤\
 
-// [SEQUENCE: MVP12-0-2] Basic UI types
+// [SEQUENCE: 2364] Basic UI types
 struct Color {
     float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
     
@@ -55,42 +55,42 @@ struct Rect {
     }
 };
 
-// [SEQUENCE: MVP12-0-3] UI element anchor types
+// [SEQUENCE: 2365] UI element anchor types
 enum class AnchorType {
-    TOP_LEFT,           // 
-    TOP_CENTER,         //  Y
-    TOP_RIGHT,          // 
-    MIDDLE_LEFT,        // ! Y
+    TOP_LEFT,           // ŒÁè
+    TOP_CENTER,         // Áè Y
+    TOP_RIGHT,          // °Áè
+    MIDDLE_LEFT,        // Œ! Y
     CENTER,             // Y
-    MIDDLE_RIGHT,       // ! Y
-    BOTTOM_LEFT,        // X
-    BOTTOM_CENTER,      // X Y
-    BOTTOM_RIGHT        // X
+    MIDDLE_RIGHT,       // °! Y
+    BOTTOM_LEFT,        // ŒXè
+    BOTTOM_CENTER,      // Xè Y
+    BOTTOM_RIGHT        // °Xè
 };
 
-// [SEQUENCE: MVP12-0-4] UI visibility states
+// [SEQUENCE: 2366] UI visibility states
 enum class Visibility {
-    VISIBLE,            // 
-    HIDDEN,             // (@ (T Hh)
-    COLLAPSED           //  ( ( Hh)
+    VISIBLE,            // ô„
+    HIDDEN,             // (@ (TÁ Hh)
+    COLLAPSED           // •Œ (õÄ (À Hh)
 };
 
-// [SEQUENCE: MVP12-0-5] UI element states
+// [SEQUENCE: 2367] UI element states
 enum class UIState {
     NORMAL,             // |
-    HOVERED,            // È° $
-    PRESSED,            // 
+    HOVERED,            // È°¤ $„
+    PRESSED,            // ¼
     DISABLED,           // D\1T
-    FOCUSED             // 
+    FOCUSED             // ìä¤
 };
 
-// [SEQUENCE: MVP12-0-6] Base UI element class
+// [SEQUENCE: 2368] Base UI element class
 class UIElement {
 public:
     UIElement(const std::string& name) : name_(name) {}
     virtual ~UIElement() = default;
     
-    // [SEQUENCE: MVP12-0-7] Core update and render
+    // [SEQUENCE: 2369] Core update and render
     virtual void Update(float delta_time) {
         if (visibility_ == Visibility::VISIBLE) {
             OnUpdate(delta_time);
@@ -113,7 +113,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-0-8] Event handling
+    // [SEQUENCE: 2370] Event handling
     virtual bool HandleMouseMove(float x, float y) {
         if (!IsInteractable()) return false;
         
@@ -173,7 +173,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP12-0-9] Hierarchy management
+    // [SEQUENCE: 2371] Hierarchy management
     void AddChild(std::shared_ptr<UIElement> child) {
         child->parent_ = this;
         children_.push_back(child);
@@ -191,7 +191,7 @@ public:
         OnChildRemoved(child);
     }
     
-    // [SEQUENCE: MVP12-0-10] Transform and layout
+    // [SEQUENCE: 2372] Transform and layout
     void SetPosition(const Vector2& position) {
         position_ = position;
         UpdateTransform();
@@ -212,7 +212,7 @@ public:
         UpdateTransform();
     }
     
-    // [SEQUENCE: MVP12-0-11] Properties
+    // [SEQUENCE: 2373] Properties
     void SetVisibility(Visibility visibility) {
         visibility_ = visibility;
     }
@@ -241,7 +241,7 @@ public:
     bool HasFocus() const { return has_focus_; }
     
 protected:
-    // [SEQUENCE: MVP12-0-12] Virtual methods for derived classes
+    // [SEQUENCE: 2374] Virtual methods for derived classes
     virtual void OnUpdate(float delta_time) {}
     virtual void OnRender() {}
     
@@ -257,7 +257,7 @@ protected:
     virtual void OnChildAdded(UIElement* child) {}
     virtual void OnChildRemoved(UIElement* child) {}
     
-    // [SEQUENCE: MVP12-0-13] Transform helpers
+    // [SEQUENCE: 2375] Transform helpers
     Vector2 ScreenToLocal(const Vector2& screen_pos) const {
         // Transform screen coordinates to local space
         return screen_pos - GetWorldPosition();
@@ -313,7 +313,7 @@ protected:
     bool has_focus_ = false;
 };
 
-// [SEQUENCE: MVP12-0-14] UI Panel - Container element
+// [SEQUENCE: 2376] UI Panel - Container element
 class UIPanel : public UIElement {
 public:
     UIPanel(const std::string& name) : UIElement(name) {}
@@ -358,7 +358,7 @@ private:
     void RenderRectOutline(const Rect& rect, const Color& color, float width) {}
 };
 
-// [SEQUENCE: MVP12-0-15] UI Button
+// [SEQUENCE: 2377] UI Button
 class UIButton : public UIElement {
 public:
     UIButton(const std::string& name) : UIElement(name) {}
@@ -379,7 +379,7 @@ public:
         color_disabled_ = disabled;
     }
     
-    // [SEQUENCE: MVP12-0-16] Click callback
+    // [SEQUENCE: 2378] Click callback
     void SetOnClick(std::function<void()> callback) {
         on_click_ = callback;
     }
@@ -437,7 +437,7 @@ private:
     void RenderTextCentered(const std::string& text, const Vector2& pos, const Color& color) {}
 };
 
-// [SEQUENCE: MVP12-0-17] UI Label - Text display
+// [SEQUENCE: 2379] UI Label - Text display
 class UILabel : public UIElement {
 public:
     UILabel(const std::string& name) : UIElement(name) {}
@@ -494,7 +494,7 @@ private:
                    const Color& color, float size) {}
 };
 
-// [SEQUENCE: MVP12-0-18] UI Image
+// [SEQUENCE: 2380] UI Image
 class UIImage : public UIElement {
 public:
     UIImage(const std::string& name) : UIElement(name) {}
@@ -508,10 +508,10 @@ public:
     }
     
     enum class ScaleMode {
-        STRETCH,            // 0
-        FIT,                // D(  Xp Þ”0
-        FILL,               // D(  Xp D0
-        TILE                // |
+        STRETCH,            // ˜¬0
+        FIT,                // D(  ÀXp Þ”0
+        FILL,               // D(  ÀXp D°0
+        TILE                // À|Á
     };
     
     void SetScaleMode(ScaleMode mode) {
@@ -534,7 +534,7 @@ private:
                       const Color& tint, ScaleMode mode) {}
 };
 
-// [SEQUENCE: MVP12-0-19] UI Progress Bar
+// [SEQUENCE: 2381] UI Progress Bar
 class UIProgressBar : public UIElement {
 public:
     UIProgressBar(const std::string& name) : UIElement(name) {}
@@ -609,7 +609,7 @@ private:
     void RenderTextCentered(const std::string& text, const Vector2& pos, const Color& color) {}
 };
 
-// [SEQUENCE: MVP12-0-20] UI Window - Draggable container
+// [SEQUENCE: 2382] UI Window - Draggable container
 class UIWindow : public UIPanel {
 public:
     UIWindow(const std::string& name) : UIPanel(name) {
@@ -697,7 +697,7 @@ private:
     std::function<void()> on_close_;
 };
 
-// [SEQUENCE: MVP12-0-21] UI Manager - Manages all UI elements
+// [SEQUENCE: 2383] UI Manager - Manages all UI elements
 class UIManager {
 public:
     static UIManager& Instance() {
@@ -705,7 +705,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP12-0-22] Root management
+    // [SEQUENCE: 2384] Root management
     void SetRoot(std::shared_ptr<UIElement> root) {
         root_ = root;
     }
@@ -714,7 +714,7 @@ public:
         return root_;
     }
     
-    // [SEQUENCE: MVP12-0-23] Update and render
+    // [SEQUENCE: 2385] Update and render
     void Update(float delta_time) {
         if (root_) {
             root_->Update(delta_time);
@@ -733,7 +733,7 @@ public:
         RenderTooltip();
     }
     
-    // [SEQUENCE: MVP12-0-24] Event handling
+    // [SEQUENCE: 2386] Event handling
     bool HandleMouseMove(float x, float y) {
         mouse_x_ = x;
         mouse_y_ = y;
@@ -761,7 +761,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP12-0-25] Focus management
+    // [SEQUENCE: 2387] Focus management
     void SetFocusedElement(UIElement* element) {
         if (focused_element_) {
             focused_element_->has_focus_ = false;
@@ -774,7 +774,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-0-26] Tooltip system
+    // [SEQUENCE: 2388] Tooltip system
     void ShowTooltip(const std::string& text, float x, float y) {
         tooltip_text_ = text;
         tooltip_x_ = x;
@@ -786,7 +786,7 @@ public:
         tooltip_visible_ = false;
     }
     
-    // [SEQUENCE: MVP12-0-27] Screen management
+    // [SEQUENCE: 2389] Screen management
     void SetScreenSize(float width, float height) {
         screen_width_ = width;
         screen_height_ = height;
@@ -829,14 +829,14 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-0-28] Layout system base
+// [SEQUENCE: 2390] Layout system base
 class UILayout {
 public:
     virtual ~UILayout() = default;
     virtual void ArrangeChildren(UIElement* parent) = 0;
 };
 
-// [SEQUENCE: MVP12-0-29] Horizontal layout
+// [SEQUENCE: 2391] Horizontal layout
 class HorizontalLayout : public UILayout {
 public:
     HorizontalLayout(float spacing = 5.0f) : spacing_(spacing) {}
@@ -854,7 +854,7 @@ private:
     float spacing_;
 };
 
-// [SEQUENCE: MVP12-0-30] Vertical layout
+// [SEQUENCE: 2392] Vertical layout
 class VerticalLayout : public UILayout {
 public:
     VerticalLayout(float spacing = 5.0f) : spacing_(spacing) {}
@@ -872,7 +872,7 @@ private:
     float spacing_;
 };
 
-// [SEQUENCE: MVP12-0-31] Grid layout
+// [SEQUENCE: 2393] Grid layout
 class GridLayout : public UILayout {
 public:
     GridLayout(int columns, float spacing = 5.0f) 

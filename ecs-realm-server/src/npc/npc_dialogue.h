@@ -14,7 +14,7 @@
 
 namespace mmorpg::npc {
 
-// [SEQUENCE: MVP14-1] Dialogue node types
+// [SEQUENCE: 3630] Dialogue node types
 enum class DialogueNodeType {
     TEXT,           // 단순 텍스트
     CHOICE,         // 선택지
@@ -23,7 +23,7 @@ enum class DialogueNodeType {
     END             // 대화 종료
 };
 
-// [SEQUENCE: MVP14-2] Dialogue choice structure
+// [SEQUENCE: 3631] Dialogue choice structure
 struct DialogueChoice {
     uint32_t id;
     std::string text;
@@ -49,7 +49,7 @@ struct DialogueChoice {
     } effects;
 };
 
-// [SEQUENCE: MVP14-3] Dialogue node
+// [SEQUENCE: 3632] Dialogue node
 class DialogueNode {
 public:
     DialogueNode(const std::string& id, DialogueNodeType type)
@@ -109,7 +109,7 @@ protected:
 
 using DialogueNodePtr = std::shared_ptr<DialogueNode>;
 
-// [SEQUENCE: MVP14-4] Dialogue tree
+// [SEQUENCE: 3633] Dialogue tree
 class DialogueTree {
 public:
     DialogueTree(const std::string& id) : id_(id) {}
@@ -139,7 +139,7 @@ private:
 
 using DialogueTreePtr = std::shared_ptr<DialogueTree>;
 
-// [SEQUENCE: MVP14-5] Dialogue state tracking
+// [SEQUENCE: 3634] Dialogue state tracking
 class DialogueState {
 public:
     DialogueState(uint64_t player_id, uint64_t npc_id, DialogueTreePtr tree)
@@ -186,20 +186,20 @@ private:
 
 using DialogueStatePtr = std::shared_ptr<DialogueState>;
 
-// [SEQUENCE: MVP14-6] Dialogue manager
+// [SEQUENCE: 3635] Dialogue manager
 class DialogueManager : public Singleton<DialogueManager> {
 public:
-    // [SEQUENCE: MVP14-7] Dialogue tree management
+    // [SEQUENCE: 3636] Dialogue tree management
     void RegisterDialogueTree(DialogueTreePtr tree);
     DialogueTreePtr GetDialogueTree(const std::string& tree_id);
     
-    // [SEQUENCE: MVP14-8] Dialogue session management
+    // [SEQUENCE: 3637] Dialogue session management
     DialogueStatePtr StartDialogue(Player& player, NPC& npc, 
                                   const std::string& tree_id);
     void EndDialogue(uint64_t player_id);
     DialogueStatePtr GetActiveDialogue(uint64_t player_id);
     
-    // [SEQUENCE: MVP14-9] Dialogue progression
+    // [SEQUENCE: 3638] Dialogue progression
     struct DialogueResponse {
         std::string text;
         std::string speaker;
@@ -210,14 +210,14 @@ public:
     DialogueResponse ContinueDialogue(uint64_t player_id);
     DialogueResponse MakeChoice(uint64_t player_id, uint32_t choice_id);
     
-    // [SEQUENCE: MVP14-10] Dialogue conditions
+    // [SEQUENCE: 3639] Dialogue conditions
     using GlobalConditionFunc = std::function<bool(const Player&, const NPC&)>;
     void RegisterGlobalCondition(const std::string& name, 
                                 GlobalConditionFunc condition);
     bool CheckCondition(const std::string& name, 
                        const Player& player, const NPC& npc);
     
-    // [SEQUENCE: MVP14-11] Dialogue actions
+    // [SEQUENCE: 3640] Dialogue actions
     using GlobalActionFunc = std::function<void(Player&, NPC&)>;
     void RegisterGlobalAction(const std::string& name, GlobalActionFunc action);
     void ExecuteAction(const std::string& name, Player& player, NPC& npc);
@@ -259,7 +259,7 @@ private:
                           Player& player, NPC& npc);
 };
 
-// [SEQUENCE: MVP14-12] Dialogue builder
+// [SEQUENCE: 3641] Dialogue builder
 class DialogueBuilder {
 public:
     DialogueBuilder(const std::string& tree_id) {
@@ -319,7 +319,7 @@ private:
     std::unordered_map<uint32_t, DialogueChoice*> choice_map_;
 };
 
-// [SEQUENCE: MVP14-13] Common dialogue patterns
+// [SEQUENCE: 3642] Common dialogue patterns
 namespace DialoguePatterns {
     // Merchant dialogue
     DialogueTreePtr CreateMerchantDialogue(const std::string& merchant_name,
@@ -346,7 +346,7 @@ namespace DialoguePatterns {
                                          const std::vector<uint32_t>& skills);
 }
 
-// [SEQUENCE: MVP14-14] Dialogue utilities
+// [SEQUENCE: 3643] Dialogue utilities
 namespace DialogueUtils {
     // Text formatting
     std::string FormatDialogueText(const std::string& text, 

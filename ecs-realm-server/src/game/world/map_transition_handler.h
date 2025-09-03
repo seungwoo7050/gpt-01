@@ -8,7 +8,7 @@
 
 namespace mmorpg::game::world {
 
-// [SEQUENCE: MVP7-130] Map transition states
+// [SEQUENCE: 461] Map transition states
 enum class TransitionState {
     NONE,
     PREPARING,      // 전환 준비 중
@@ -18,7 +18,7 @@ enum class TransitionState {
     COMPLETING      // 전환 완료 중
 };
 
-// [SEQUENCE: MVP7-131] Map transition result
+// [SEQUENCE: 462] Map transition result
 struct TransitionResult {
     bool success;
     std::string error_message;
@@ -27,7 +27,7 @@ struct TransitionResult {
     float spawn_x, spawn_y, spawn_z;
 };
 
-// [SEQUENCE: MVP7-132] Map transition handler for seamless world movement
+// [SEQUENCE: 463] Map transition handler for seamless world movement
 class MapTransitionHandler {
 public:
     using TransitionCallback = std::function<void(const TransitionResult&)>;
@@ -35,37 +35,37 @@ public:
     MapTransitionHandler(core::ecs::World& ecs_world)
         : ecs_world_(ecs_world) {}
     
-    // [SEQUENCE: MVP7-133] Initiate map transition for entity
+    // [SEQUENCE: 464] Initiate map transition for entity
     void InitiateTransition(core::ecs::EntityId entity_id,
                            uint32_t target_map_id,
                            const TransitionCallback& callback);
     
-    // [SEQUENCE: MVP7-134] Handle seamless transition at map boundary
+    // [SEQUENCE: 465] Handle seamless transition at map boundary
     void HandleSeamlessTransition(core::ecs::EntityId entity_id,
                                  const MapConfig::Connection& connection);
     
-    // [SEQUENCE: MVP7-135] Force teleport to specific map/location
+    // [SEQUENCE: 466] Force teleport to specific map/location
     void TeleportToMap(core::ecs::EntityId entity_id,
                       uint32_t map_id,
                       float x, float y, float z,
                       const TransitionCallback& callback);
     
-    // [SEQUENCE: MVP7-136] Instance creation and joining
+    // [SEQUENCE: 467] Instance creation and joining
     void JoinOrCreateInstance(core::ecs::EntityId entity_id,
                              uint32_t map_id,
                              uint32_t party_id,
                              const TransitionCallback& callback);
     
-    // [SEQUENCE: MVP7-137] Check if entity is in transition
+    // [SEQUENCE: 468] Check if entity is in transition
     bool IsInTransition(core::ecs::EntityId entity_id) const {
         return transition_states_.find(entity_id) != transition_states_.end();
     }
     
-    // [SEQUENCE: MVP7-138] Cancel ongoing transition
+    // [SEQUENCE: 469] Cancel ongoing transition
     void CancelTransition(core::ecs::EntityId entity_id);
     
 private:
-    // [SEQUENCE: MVP7-139] Transition state tracking
+    // [SEQUENCE: 470] Transition state tracking
     struct TransitionInfo {
         TransitionState state = TransitionState::NONE;
         uint32_t source_map_id = 0;
@@ -76,38 +76,38 @@ private:
         TransitionCallback callback;
     };
     
-    // [SEQUENCE: MVP7-140] Save entity state before transition
+    // [SEQUENCE: 471] Save entity state before transition
     bool SaveEntityState(core::ecs::EntityId entity_id);
     
-    // [SEQUENCE: MVP7-141] Load entity into new map
+    // [SEQUENCE: 472] Load entity into new map
     bool LoadEntityToMap(core::ecs::EntityId entity_id,
                         std::shared_ptr<MapInstance> target_map,
                         float x, float y, float z);
     
-    // [SEQUENCE: MVP7-142] Transfer entity components between maps
+    // [SEQUENCE: 473] Transfer entity components between maps
     void TransferEntityComponents(core::ecs::EntityId entity_id,
                                  std::shared_ptr<MapInstance> source_map,
                                  std::shared_ptr<MapInstance> target_map);
     
-    // [SEQUENCE: MVP7-143] Notify nearby players of transition
+    // [SEQUENCE: 474] Notify nearby players of transition
     void NotifyNearbyPlayers(core::ecs::EntityId entity_id,
                             std::shared_ptr<MapInstance> map,
                             bool is_leaving);
     
-    // [SEQUENCE: MVP7-144] Send transition packets to client
+    // [SEQUENCE: 475] Send transition packets to client
     void SendTransitionPackets(core::ecs::EntityId entity_id,
                               const TransitionInfo& info);
     
-    // [SEQUENCE: MVP7-145] Validate transition permission
+    // [SEQUENCE: 476] Validate transition permission
     bool ValidateTransition(core::ecs::EntityId entity_id,
                            uint32_t target_map_id,
                            std::string& error_message);
     
-    // [SEQUENCE: MVP7-146] Get spawn position for map
+    // [SEQUENCE: 477] Get spawn position for map
     std::tuple<float, float, float> GetSpawnPosition(uint32_t map_id,
                                                      const MapConfig::Connection* connection = nullptr);
     
-    // [SEQUENCE: MVP7-147] Handle transition timeout
+    // [SEQUENCE: 478] Handle transition timeout
     void CheckTransitionTimeouts();
     
     core::ecs::World& ecs_world_;
@@ -117,10 +117,10 @@ private:
     static constexpr auto TRANSITION_TIMEOUT = std::chrono::seconds(10);
 };
 
-// [SEQUENCE: MVP7-148] Map boundary detector
+// [SEQUENCE: 479] Map boundary detector
 class MapBoundaryDetector {
 public:
-    // [SEQUENCE: MVP7-149] Check if position is near map boundary
+    // [SEQUENCE: 480] Check if position is near map boundary
     static std::optional<MapConfig::Connection> CheckBoundary(
         std::shared_ptr<MapInstance> current_map,
         float x, float y, float z) {
@@ -128,7 +128,7 @@ public:
         return current_map->CheckMapTransition(x, y, z);
     }
     
-    // [SEQUENCE: MVP7-150] Get distance to nearest boundary
+    // [SEQUENCE: 481] Get distance to nearest boundary
     static float GetDistanceToBoundary(std::shared_ptr<MapInstance> current_map,
                                       float x, float y, float z) {
         const auto& config = current_map->GetConfig();
@@ -145,7 +145,7 @@ public:
         return min_distance;
     }
     
-    // [SEQUENCE: MVP7-151] Preload adjacent map data
+    // [SEQUENCE: 482] Preload adjacent map data
     static void PreloadAdjacentMaps(uint32_t current_map_id) {
         auto& map_manager = MapManager::Instance();
         auto current_instance = map_manager.GetInstance(current_map_id);

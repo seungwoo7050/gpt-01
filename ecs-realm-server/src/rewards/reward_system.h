@@ -13,7 +13,7 @@
 
 namespace mmorpg::rewards {
 
-// [SEQUENCE: MVP13-180] Reward types
+// [SEQUENCE: 2893] Reward types
 enum class RewardType {
     CURRENCY,          // 골드, 토큰 등
     ITEM,             // 아이템
@@ -29,7 +29,7 @@ enum class RewardType {
     UNLOCK            // 콘텐츠 잠금 해제
 };
 
-// [SEQUENCE: MVP13-181] Currency types
+// [SEQUENCE: 2894] Currency types
 enum class CurrencyType {
     GOLD,                    // 기본 화폐
     HONOR_POINTS,           // PvP 명예 점수
@@ -43,7 +43,7 @@ enum class CurrencyType {
     PREMIUM_CURRENCY        // 프리미엄 화폐
 };
 
-// [SEQUENCE: MVP13-182] Reward definition
+// [SEQUENCE: 2895] Reward definition
 struct Reward {
     RewardType type;
     
@@ -85,7 +85,7 @@ struct Reward {
     std::string icon_path;
 };
 
-// [SEQUENCE: MVP13-183] Reward package (multiple rewards)
+// [SEQUENCE: 2896] Reward package (multiple rewards)
 struct RewardPackage {
     std::string package_id;
     std::string package_name;
@@ -102,7 +102,7 @@ struct RewardPackage {
     bool show_all_rewards{true};  // Show all or just highlights
 };
 
-// [SEQUENCE: MVP13-184] Reward source tracking
+// [SEQUENCE: 2897] Reward source tracking
 struct RewardSource {
     enum class SourceType {
         QUEST,
@@ -127,7 +127,7 @@ struct RewardSource {
     std::chrono::system_clock::time_point timestamp;
 };
 
-// [SEQUENCE: MVP13-185] Reward history entry
+// [SEQUENCE: 2898] Reward history entry
 struct RewardHistoryEntry {
     uint64_t entry_id;
     uint64_t player_id;
@@ -140,7 +140,7 @@ struct RewardHistoryEntry {
     std::chrono::system_clock::time_point claimed_time;
 };
 
-// [SEQUENCE: MVP13-186] Daily/weekly reward tracker
+// [SEQUENCE: 2899] Daily/weekly reward tracker
 struct TimedRewardTracker {
     // Daily rewards
     struct DailyReward {
@@ -167,7 +167,7 @@ struct TimedRewardTracker {
     } monthly;
 };
 
-// [SEQUENCE: MVP13-187] Reward claim conditions
+// [SEQUENCE: 2900] Reward claim conditions
 struct ClaimCondition {
     enum class ConditionType {
         LEVEL_REQUIREMENT,
@@ -206,10 +206,10 @@ struct ClaimCondition {
     std::string failure_message;
 };
 
-// [SEQUENCE: MVP13-188] Reward service
+// [SEQUENCE: 2901] Reward service
 class RewardService {
 public:
-    // [SEQUENCE: MVP13-189] Grant reward to player
+    // [SEQUENCE: 2902] Grant reward to player
     bool GrantReward(uint64_t player_id, const Reward& reward, 
                     const RewardSource& source) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -284,7 +284,7 @@ public:
         return success;
     }
     
-    // [SEQUENCE: MVP13-190] Grant reward package
+    // [SEQUENCE: 2903] Grant reward package
     bool GrantRewardPackage(uint64_t player_id, const RewardPackage& package,
                           const RewardSource& source) {
         // Check package conditions
@@ -314,7 +314,7 @@ public:
         return all_success;
     }
     
-    // [SEQUENCE: MVP13-191] Check and grant daily rewards
+    // [SEQUENCE: 2904] Check and grant daily rewards
     void ProcessDailyRewards(uint64_t player_id) {
         auto& tracker = GetTimedRewardTracker(player_id);
         
@@ -361,7 +361,7 @@ public:
         SaveTimedRewardTracker(player_id, tracker);
     }
     
-    // [SEQUENCE: MVP13-192] Process milestone rewards
+    // [SEQUENCE: 2905] Process milestone rewards
     void CheckMilestoneRewards(uint64_t player_id, const std::string& milestone_type,
                              uint64_t progress_value) {
         auto milestones = GetMilestonesForType(milestone_type);
@@ -385,7 +385,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-193] Get reward history
+    // [SEQUENCE: 2906] Get reward history
     std::vector<RewardHistoryEntry> GetRewardHistory(uint64_t player_id,
                                                     uint32_t limit = 100) const {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -408,7 +408,7 @@ public:
         return recent_history;
     }
     
-    // [SEQUENCE: MVP13-194] Process weekly reset
+    // [SEQUENCE: 2907] Process weekly reset
     void ProcessWeeklyReset() {
         auto now = std::chrono::system_clock::now();
         
@@ -425,7 +425,7 @@ public:
         spdlog::info("Weekly reward reset completed");
     }
     
-    // [SEQUENCE: MVP13-195] Set up reward callbacks
+    // [SEQUENCE: 2908] Set up reward callbacks
     std::function<void(uint64_t, const Reward&, const RewardSource&)> OnRewardGranted;
     
     // Reward generation
@@ -447,7 +447,7 @@ private:
     mutable std::mutex mutex_;
     std::atomic<uint64_t> next_history_id_{1};
     
-    // [SEQUENCE: MVP13-196] Grant specific reward types
+    // [SEQUENCE: 2909] Grant specific reward types
     bool GrantCurrency(uint64_t player_id, const Reward& reward) {
         // Implementation would call currency service
         spdlog::info("Granting {} {} to player {}", 
@@ -522,7 +522,7 @@ private:
         return true;
     }
     
-    // [SEQUENCE: MVP13-197] Helper methods
+    // [SEQUENCE: 2910] Helper methods
     void LogRewardGrant(uint64_t player_id, const Reward& reward, 
                        const RewardSource& source) {
         Json::Value log_entry;
@@ -745,7 +745,7 @@ private:
     static constexpr size_t MAX_HISTORY_SIZE = 1000;
 };
 
-// [SEQUENCE: MVP13-198] Reward factory methods
+// [SEQUENCE: 2911] Reward factory methods
 Reward RewardService::CreateCurrencyReward(CurrencyType type, uint32_t amount) {
     Reward reward;
     reward.type = RewardType::CURRENCY;

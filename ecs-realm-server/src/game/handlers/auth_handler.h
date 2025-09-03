@@ -6,26 +6,22 @@
 #include "core/cache/session_manager.h"
 #include "proto/auth.pb.h"
 
-// [SEQUENCE: MVP1-61] Game server authentication packet handler.
+#include "network/session_manager.h"
 
 namespace mmorpg::game::handlers {
 
 class AuthHandler {
 public:
-    AuthHandler(std::shared_ptr<auth::AuthService> auth_service)
-        : auth_service_(auth_service) {}
-    
+    AuthHandler(std::shared_ptr<auth::AuthService> auth_service, std::shared_ptr<network::SessionManager> session_manager);
+
     void HandleLoginRequest(core::network::SessionPtr session, 
-                           const mmorpg::proto::Packet& packet);
-    
+                                    const mmorpg::proto::Packet& packet);
     void HandleLogoutRequest(core::network::SessionPtr session, 
-                            const mmorpg::proto::Packet& packet);
-    
+                                     const mmorpg::proto::Packet& packet);
     void HandleHeartbeatRequest(core::network::SessionPtr session, 
-                               const mmorpg::proto::Packet& packet);
-    
+                                        const mmorpg::proto::Packet& packet);
+
 private:
     std::shared_ptr<auth::AuthService> auth_service_;
+    std::shared_ptr<network::SessionManager> session_manager_;
 };
-
-} // namespace mmorpg::game::handlers

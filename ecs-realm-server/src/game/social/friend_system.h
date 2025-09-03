@@ -11,10 +11,10 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-33] Friend system for social interactions
+// [SEQUENCE: 1491] Friend system for social interactions
 // 친구 시스템으로 플레이어 간 소셜 관계 관리
 
-// [SEQUENCE: MVP11-34] Friend status
+// [SEQUENCE: 1492] Friend status
 enum class FriendStatus {
     PENDING,        // Friend request sent, waiting for response
     ACCEPTED,       // Friends
@@ -22,7 +22,7 @@ enum class FriendStatus {
     DECLINED        // Request declined
 };
 
-// [SEQUENCE: MVP11-35] Online status
+// [SEQUENCE: 1493] Online status
 enum class OnlineStatus {
     OFFLINE,
     ONLINE,
@@ -31,7 +31,7 @@ enum class OnlineStatus {
     INVISIBLE       // Appear offline
 };
 
-// [SEQUENCE: MVP11-36] Friend info
+// [SEQUENCE: 1494] Friend info
 struct FriendInfo {
     uint64_t friend_id;
     std::string character_name;
@@ -56,7 +56,7 @@ struct FriendInfo {
     uint32_t dungeons_together = 0;
 };
 
-// [SEQUENCE: MVP11-37] Friend request
+// [SEQUENCE: 1495] Friend request
 struct FriendRequest {
     uint64_t requester_id;
     uint64_t target_id;
@@ -72,7 +72,7 @@ struct FriendRequest {
     }
 };
 
-// [SEQUENCE: MVP11-38] Friend list configuration
+// [SEQUENCE: 1496] Friend list configuration
 struct FriendListConfig {
     uint32_t max_friends = 100;
     uint32_t max_blocked = 50;
@@ -82,13 +82,13 @@ struct FriendListConfig {
     bool receive_online_notifications = true;
 };
 
-// [SEQUENCE: MVP11-39] Friend list for a player
+// [SEQUENCE: 1497] Friend list for a player
 class FriendList {
 public:
     FriendList(uint64_t owner_id, const FriendListConfig& config = {})
         : owner_id_(owner_id), config_(config) {}
     
-    // [SEQUENCE: MVP11-40] Send friend request
+    // [SEQUENCE: 1498] Send friend request
     bool SendFriendRequest(uint64_t target_id, const std::string& message = "") {
         // Check if already friends
         if (IsFriend(target_id)) {
@@ -121,7 +121,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-41] Receive friend request
+    // [SEQUENCE: 1499] Receive friend request
     void ReceiveFriendRequest(const FriendRequest& request) {
         incoming_requests_[request.requester_id] = request;
         
@@ -129,7 +129,7 @@ public:
                     owner_id_, request.requester_id);
     }
     
-    // [SEQUENCE: MVP11-42] Accept friend request
+    // [SEQUENCE: 1500] Accept friend request
     bool AcceptFriendRequest(uint64_t requester_id) {
         auto it = incoming_requests_.find(requester_id);
         if (it == incoming_requests_.end()) {
@@ -157,7 +157,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-43] Decline friend request
+    // [SEQUENCE: 1501] Decline friend request
     bool DeclineFriendRequest(uint64_t requester_id) {
         auto it = incoming_requests_.find(requester_id);
         if (it == incoming_requests_.end()) {
@@ -172,7 +172,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-44] Remove friend
+    // [SEQUENCE: 1502] Remove friend
     bool RemoveFriend(uint64_t friend_id) {
         auto it = friends_.find(friend_id);
         if (it == friends_.end()) {
@@ -185,7 +185,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-45] Block user
+    // [SEQUENCE: 1503] Block user
     bool BlockUser(uint64_t user_id) {
         // Check blocked limit
         if (blocked_users_.size() >= config_.max_blocked) {
@@ -203,12 +203,12 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-46] Unblock user
+    // [SEQUENCE: 1504] Unblock user
     bool UnblockUser(uint64_t user_id) {
         return blocked_users_.erase(user_id) > 0;
     }
     
-    // [SEQUENCE: MVP11-47] Update friend info
+    // [SEQUENCE: 1505] Update friend info
     void UpdateFriendInfo(uint64_t friend_id, 
                          const std::function<void(FriendInfo&)>& updater) {
         auto it = friends_.find(friend_id);
@@ -217,7 +217,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-48] Update friend online status
+    // [SEQUENCE: 1506] Update friend online status
     void UpdateFriendOnlineStatus(uint64_t friend_id, OnlineStatus status) {
         UpdateFriendInfo(friend_id, [status](FriendInfo& info) {
             info.online_status = status;
@@ -227,7 +227,7 @@ public:
         });
     }
     
-    // [SEQUENCE: MVP11-49] Set personal note
+    // [SEQUENCE: 1507] Set personal note
     bool SetFriendNote(uint64_t friend_id, const std::string& note) {
         auto it = friends_.find(friend_id);
         if (it == friends_.end()) {
@@ -256,13 +256,13 @@ public:
         return outgoing_requests_.find(to_id) != outgoing_requests_.end();
     }
     
-    // [SEQUENCE: MVP11-50] Get friend info
+    // [SEQUENCE: 1508] Get friend info
     const FriendInfo* GetFriendInfo(uint64_t friend_id) const {
         auto it = friends_.find(friend_id);
         return it != friends_.end() ? &it->second : nullptr;
     }
     
-    // [SEQUENCE: MVP11-51] Get all friends
+    // [SEQUENCE: 1509] Get all friends
     std::vector<FriendInfo> GetAllFriends() const {
         std::vector<FriendInfo> result;
         for (const auto& [id, info] : friends_) {
@@ -273,7 +273,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP11-52] Get online friends
+    // [SEQUENCE: 1510] Get online friends
     std::vector<FriendInfo> GetOnlineFriends() const {
         std::vector<FriendInfo> result;
         for (const auto& [id, info] : friends_) {
@@ -301,7 +301,7 @@ public:
         return blocked_users_.size();
     }
     
-    // [SEQUENCE: MVP11-53] Clean expired requests
+    // [SEQUENCE: 1511] Clean expired requests
     void CleanExpiredRequests() {
         // Clean incoming
         std::erase_if(incoming_requests_, [](const auto& pair) {
@@ -332,7 +332,7 @@ private:
     std::unordered_set<uint64_t> declined_ids_;
 };
 
-// [SEQUENCE: MVP11-54] Friend system manager
+// [SEQUENCE: 1512] Friend system manager
 class FriendSystemManager {
 public:
     static FriendSystemManager& Instance() {
@@ -340,13 +340,13 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-55] Initialize system
+    // [SEQUENCE: 1513] Initialize system
     void Initialize(const FriendListConfig& default_config = {}) {
         default_config_ = default_config;
         spdlog::info("Friend system initialized");
     }
     
-    // [SEQUENCE: MVP11-56] Get or create friend list
+    // [SEQUENCE: 1514] Get or create friend list
     std::shared_ptr<FriendList> GetFriendList(uint64_t player_id) {
         auto it = friend_lists_.find(player_id);
         if (it == friend_lists_.end()) {
@@ -357,7 +357,7 @@ public:
         return it->second;
     }
     
-    // [SEQUENCE: MVP11-57] Process friend request
+    // [SEQUENCE: 1515] Process friend request
     bool ProcessFriendRequest(uint64_t from_id, uint64_t to_id, 
                             const std::string& message = "") {
         auto sender_list = GetFriendList(from_id);
@@ -388,7 +388,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-58] Process friend acceptance
+    // [SEQUENCE: 1516] Process friend acceptance
     bool ProcessFriendAcceptance(uint64_t accepter_id, uint64_t requester_id) {
         auto accepter_list = GetFriendList(accepter_id);
         auto requester_list = GetFriendList(requester_id);
@@ -420,7 +420,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-59] Update player online status
+    // [SEQUENCE: 1517] Update player online status
     void UpdatePlayerOnlineStatus(uint64_t player_id, OnlineStatus status) {
         // Update status for all friends
         for (auto& [friend_id, friend_list] : friend_lists_) {
@@ -435,7 +435,7 @@ public:
         player_online_status_[player_id] = status;
     }
     
-    // [SEQUENCE: MVP11-60] Update player location
+    // [SEQUENCE: 1518] Update player location
     void UpdatePlayerLocation(uint64_t player_id, const std::string& zone,
                             uint32_t level, uint32_t class_id) {
         // Update for all friends
@@ -451,7 +451,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP11-61] Remove friendship (both sides)
+    // [SEQUENCE: 1519] Remove friendship (both sides)
     void RemoveFriendship(uint64_t player1_id, uint64_t player2_id) {
         auto list1 = GetFriendList(player1_id);
         auto list2 = GetFriendList(player2_id);
@@ -462,14 +462,14 @@ public:
         spdlog::info("Friendship removed: {} <-> {}", player1_id, player2_id);
     }
     
-    // [SEQUENCE: MVP11-62] Clean all expired requests
+    // [SEQUENCE: 1520] Clean all expired requests
     void CleanupExpiredRequests() {
         for (auto& [player_id, friend_list] : friend_lists_) {
             friend_list->CleanExpiredRequests();
         }
     }
     
-    // [SEQUENCE: MVP11-63] Get mutual friends
+    // [SEQUENCE: 1521] Get mutual friends
     std::vector<uint64_t> GetMutualFriends(uint64_t player1_id, uint64_t player2_id) {
         auto list1 = GetFriendList(player1_id);
         auto list2 = GetFriendList(player2_id);
@@ -500,7 +500,7 @@ private:
     std::unordered_map<uint64_t, OnlineStatus> player_online_status_;
 };
 
-// [SEQUENCE: MVP11-64] Friend activity tracker
+// [SEQUENCE: 1522] Friend activity tracker
 class FriendActivityTracker {
 public:
     // Track message between friends
@@ -549,3 +549,5 @@ public:
         }
     }
 };
+
+} // namespace mmorpg::game::social

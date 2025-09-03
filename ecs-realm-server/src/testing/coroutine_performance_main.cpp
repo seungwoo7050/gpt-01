@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP19-64] Performance test runner for C++20 Coroutines
+// [SEQUENCE: 596] Performance test runner for C++20 Coroutines
 #include "coroutine_performance_test.h"
 #include <spdlog/spdlog.h>
 #include <iostream>
@@ -8,10 +8,10 @@ int main() {
         spdlog::set_level(spdlog::level::info);
         spdlog::info("=== Starting C++20 Coroutines Performance Analysis ===");
         
-        // [SEQUENCE: MVP19-65] Run comprehensive performance comparison
+        // [SEQUENCE: 597] Run comprehensive performance comparison
         auto results = mmorpg::testing::CoroutinePerformanceTest::RunPerformanceComparison();
         
-        // [SEQUENCE: MVP19-66] Summary analysis
+        // [SEQUENCE: 598] Summary analysis
         spdlog::info("\n=== Performance Analysis Complete ===");
         
         if (results.size() >= 2) {

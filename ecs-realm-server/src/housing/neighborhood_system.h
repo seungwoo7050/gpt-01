@@ -12,7 +12,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-26] Neighborhood types
+// [SEQUENCE: 3557] Neighborhood types
 enum class NeighborhoodType {
     RESIDENTIAL,    // 주거 지역
     COMMERCIAL,     // 상업 지역
@@ -24,7 +24,7 @@ enum class NeighborhoodType {
     GUILD_DISTRICT  // 길드 지역
 };
 
-// [SEQUENCE: MVP14-27] Neighborhood features
+// [SEQUENCE: 3558] Neighborhood features
 struct NeighborhoodFeatures {
     bool has_market{false};         // 시장
     bool has_crafting_hub{false};   // 제작 허브
@@ -42,7 +42,7 @@ struct NeighborhoodFeatures {
     bool has_seasonal_events{false}; // 계절 이벤트
 };
 
-// [SEQUENCE: MVP14-28] Neighborhood layout
+// [SEQUENCE: 3559] Neighborhood layout
 struct NeighborhoodLayout {
     struct Plot {
         uint32_t plot_id;
@@ -81,10 +81,10 @@ struct NeighborhoodLayout {
     std::vector<CommonArea> common_areas;
 };
 
-// [SEQUENCE: MVP14-29] Neighborhood instance
+// [SEQUENCE: 3560] Neighborhood instance
 class Neighborhood {
 public:
-    // [SEQUENCE: MVP14-30] Core properties
+    // [SEQUENCE: 3561] Core properties
     struct Properties {
         uint32_t neighborhood_id;
         std::string name;
@@ -108,7 +108,7 @@ public:
     
     Neighborhood(const Properties& props);
     
-    // [SEQUENCE: MVP14-31] Plot management
+    // [SEQUENCE: 3562] Plot management
     Plot* GetAvailablePlot(HouseType type) const;
     bool ReservePlot(uint32_t plot_id, uint64_t player_id);
     bool ReleasePlot(uint32_t plot_id);
@@ -120,7 +120,7 @@ public:
     std::vector<uint64_t> GetNeighborHouses(uint64_t house_id, float radius) const;
     std::vector<uint64_t> GetAllHouses() const;
     
-    // [SEQUENCE: MVP14-32] Community features
+    // [SEQUENCE: 3563] Community features
     void UpdateDesirability();
     float GetDesirabilityScore() const { return properties_.desirability_score; }
     
@@ -158,7 +158,7 @@ private:
     void CalculateDesirability();
 };
 
-// [SEQUENCE: MVP14-33] Neighborhood management
+// [SEQUENCE: 3564] Neighborhood management
 class NeighborhoodManager {
 public:
     static NeighborhoodManager& Instance() {
@@ -166,7 +166,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-34] Neighborhood creation
+    // [SEQUENCE: 3565] Neighborhood creation
     std::shared_ptr<Neighborhood> CreateNeighborhood(
         const std::string& name,
         NeighborhoodType type,
@@ -183,7 +183,7 @@ public:
         HouseType house_type,
         uint64_t budget);
     
-    // [SEQUENCE: MVP14-35] Plot allocation
+    // [SEQUENCE: 3566] Plot allocation
     struct PlotAllocation {
         uint32_t neighborhood_id;
         uint32_t plot_id;
@@ -221,7 +221,7 @@ private:
     std::unordered_map<uint32_t, std::vector<uint32_t>> zone_neighborhoods_;
 };
 
-// [SEQUENCE: MVP14-36] Community interaction system
+// [SEQUENCE: 3567] Community interaction system
 class CommunityInteraction {
 public:
     // Neighbor relationships
@@ -242,7 +242,7 @@ public:
         std::chrono::system_clock::time_point last_interaction;
     };
     
-    // [SEQUENCE: MVP14-37] Interaction methods
+    // [SEQUENCE: 3568] Interaction methods
     void RecordInteraction(uint64_t player1, uint64_t player2,
                           const std::string& interaction_type);
     
@@ -290,7 +290,7 @@ private:
     };
 };
 
-// [SEQUENCE: MVP14-38] Neighborhood services
+// [SEQUENCE: 3569] Neighborhood services
 class NeighborhoodServices {
 public:
     struct ServicePoint {
@@ -304,7 +304,7 @@ public:
         std::chrono::system_clock::time_point last_maintenance;
     };
     
-    // [SEQUENCE: MVP14-39] Service management
+    // [SEQUENCE: 3570] Service management
     void AddService(uint32_t neighborhood_id, const ServicePoint& service);
     void RemoveService(uint32_t neighborhood_id, const std::string& service_type);
     void UpgradeService(uint32_t neighborhood_id, const std::string& service_type);
@@ -331,7 +331,7 @@ private:
     void UpdateServiceAvailability();
 };
 
-// [SEQUENCE: MVP14-40] Neighborhood events
+// [SEQUENCE: 3571] Neighborhood events
 class NeighborhoodEvents {
 public:
     struct CommunityEvent {
@@ -359,7 +359,7 @@ public:
         uint32_t entry_fee{0};
     };
     
-    // [SEQUENCE: MVP14-41] Event management
+    // [SEQUENCE: 3572] Event management
     uint32_t CreateEvent(const CommunityEvent& event);
     void CancelEvent(uint32_t event_id);
     void StartEvent(uint32_t event_id);
@@ -401,7 +401,7 @@ private:
     void DistributeRewards(uint32_t event_id);
 };
 
-// [SEQUENCE: MVP14-42] Neighborhood utilities
+// [SEQUENCE: 3573] Neighborhood utilities
 namespace NeighborhoodUtils {
     // Distance calculations
     float GetDistanceBetweenHouses(uint64_t house1_id, uint64_t house2_id);

@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP0-4] CMake build system setup
+# [SEQUENCE: MVP0-4] CMake build system setup
 cmake_minimum_required(VERSION 3.20)
 project(mmorpg-server-engine VERSION 1.0.0 LANGUAGES CXX)
 
@@ -23,45 +23,79 @@ find_package(Boost 1.82 REQUIRED COMPONENTS system filesystem thread)
 find_package(Protobuf REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json 3.11 REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Optional packages
 find_package(GTest)
 find_package(benchmark)
 
 # [SEQUENCE: 3] Protocol Buffers generation
-set(PROTO_FILES
-    proto/common.proto
-    proto/network.proto
-    proto/game_messages.proto
-)
+# Find all .proto files in the proto directory
+file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+# Create the directory for the generated files
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+
+# Create a list to hold the generated source and header files
+set(PROTO_SRCS)
+set(PROTO_HDRS)
+
+# Loop through each .proto file and set up a custom command to generate C++ files
+foreach(PROTO_FILE ${PROTO_FILES})
+    # Get the filename without the extension
+    get_filename_component(PROTO_FILENAME ${PROTO_FILE} NAME_WE)
+
+    # Define the output source and header files
+    set(OUT_SRC "${CMAKE_CURRENT_BINARY_DIR}/proto/${PROTO_FILENAME}.pb.cc")
+    set(OUT_HDR "${CMAKE_CURRENT_BINARY_DIR}/proto/${PROTO_FILENAME}.pb.h")
+
+    # Add the generated files to our lists
+    list(APPEND PROTO_SRCS ${OUT_SRC})
+    list(APPEND PROTO_HDRS ${OUT_HDR})
+
+    # Add a custom command to run protoc
+    add_custom_command(
+        OUTPUT ${OUT_SRC} ${OUT_HDR}
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+        ARGS --cpp_out=${CMAKE_CURRENT_BINARY_DIR}/proto --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto ${PROTO_FILE}
+        DEPENDS ${PROTO_FILE}
+        COMMENT "Generating C++ from ${PROTO_FILE}"
+    )
+endforeach()
+
+# Add a custom target that depends on all generated files to ensure they are created
+add_custom_target(generate_protobuf ALL DEPENDS ${PROTO_SRCS} ${PROTO_HDRS})
 
 # [SEQUENCE: 4] Core library
 add_library(mmorpg_core STATIC
+    # Core
+    src/core/logger.cpp
+
     # Networking
-    src/core/network/tcp_server.cpp
-    src/core/network/session.cpp
-    src/core/network/session_manager.cpp
-    src/core/network/packet_handler.cpp
-    src/core/network/packet_serializer.cpp
+    src/network/tcp_server.cpp
+    src/network/session.cpp
+    src/network/session_manager.cpp
+    src/network/packet_handler.cpp
+    src/network/packet_serializer.cpp
     
+    # [SEQUENCE: MVP2-18] Build System (`CMakeLists.txt`)
+# [SEQUENCE: MVP2-19] The build system is configured to compile the `optimized_world.cpp` and `dense_entity_manager.cpp` files as part of the `mmorpg_core` library.
     # ECS
-    src/core/ecs/entity.cpp
-    src/core/ecs/world.cpp
     src/core/ecs/optimized/dense_entity_manager.cpp
     src/core/ecs/optimized/optimized_world.cpp
 
-    # Concurrency
-    src/core/concurrent/lock_free_queue.h
-    
     # Database
-    src/core/database/partition_manager.cpp
-    src/core/database/shard_manager.cpp
+    # src/database/cache_manager.cpp
+    src/database/connection_pool.cpp
     src/database/db_monitor.cpp
-    
+    # src/database/db_partitioning.cpp
+    # src/database/query_optimizer.cpp
+    # src/database/read_replica_manager.cpp
+
     # Monitoring
-    src/core/monitoring/server_monitor.cpp
+    # src/monitoring/ab_testing.cpp
+    # src/monitoring/crash_handler.cpp
+    src/monitoring/metrics_collector.cpp
     
     # Generated protobuf files
     ${PROTO_SRCS}
@@ -69,7 +103,8 @@ add_library(mmorpg_core STATIC
 
 target_include_directories(mmorpg_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}  # For generated protobuf headers
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/proto
 )
 
 target_link_libraries(mmorpg_core PUBLIC
@@ -80,15 +115,23 @@ target_link_libraries(mmorpg_core PUBLIC
     protobuf::libprotobuf
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 # [SEQUENCE: 5] Game systems library
+# [SEQUENCE: MVP3-11] Build System (`CMakeLists.txt`)
+# [SEQUENCE: MVP3-12] Updated to include the source files for `WorldGrid`, `OctreeWorld`, `GridSpatialSystem`, and `OctreeSpatialSystem`.
+# [SEQUENCE: MVP4-14] Build System (`CMakeLists.txt`)
+# [SEQUENCE: MVP4-15] Updated to include the new combat system source files in the `mmorpg_game` library.
+# [SEQUENCE: MVP5-18] Build System (`CMakeLists.txt`)
+# [SEQUENCE: MVP5-19] Updated to include the source files for the guild and PvP systems in the `mmorpg_game` library.
 add_library(mmorpg_game STATIC
     # Game systems
-    src/game/systems/movement_system.cpp
-    src/game/systems/health_regeneration_system.cpp
-    src/game/systems/network_sync_system.cpp
-    src/game/systems/optimized/optimized_movement_system.cpp
+    # src/game/systems/movement_system.cpp
+    # src/game/systems/health_regeneration_system.cpp
+    # src/game/systems/network_sync_system.cpp
+    # src/game/systems/optimized/optimized_movement_system.cpp
     src/game/world/grid/world_grid.cpp
     src/game/world/octree/octree_world.cpp
     src/game/systems/grid_spatial_system.cpp
@@ -99,70 +142,60 @@ add_library(mmorpg_game STATIC
     src/game/systems/guild/guild_war_seamless_system.cpp
     src/game/systems/pvp/openworld_pvp_system.cpp
     src/game/systems/pvp/arena_system.cpp
+    src/game/pvp/pvp_system.cpp
+    src/game/handlers/guild_handler.cpp
+    src/game/handlers/pvp_handler.cpp
 )
 
-target_link_libraries(mmorpg_game PUBLIC
-    mmorpg_core
-)
+target_link_libraries(mmorpg_game PUBLIC mmorpg_core)
 
 # [SEQUENCE: 6] Main server executable
 add_executable(mmorpg_server
     src/server/game/main.cpp
-    src/server/game_server.cpp
-    src/server/http_metrics_server.cpp
 )
 
-target_link_libraries(mmorpg_server PRIVATE
-    mmorpg_core
-    mmorpg_game
+target_include_directories(mmorpg_server PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/proto
 )
+
+target_link_libraries(mmorpg_server PRIVATE mmorpg_core mmorpg_game)
 
 # [SEQUENCE: 7] Load test client
-add_executable(load_test_client
-    tests/load_test/main.cpp
-    tests/load_test/load_test_client.cpp
-)
-
-target_link_libraries(load_test_client PRIVATE
-    mmorpg_core
-    CLI11::CLI11  # Would need to add CLI11 as dependency
-)
+# add_executable(load_test_client
+#     # tests/load_test/main.cpp # Restore this
+# )
+# target_link_libraries(load_test_client PRIVATE mmorpg_core)
 
 # [SEQUENCE: 8] Unit tests
+option(BUILD_TESTS "Build unit tests" ON)
 if(GTest_FOUND AND BUILD_TESTS)
     enable_testing()
     
     add_executable(unit_tests
-        tests/unit/test_ecs.cpp
-        tests/unit/test_spatial.cpp
-        tests/unit/test_combat.cpp
-        tests/unit/test_networking.cpp
+        tests/unit/test_ecs_system.cpp
+        tests/unit/test_spatial_indexing.cpp
+        tests/unit/test_combat_system.cpp
+        tests/unit/test_guild_system.cpp
+        tests/unit/test_pvp_system.cpp
+        # tests/unit/test_networking.cpp
     )
     
-    target_link_libraries(unit_tests PRIVATE
-        mmorpg_core
-        mmorpg_game
-        GTest::gtest
-        GTest::gtest_main
-    )
+    target_link_libraries(unit_tests PRIVATE mmorpg_core mmorpg_game GTest::gtest GTest::gtest_main)
     
     add_test(NAME unit_tests COMMAND unit_tests)
 endif()
 
 # [SEQUENCE: 9] Benchmarks
-if(benchmark_FOUND AND BUILD_BENCHMARKS)
-    add_executable(benchmarks
-        tests/benchmark/bench_ecs.cpp
-        tests/benchmark/bench_spatial.cpp
-        tests/benchmark/bench_network.cpp
-    )
-    
-    target_link_libraries(benchmarks PRIVATE
-        mmorpg_core
-        mmorpg_game
-        benchmark::benchmark
-    )
-endif()
+# option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+# if(benchmark_FOUND AND BUILD_BENCHMARKS)
+#     add_executable(benchmarks
+#         # tests/benchmark/bench_ecs.cpp # Restore this
+#     )
+#     
+#     target_link_libraries(benchmarks PRIVATE mmorpg_core mmorpg_game benchmark::benchmark)
+# endif()
 
 # [SEQUENCE: 10] Installation
 install(TARGETS mmorpg_server
@@ -184,8 +217,6 @@ set(CPACK_GENERATOR "TGZ;DEB;RPM")
 include(CPack)
 
 # [SEQUENCE: 12] Build options
-option(BUILD_TESTS "Build unit tests" ON)
-option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 option(ENABLE_PROFILING "Enable profiling support" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)

@@ -7,7 +7,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-80] Furniture crafting station constructor
+// [SEQUENCE: 3422] Furniture crafting station constructor
 FurnitureCraftingStation::FurnitureCraftingStation(uint64_t station_id, 
                                                  const StationProperties& props)
     : station_id_(station_id)
@@ -15,7 +15,7 @@ FurnitureCraftingStation::FurnitureCraftingStation(uint64_t station_id,
     , current_tier_(props.tier) {
 }
 
-// [SEQUENCE: MVP14-81] Check if station can craft recipe
+// [SEQUENCE: 3423] Check if station can craft recipe
 bool FurnitureCraftingStation::CanCraftRecipe(const FurnitureRecipe& recipe) const {
     // Check category support
     auto it = std::find(properties_.supported_categories.begin(),
@@ -42,17 +42,17 @@ bool FurnitureCraftingStation::CanCraftRecipe(const FurnitureRecipe& recipe) con
     return true;
 }
 
-// [SEQUENCE: MVP14-82] Get crafting time modifier
+// [SEQUENCE: 3424] Get crafting time modifier
 float FurnitureCraftingStation::GetCraftingTimeModifier() const {
     return properties_.crafting_speed_bonus;
 }
 
-// [SEQUENCE: MVP14-83] Can upgrade station
+// [SEQUENCE: 3425] Can upgrade station
 bool FurnitureCraftingStation::CanUpgrade() const {
     return current_tier_ < 5;  // Max tier is 5
 }
 
-// [SEQUENCE: MVP14-84] Get upgrade requirements
+// [SEQUENCE: 3426] Get upgrade requirements
 std::vector<std::pair<uint32_t, uint32_t>> 
 FurnitureCraftingStation::GetUpgradeRequirements() const {
     std::vector<std::pair<uint32_t, uint32_t>> requirements;
@@ -72,7 +72,7 @@ FurnitureCraftingStation::GetUpgradeRequirements() const {
     return requirements;
 }
 
-// [SEQUENCE: MVP14-85] Upgrade station
+// [SEQUENCE: 3427] Upgrade station
 void FurnitureCraftingStation::Upgrade() {
     if (CanUpgrade()) {
         current_tier_++;
@@ -89,7 +89,7 @@ void FurnitureCraftingStation::Upgrade() {
     }
 }
 
-// [SEQUENCE: MVP14-86] Crafting session constructor
+// [SEQUENCE: 3428] Crafting session constructor
 FurnitureCraftingSession::FurnitureCraftingSession(uint64_t session_id,
                                                  uint64_t player_id,
                                                  const FurnitureRecipe& recipe,
@@ -100,7 +100,7 @@ FurnitureCraftingSession::FurnitureCraftingSession(uint64_t session_id,
     , station_(station) {
 }
 
-// [SEQUENCE: MVP14-87] Start crafting session
+// [SEQUENCE: 3429] Start crafting session
 void FurnitureCraftingSession::Start() {
     if (state_ != SessionState::PREPARING) {
         return;
@@ -124,7 +124,7 @@ void FurnitureCraftingSession::Start() {
                 session_id_, recipe_.name);
 }
 
-// [SEQUENCE: MVP14-88] Update crafting session
+// [SEQUENCE: 3430] Update crafting session
 void FurnitureCraftingSession::Update(float delta_time) {
     if (state_ != SessionState::CRAFTING && state_ != SessionState::FINISHING) {
         return;
@@ -195,7 +195,7 @@ void FurnitureCraftingSession::Update(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP14-89] Cancel crafting session
+// [SEQUENCE: 3431] Cancel crafting session
 void FurnitureCraftingSession::Cancel() {
     if (state_ == SessionState::CRAFTING || state_ == SessionState::PREPARING) {
         state_ = SessionState::CANCELLED;
@@ -204,12 +204,12 @@ void FurnitureCraftingSession::Cancel() {
     }
 }
 
-// [SEQUENCE: MVP14-90] Get crafting progress
+// [SEQUENCE: 3432] Get crafting progress
 float FurnitureCraftingSession::GetProgress() const {
     return progress_;
 }
 
-// [SEQUENCE: MVP14-91] Get remaining time
+// [SEQUENCE: 3433] Get remaining time
 std::chrono::seconds FurnitureCraftingSession::GetRemainingTime() const {
     if (state_ != SessionState::CRAFTING) {
         return std::chrono::seconds(0);
@@ -225,7 +225,7 @@ std::chrono::seconds FurnitureCraftingSession::GetRemainingTime() const {
     return std::chrono::seconds(static_cast<int>(remaining));
 }
 
-// [SEQUENCE: MVP14-92] Determine crafted quality
+// [SEQUENCE: 3434] Determine crafted quality
 CraftedFurnitureProperties::Quality FurnitureCraftingSession::DetermineQuality() const {
     // Get player skill (placeholder)
     uint32_t skill_level = 50;  // Would get from player
@@ -259,20 +259,20 @@ CraftedFurnitureProperties::Quality FurnitureCraftingSession::DetermineQuality()
     }
 }
 
-// [SEQUENCE: MVP14-93] Check materials availability
+// [SEQUENCE: 3435] Check materials availability
 bool FurnitureCraftingSession::CheckMaterials() {
     // In real implementation, would check player inventory
     return true;
 }
 
-// [SEQUENCE: MVP14-94] Consume crafting materials
+// [SEQUENCE: 3436] Consume crafting materials
 void FurnitureCraftingSession::ConsumeMaterials() {
     // In real implementation, would remove from player inventory
     spdlog::debug("[FURNITURE_CRAFTING] Consumed materials for recipe {}",
                  recipe_.name);
 }
 
-// [SEQUENCE: MVP14-95] Roll for crafting success
+// [SEQUENCE: 3437] Roll for crafting success
 bool FurnitureCraftingSession::RollSuccess() {
     // Get player skill (placeholder)
     uint32_t skill_level = 50;
@@ -293,13 +293,13 @@ bool FurnitureCraftingSession::RollSuccess() {
     return dis(gen) < total_rate;
 }
 
-// [SEQUENCE: MVP14-96] Get required experience for level
+// [SEQUENCE: 3438] Get required experience for level
 uint32_t FurnitureCraftingSkill::GetRequiredExperience(uint32_t level) {
     // Exponential growth
     return 100 * level * level;
 }
 
-// [SEQUENCE: MVP14-97] Get success rate modifier
+// [SEQUENCE: 3439] Get success rate modifier
 float FurnitureCraftingSkill::GetSuccessRateModifier(uint32_t skill_level,
                                                     uint32_t recipe_level) {
     int32_t level_diff = static_cast<int32_t>(skill_level) - recipe_level;
@@ -319,7 +319,7 @@ float FurnitureCraftingSkill::GetSuccessRateModifier(uint32_t skill_level,
     }
 }
 
-// [SEQUENCE: MVP14-98] Get quality chance
+// [SEQUENCE: 3440] Get quality chance
 float FurnitureCraftingSkill::GetQualityChance(uint32_t skill_level,
                                               uint32_t mastery_level) {
     float skill_bonus = skill_level * 0.005f;    // 0.5% per level
@@ -328,7 +328,7 @@ float FurnitureCraftingSkill::GetQualityChance(uint32_t skill_level,
     return skill_bonus + mastery_bonus;
 }
 
-// [SEQUENCE: MVP14-99] Can learn recipe
+// [SEQUENCE: 3441] Can learn recipe
 bool FurnitureCraftingSkill::CanLearnRecipe(const SkillData& skill,
                                            const FurnitureRecipe& recipe) {
     // Check skill level requirement
@@ -344,13 +344,13 @@ bool FurnitureCraftingSkill::CanLearnRecipe(const SkillData& skill,
     return it == skill.known_recipes.end();
 }
 
-// [SEQUENCE: MVP14-100] Learn recipe
+// [SEQUENCE: 3442] Learn recipe
 void FurnitureCraftingSkill::LearnRecipe(SkillData& skill, uint32_t recipe_id) {
     skill.known_recipes.push_back(recipe_id);
     spdlog::info("[FURNITURE_CRAFTING] Learned recipe {}", recipe_id);
 }
 
-// [SEQUENCE: MVP14-101] Gain crafting experience
+// [SEQUENCE: 3443] Gain crafting experience
 void FurnitureCraftingSkill::GainExperience(SkillData& skill, uint32_t amount,
                                            FurnitureCraftingCategory category) {
     skill.experience += amount;
@@ -367,7 +367,7 @@ void FurnitureCraftingSkill::GainExperience(SkillData& skill, uint32_t amount,
     skill.category_mastery[category]++;
 }
 
-// [SEQUENCE: MVP14-102] Register furniture recipe
+// [SEQUENCE: 3444] Register furniture recipe
 void FurnitureRecipeManager::RegisterRecipe(const FurnitureRecipe& recipe) {
     recipes_[recipe.recipe_id] = recipe;
     recipes_by_category_[recipe.category].push_back(recipe.recipe_id);
@@ -375,13 +375,13 @@ void FurnitureRecipeManager::RegisterRecipe(const FurnitureRecipe& recipe) {
     spdlog::debug("[FURNITURE_CRAFTING] Registered recipe: {}", recipe.name);
 }
 
-// [SEQUENCE: MVP14-103] Get recipe by ID
+// [SEQUENCE: 3445] Get recipe by ID
 FurnitureRecipe* FurnitureRecipeManager::GetRecipe(uint32_t recipe_id) {
     auto it = recipes_.find(recipe_id);
     return it != recipes_.end() ? &it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-104] Get recipes by category
+// [SEQUENCE: 3446] Get recipes by category
 std::vector<FurnitureRecipe> FurnitureRecipeManager::GetRecipesByCategory(
     FurnitureCraftingCategory category) {
     
@@ -399,7 +399,7 @@ std::vector<FurnitureRecipe> FurnitureRecipeManager::GetRecipesByCategory(
     return result;
 }
 
-// [SEQUENCE: MVP14-105] Get available recipes for skill
+// [SEQUENCE: 3447] Get available recipes for skill
 std::vector<FurnitureRecipe> FurnitureRecipeManager::GetAvailableRecipes(
     const FurnitureCraftingSkill::SkillData& skill) {
     
@@ -414,7 +414,7 @@ std::vector<FurnitureRecipe> FurnitureRecipeManager::GetAvailableRecipes(
     return result;
 }
 
-// [SEQUENCE: MVP14-106] Start furniture crafting
+// [SEQUENCE: 3448] Start furniture crafting
 std::shared_ptr<FurnitureCraftingSession> FurnitureCraftingManager::StartCrafting(
     uint64_t player_id,
     uint32_t recipe_id,
@@ -449,7 +449,7 @@ std::shared_ptr<FurnitureCraftingSession> FurnitureCraftingManager::StartCraftin
     return session;
 }
 
-// [SEQUENCE: MVP14-107] Update all crafting sessions
+// [SEQUENCE: 3449] Update all crafting sessions
 void FurnitureCraftingManager::UpdateSessions(float delta_time) {
     std::vector<uint64_t> completed_sessions;
     
@@ -491,7 +491,7 @@ void FurnitureCraftingManager::UpdateSessions(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP14-108] Apply furniture effect
+// [SEQUENCE: 3450] Apply furniture effect
 void SpecialFurnitureEffects::ApplyFurnitureEffect(Player& player,
                                                   const FurnitureEffect& effect) {
     switch (effect.type) {
@@ -518,7 +518,7 @@ void SpecialFurnitureEffects::ApplyFurnitureEffect(Player& player,
                  static_cast<int>(effect.type), player.GetId());
 }
 
-// [SEQUENCE: MVP14-109] Get effects for quality
+// [SEQUENCE: 3451] Get effects for quality
 std::vector<SpecialFurnitureEffects::FurnitureEffect> 
 SpecialFurnitureEffects::GetEffectsForQuality(CraftedFurnitureProperties::Quality quality) {
     
@@ -571,7 +571,7 @@ SpecialFurnitureEffects::GetEffectsForQuality(CraftedFurnitureProperties::Qualit
     return effects;
 }
 
-// [SEQUENCE: MVP14-110] Attempt recipe discovery
+// [SEQUENCE: 3452] Attempt recipe discovery
 bool RecipeDiscoverySystem::AttemptDiscovery(uint64_t player_id,
                                            DiscoveryMethod method,
                                            const std::vector<FurnitureMaterial>& materials) {
@@ -616,7 +616,7 @@ bool RecipeDiscoverySystem::AttemptDiscovery(uint64_t player_id,
     return false;
 }
 
-// [SEQUENCE: MVP14-111] Get possible discoveries
+// [SEQUENCE: 3453] Get possible discoveries
 std::vector<uint32_t> RecipeDiscoverySystem::GetPossibleDiscoveries(
     uint32_t skill_level,
     const std::vector<FurnitureMaterial>& materials) {
@@ -632,7 +632,7 @@ std::vector<uint32_t> RecipeDiscoverySystem::GetPossibleDiscoveries(
     return possible;
 }
 
-// [SEQUENCE: MVP14-112] Unlock discovered recipe
+// [SEQUENCE: 3454] Unlock discovered recipe
 void RecipeDiscoverySystem::UnlockRecipe(uint64_t player_id, uint32_t recipe_id,
                                        DiscoveryMethod method) {
     // In real implementation, would add to player's known recipes
@@ -641,7 +641,7 @@ void RecipeDiscoverySystem::UnlockRecipe(uint64_t player_id, uint32_t recipe_id,
                 player_id, recipe_id, static_cast<int>(method));
 }
 
-// [SEQUENCE: MVP14-113] Furniture crafting utilities
+// [SEQUENCE: 3455] Furniture crafting utilities
 namespace FurnitureCraftingUtils {
 
 uint64_t CalculateMaterialValue(FurnitureMaterial material, 

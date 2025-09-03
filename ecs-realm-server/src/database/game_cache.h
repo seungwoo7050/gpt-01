@@ -9,7 +9,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-576] Player cache configuration
+// [SEQUENCE: 3079] Player cache configuration
 struct PlayerCacheConfig {
     size_t l1_size = 10000;         // Hot cache: 10k active players
     size_t l2_size = 100000;        // Warm cache: 100k recent players
@@ -22,7 +22,7 @@ struct PlayerCacheConfig {
     std::chrono::seconds write_delay{30};      // Write to DB after 30s
 };
 
-// [SEQUENCE: MVP14-577] Player data cache
+// [SEQUENCE: 3080] Player data cache
 class PlayerDataCache {
 public:
     PlayerDataCache(const PlayerCacheConfig& config = {})
@@ -32,7 +32,7 @@ public:
         InitializeWriteBehind();
     }
     
-    // [SEQUENCE: MVP14-578] Get player data with status check
+    // [SEQUENCE: 3081] Get player data with status check
     bool GetPlayer(uint64_t player_id, PlayerData& data) {
         // Check online status for TTL adjustment
         auto ttl = IsPlayerOnline(player_id) ? config_.active_ttl : config_.inactive_ttl;
@@ -51,7 +51,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-579] Update player data
+    // [SEQUENCE: 3082] Update player data
     void UpdatePlayer(uint64_t player_id, const PlayerData& data) {
         auto ttl = IsPlayerOnline(player_id) ? config_.active_ttl : config_.inactive_ttl;
         cache_.Set(player_id, data, ttl);
@@ -63,7 +63,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP14-580] Batch operations for efficiency
+    // [SEQUENCE: 3083] Batch operations for efficiency
     std::unordered_map<uint64_t, PlayerData> GetMultiplePlayers(
         const std::vector<uint64_t>& player_ids) {
         
@@ -92,7 +92,7 @@ public:
         return results;
     }
     
-    // [SEQUENCE: MVP14-581] Invalidate player cache
+    // [SEQUENCE: 3084] Invalidate player cache
     void InvalidatePlayer(uint64_t player_id) {
         // Flush any pending writes
         if (config_.enable_write_behind) {
@@ -104,7 +104,7 @@ public:
         cache_.Get(player_id, dummy);  // This removes from cache
     }
     
-    // [SEQUENCE: MVP14-582] Preload frequently accessed players
+    // [SEQUENCE: 3085] Preload frequently accessed players
     void PreloadFrequentPlayers() {
         auto frequent_players = GetFrequentlyAccessedPlayers(1000);
         
@@ -119,7 +119,7 @@ public:
                     frequent_players.size());
     }
     
-    // [SEQUENCE: MVP14-583] Get cache statistics
+    // [SEQUENCE: 3086] Get cache statistics
     struct PlayerCacheStats {
         TwoLevelCache<uint64_t, PlayerData>::TwoLevelStats cache_stats;
         uint64_t write_behind_pending{0};
@@ -276,7 +276,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-584] Item cache for static data
+// [SEQUENCE: 3087] Item cache for static data
 class ItemDataCache {
 public:
     ItemDataCache(size_t max_items = 50000)
@@ -286,7 +286,7 @@ public:
         default_ttl_ = std::chrono::seconds(3600);  // 1 hour
     }
     
-    // [SEQUENCE: MVP14-585] Get item with read-through
+    // [SEQUENCE: 3088] Get item with read-through
     bool GetItem(uint32_t item_id, ItemData& data) {
         if (cache_.Get(item_id, data)) {
             return true;
@@ -301,7 +301,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-586] Preload all items on startup
+    // [SEQUENCE: 3089] Preload all items on startup
     void PreloadAllItems() {
         auto all_items = LoadAllItemsFromSource();
         
@@ -312,7 +312,7 @@ public:
         spdlog::info("[ITEM_CACHE] Preloaded {} items", all_items.size());
     }
     
-    // [SEQUENCE: MVP14-587] Invalidate when items are updated
+    // [SEQUENCE: 3090] Invalidate when items are updated
     void InvalidateItem(uint32_t item_id) {
         cache_.Delete(item_id);
     }
@@ -337,7 +337,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-588] Guild cache with member tracking
+// [SEQUENCE: 3091] Guild cache with member tracking
 class GuildDataCache {
 public:
     GuildDataCache(size_t max_guilds = 5000)
@@ -347,7 +347,7 @@ public:
         inactive_ttl_ = std::chrono::seconds(3600); // 1 hour for inactive
     }
     
-    // [SEQUENCE: MVP14-589] Get guild with member preloading
+    // [SEQUENCE: 3092] Get guild with member preloading
     bool GetGuild(uint32_t guild_id, GuildData& data) {
         if (cache_.Get(guild_id, data)) {
             return true;
@@ -366,7 +366,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-590] Update guild data
+    // [SEQUENCE: 3093] Update guild data
     void UpdateGuild(uint32_t guild_id, const GuildData& data) {
         auto ttl = IsGuildActive(guild_id) ? active_ttl_ : inactive_ttl_;
         cache_.Set(guild_id, data, ttl);
@@ -378,7 +378,7 @@ public:
         WriteGuildToDatabase(guild_id, data);
     }
     
-    // [SEQUENCE: MVP14-591] Get guilds by member
+    // [SEQUENCE: 3094] Get guilds by member
     std::vector<uint32_t> GetGuildsByMember(uint64_t player_id) {
         // Use member index cache
         std::vector<uint32_t> guild_ids;
@@ -391,7 +391,7 @@ public:
         return guild_ids;
     }
     
-    // [SEQUENCE: MVP14-592] Preload active guilds
+    // [SEQUENCE: 3095] Preload active guilds
     void PreloadActiveGuilds() {
         auto active_guilds = GetActiveGuildIds();
         
@@ -457,7 +457,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-593] Query result cache for expensive operations
+// [SEQUENCE: 3096] Query result cache for expensive operations
 class QueryResultCache {
 public:
     using QueryKey = std::string;
@@ -469,7 +469,7 @@ public:
         default_ttl_ = std::chrono::seconds(300);  // 5 minutes default
     }
     
-    // [SEQUENCE: MVP14-594] Cache query results
+    // [SEQUENCE: 3097] Cache query results
     bool GetQueryResult(const QueryKey& key, QueryResult& result) {
         return cache_.Get(key, result);
     }
@@ -479,7 +479,7 @@ public:
         cache_.Set(key, result, ttl);
     }
     
-    // [SEQUENCE: MVP14-595] Generate cache key from query
+    // [SEQUENCE: 3098] Generate cache key from query
     static QueryKey GenerateKey(const std::string& query, 
                                const std::vector<std::string>& params) {
         std::string key = query;
@@ -489,7 +489,7 @@ public:
         return key;
     }
     
-    // [SEQUENCE: MVP14-596] Invalidate by query pattern
+    // [SEQUENCE: 3099] Invalidate by query pattern
     void InvalidatePattern(const std::string& pattern) {
         // Would iterate and invalidate matching keys
     }
@@ -499,7 +499,7 @@ private:
     std::chrono::seconds default_ttl_;
 };
 
-// [SEQUENCE: MVP14-597] Initialize all game caches
+// [SEQUENCE: 3100] Initialize all game caches
 void InitializeGameCaches() {
     auto& manager = GlobalCacheManager::Instance();
     

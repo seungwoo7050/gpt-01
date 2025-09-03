@@ -1,7 +1,6 @@
-// [SEQUENCE: MVP4-13] This system handles non-targeting, action-based combat.
 #pragma once
 
-#include "core/ecs/system.h"
+#include "core/ecs/optimized/system.h"
 #include "game/components/health_component.h"
 #include "game/components/combat_stats_component.h"
 #include "game/components/skill_component.h"
@@ -9,17 +8,21 @@
 #include "game/components/projectile_component.h"
 #include "game/components/dodge_component.h"
 #include "core/utils/vector3.h"
+#include "game/systems/grid_spatial_system.h"
 #include <memory>
+#include <unordered_set>
 
 namespace mmorpg::game::systems::combat {
 
-class ActionCombatSystem : public core::ecs::System {
+// [SEQUENCE: MVP4-13] Action-oriented combat without target locking
+class ActionCombatSystem : public core::ecs::optimized::System {
 public:
-    ActionCombatSystem() = default;
+    ActionCombatSystem();
+    ~ActionCombatSystem() override;
     
-    void OnSystemInit() override;
-    void OnSystemShutdown() override;
-    void Update(float delta_time) override;
+        void Update(float delta_time) override;
+
+    void SetSpatialSystem(mmorpg::game::systems::GridSpatialSystem* system) { spatial_system_ = system; }
     
     bool UseSkillshot(core::ecs::EntityId caster, uint32_t skill_id,
                      const core::utils::Vector3& direction);
@@ -62,8 +65,8 @@ private:
                                   const components::ProjectileComponent& proj,
                                   const core::utils::Vector3& position);
     
-    void ProcessSkillCasts(float delta_time, core::ecs::EntityId entity);
-    void ProcessSkillCooldowns(float delta_time, core::ecs::EntityId entity);
+    void ProcessSkillCasts(float delta_time);
+    void ProcessSkillCooldowns(float delta_time);
     
     void UpdateDodgeStates(float delta_time);
     void RechargeDodges(float delta_time);
@@ -83,8 +86,6 @@ private:
         float combo_window = 2.0f;
         float hitbox_padding = 0.5f;
     } config_;
-    
-    std::unordered_map<core::ecs::EntityId, components::DodgeComponent> dodge_states_;
     
     struct HitRecord {
         std::unordered_set<core::ecs::EntityId> hit_entities;

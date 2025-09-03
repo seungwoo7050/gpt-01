@@ -15,7 +15,7 @@
 
 namespace mmorpg::quest {
 
-// [SEQUENCE: MVP14-67] Quest template types
+// [SEQUENCE: 3656] Quest template types
 enum class QuestTemplateType {
     KILL,           // 몬스터 처치
     COLLECT,        // 아이템 수집
@@ -29,7 +29,7 @@ enum class QuestTemplateType {
     COMPETITION     // 경쟁 임무
 };
 
-// [SEQUENCE: MVP14-68] Quest generation parameters
+// [SEQUENCE: 3657] Quest generation parameters
 struct QuestGenerationParams {
     uint32_t player_level;
     Vector3 player_position;
@@ -46,7 +46,7 @@ struct QuestGenerationParams {
     std::unordered_map<std::string, float> world_events;  // event_name -> intensity
 };
 
-// [SEQUENCE: MVP14-69] Quest objective template
+// [SEQUENCE: 3658] Quest objective template
 struct ObjectiveTemplate {
     std::string type;
     std::string description_template;
@@ -67,7 +67,7 @@ struct ObjectiveTemplate {
     uint32_t time_limit{0};  // 0 = no limit
 };
 
-// [SEQUENCE: MVP14-70] Quest reward template
+// [SEQUENCE: 3659] Quest reward template
 struct RewardTemplate {
     // Base rewards
     uint32_t base_experience{100};
@@ -93,7 +93,7 @@ struct RewardTemplate {
     uint32_t reputation_gain{0};
 };
 
-// [SEQUENCE: MVP14-71] Quest template
+// [SEQUENCE: 3660] Quest template
 class QuestTemplate {
 public:
     QuestTemplate(const std::string& id, QuestTemplateType type)
@@ -148,7 +148,7 @@ private:
 
 using QuestTemplatePtr = std::shared_ptr<QuestTemplate>;
 
-// [SEQUENCE: MVP14-72] Generated quest instance
+// [SEQUENCE: 3661] Generated quest instance
 class GeneratedQuest : public Quest {
 public:
     GeneratedQuest(uint32_t id, const std::string& template_id)
@@ -190,12 +190,12 @@ private:
 
 using GeneratedQuestPtr = std::shared_ptr<GeneratedQuest>;
 
-// [SEQUENCE: MVP14-73] Quest generation engine
+// [SEQUENCE: 3662] Quest generation engine
 class QuestGenerationEngine {
 public:
     QuestGenerationEngine();
     
-    // [SEQUENCE: MVP14-74] Quest generation
+    // [SEQUENCE: 3663] Quest generation
     GeneratedQuestPtr GenerateQuest(const QuestGenerationParams& params);
     std::vector<GeneratedQuestPtr> GenerateMultipleQuests(
         const QuestGenerationParams& params, uint32_t count);
@@ -232,32 +232,32 @@ private:
     float CalculateDifficultyModifier(const QuestGenerationParams& params);
 };
 
-// [SEQUENCE: MVP14-75] Dynamic quest manager
+// [SEQUENCE: 3664] Dynamic quest manager
 class DynamicQuestManager : public Singleton<DynamicQuestManager> {
 public:
-    // [SEQUENCE: MVP14-76] Template management
+    // [SEQUENCE: 3665] Template management
     void RegisterTemplate(QuestTemplatePtr template_quest);
     QuestTemplatePtr GetTemplate(const std::string& template_id);
     void LoadTemplatesFromFile(const std::string& filename);
     
-    // [SEQUENCE: MVP14-77] Quest generation
+    // [SEQUENCE: 3666] Quest generation
     GeneratedQuestPtr GenerateQuestForPlayer(Player& player);
     std::vector<GeneratedQuestPtr> GenerateDailyQuests(Player& player, uint32_t count);
     GeneratedQuestPtr GenerateEventQuest(const std::string& event_type,
                                        const QuestGenerationParams& params);
     
-    // [SEQUENCE: MVP14-78] Quest management
+    // [SEQUENCE: 3667] Quest management
     void OfferGeneratedQuest(Player& player, GeneratedQuestPtr quest);
     void RefreshPlayerQuests(Player& player);
     void CleanupExpiredQuests();
     
-    // [SEQUENCE: MVP14-79] World event integration
+    // [SEQUENCE: 3668] World event integration
     void OnWorldEvent(const std::string& event_type, float intensity);
     void OnMonsterKilled(uint32_t monster_id, const Vector3& position);
     void OnItemDiscovered(uint32_t item_id, uint64_t player_id);
     void OnZoneExplored(const std::string& zone_name, uint64_t player_id);
     
-    // [SEQUENCE: MVP14-80] Quest chains
+    // [SEQUENCE: 3669] Quest chains
     struct QuestChain {
         std::string chain_id;
         std::vector<std::string> template_ids;
@@ -311,7 +311,7 @@ private:
     void RecordQuestCompletion(const GeneratedQuest& quest, float completion_time);
 };
 
-// [SEQUENCE: MVP14-81] Quest template builder
+// [SEQUENCE: 3670] Quest template builder
 class QuestTemplateBuilder {
 public:
     QuestTemplateBuilder(const std::string& id, QuestTemplateType type) {
@@ -348,7 +348,7 @@ private:
     QuestTemplatePtr template_;
 };
 
-// [SEQUENCE: MVP14-82] Quest generation utilities
+// [SEQUENCE: 3671] Quest generation utilities
 namespace QuestGenerationUtils {
     // Name generation
     std::string GenerateQuestTitle(QuestTemplateType type,
@@ -377,7 +377,7 @@ namespace QuestGenerationUtils {
                                const Player& player);
 }
 
-// [SEQUENCE: MVP14-83] Predefined quest templates
+// [SEQUENCE: 3672] Predefined quest templates
 namespace PredefinedTemplates {
     // Kill quests
     QuestTemplatePtr CreateBountyHunterTemplate();

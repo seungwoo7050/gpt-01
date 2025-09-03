@@ -10,10 +10,10 @@
 
 namespace mmorpg::game::social {
 
-// [SEQUENCE: MVP11-101] Trade system for secure item/gold exchange
+// [SEQUENCE: 1600] Trade system for secure item/gold exchange
 // 거래 시스템으로 안전한 아이템/골드 교환 관리
 
-// [SEQUENCE: MVP11-102] Trade state
+// [SEQUENCE: 1601] Trade state
 enum class TradeState {
     NONE,           // No trade
     INITIATED,      // Trade request sent
@@ -25,7 +25,7 @@ enum class TradeState {
     CANCELLED       // Trade cancelled
 };
 
-// [SEQUENCE: MVP11-103] Trade slot
+// [SEQUENCE: 1602] Trade slot
 struct TradeSlot {
     uint64_t item_instance_id = 0;  // Unique item instance
     uint32_t item_id = 0;           // Item template ID
@@ -40,7 +40,7 @@ struct TradeSlot {
     }
 };
 
-// [SEQUENCE: MVP11-104] Trade offer
+// [SEQUENCE: 1603] Trade offer
 struct TradeOffer {
     uint64_t player_id;
     uint64_t gold_amount = 0;
@@ -60,7 +60,7 @@ struct TradeOffer {
     }
 };
 
-// [SEQUENCE: MVP11-105] Trade session
+// [SEQUENCE: 1604] Trade session
 class TradeSession {
 public:
     TradeSession(uint64_t initiator_id, uint64_t target_id, uint32_t session_id)
@@ -77,7 +77,7 @@ public:
         creation_time_ = std::chrono::system_clock::now();
     }
     
-    // [SEQUENCE: MVP11-106] Accept trade request
+    // [SEQUENCE: 1605] Accept trade request
     bool AcceptTradeRequest() {
         if (state_ != TradeState::INITIATED) {
             return false;
@@ -88,7 +88,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-107] Add item to trade
+    // [SEQUENCE: 1606] Add item to trade
     bool AddItem(uint64_t player_id, uint32_t slot_index, 
                 uint64_t item_instance_id, uint32_t item_id, uint32_t quantity) {
         if (state_ != TradeState::NEGOTIATING) {
@@ -121,7 +121,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-108] Remove item from trade
+    // [SEQUENCE: 1607] Remove item from trade
     bool RemoveItem(uint64_t player_id, uint32_t slot_index) {
         if (state_ != TradeState::NEGOTIATING) {
             return false;
@@ -149,7 +149,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-109] Set gold amount
+    // [SEQUENCE: 1608] Set gold amount
     bool SetGoldAmount(uint64_t player_id, uint64_t amount) {
         if (state_ != TradeState::NEGOTIATING) {
             return false;
@@ -173,7 +173,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-110] Lock trade offer
+    // [SEQUENCE: 1609] Lock trade offer
     bool LockOffer(uint64_t player_id) {
         if (state_ != TradeState::NEGOTIATING && state_ != TradeState::LOCKED) {
             return false;
@@ -196,7 +196,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-111] Unlock trade offer
+    // [SEQUENCE: 1610] Unlock trade offer
     bool UnlockOffer(uint64_t player_id) {
         auto* offer = GetPlayerOffer(player_id);
         if (!offer) {
@@ -210,7 +210,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-112] Confirm trade
+    // [SEQUENCE: 1611] Confirm trade
     bool ConfirmTrade(uint64_t player_id) {
         if (state_ != TradeState::BOTH_LOCKED) {
             return false;
@@ -232,13 +232,13 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-113] Cancel trade
+    // [SEQUENCE: 1612] Cancel trade
     void Cancel() {
         state_ = TradeState::CANCELLED;
         cancellation_time_ = std::chrono::system_clock::now();
     }
     
-    // [SEQUENCE: MVP11-114] Validate trade
+    // [SEQUENCE: 1613] Validate trade
     bool ValidateTrade() const {
         if (state_ != TradeState::CONFIRMED) {
             return false;
@@ -257,7 +257,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-115] Complete trade
+    // [SEQUENCE: 1614] Complete trade
     bool CompleteTrade() {
         if (!ValidateTrade()) {
             return false;
@@ -282,7 +282,7 @@ public:
                participants_[1].player_id == player_id;
     }
     
-    // [SEQUENCE: MVP11-116] Check if trade expired
+    // [SEQUENCE: 1615] Check if trade expired
     bool IsExpired() const {
         auto now = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(
@@ -301,7 +301,7 @@ private:
     std::chrono::system_clock::time_point completion_time_;
     std::chrono::system_clock::time_point cancellation_time_;
     
-    // [SEQUENCE: MVP11-117] Get player's offer
+    // [SEQUENCE: 1616] Get player's offer
     TradeOffer* GetPlayerOffer(uint64_t player_id) {
         if (participants_[0].player_id == player_id) {
             return &participants_[0];
@@ -311,7 +311,7 @@ private:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP11-118] Get other player's offer
+    // [SEQUENCE: 1617] Get other player's offer
     TradeOffer* GetOtherPlayerOffer(uint64_t player_id) {
         if (participants_[0].player_id == player_id) {
             return &participants_[1];
@@ -322,7 +322,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-119] Trade request
+// [SEQUENCE: 1618] Trade request
 struct TradeRequest {
     uint64_t initiator_id;
     uint64_t target_id;
@@ -337,7 +337,7 @@ struct TradeRequest {
     }
 };
 
-// [SEQUENCE: MVP11-120] Trade manager
+// [SEQUENCE: 1619] Trade manager
 class TradeManager {
 public:
     static TradeManager& Instance() {
@@ -345,7 +345,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP11-121] Request trade
+    // [SEQUENCE: 1620] Request trade
     bool RequestTrade(uint64_t initiator_id, uint64_t target_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -377,7 +377,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-122] Accept trade request
+    // [SEQUENCE: 1621] Accept trade request
     std::shared_ptr<TradeSession> AcceptTradeRequest(uint64_t target_id, 
                                                      uint64_t initiator_id) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -414,7 +414,7 @@ public:
         return session;
     }
     
-    // [SEQUENCE: MVP11-123] Decline trade request
+    // [SEQUENCE: 1622] Decline trade request
     bool DeclineTradeRequest(uint64_t target_id, uint64_t initiator_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -422,7 +422,7 @@ public:
         return pending_requests_.erase(key) > 0;
     }
     
-    // [SEQUENCE: MVP11-124] Get active trade session
+    // [SEQUENCE: 1623] Get active trade session
     std::shared_ptr<TradeSession> GetActiveTradeSession(uint64_t player_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -439,7 +439,7 @@ public:
         return session_it->second;
     }
     
-    // [SEQUENCE: MVP11-125] Cancel trade
+    // [SEQUENCE: 1624] Cancel trade
     bool CancelTrade(uint64_t player_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -460,7 +460,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP11-126] Complete trade
+    // [SEQUENCE: 1625] Complete trade
     bool CompleteTrade(std::shared_ptr<TradeSession> session) {
         if (!session->CompleteTrade()) {
             return false;
@@ -480,7 +480,7 @@ public:
         return success;
     }
     
-    // [SEQUENCE: MVP11-127] Clean expired
+    // [SEQUENCE: 1626] Clean expired
     void CleanupExpired() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -526,12 +526,12 @@ private:
     };
     std::vector<TradeLog> trade_history_;
     
-    // [SEQUENCE: MVP11-128] Make request key
+    // [SEQUENCE: 1627] Make request key
     std::string MakeRequestKey(uint64_t initiator, uint64_t target) {
         return std::to_string(initiator) + "_" + std::to_string(target);
     }
     
-    // [SEQUENCE: MVP11-129] Remove session
+    // [SEQUENCE: 1628] Remove session
     void RemoveSession(uint32_t session_id) {
         auto session_it = active_sessions_.find(session_id);
         if (session_it == active_sessions_.end()) {
@@ -548,7 +548,7 @@ private:
         active_sessions_.erase(session_it);
     }
     
-    // [SEQUENCE: MVP11-130] Execute trade
+    // [SEQUENCE: 1629] Execute trade
     bool ExecuteTrade(std::shared_ptr<TradeSession> session) {
         // TODO: Begin transaction
         
@@ -566,7 +566,7 @@ private:
         return true;
     }
     
-    // [SEQUENCE: MVP11-131] Log trade
+    // [SEQUENCE: 1630] Log trade
     void LogTrade(std::shared_ptr<TradeSession> session) {
         TradeLog log;
         log.session_id = session->GetSessionId();
@@ -585,7 +585,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP11-132] Trade validator
+// [SEQUENCE: 1631] Trade validator
 class TradeValidator {
 public:
     // Validate player can trade
@@ -619,3 +619,5 @@ public:
         return true;
     }
 };
+
+} // namespace mmorpg::game::social

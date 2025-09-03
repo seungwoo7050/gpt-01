@@ -5,10 +5,10 @@
 
 namespace mmorpg::monitoring {
 
-// [SEQUENCE: MVP16-31] Crash handler integration example
+// [SEQUENCE: 2557] Crash handler integration example
 class CrashHandlerIntegration {
 public:
-    // [SEQUENCE: MVP16-32] Initialize crash handler with game server
+    // [SEQUENCE: 2558] Initialize crash handler with game server
     static void InitializeWithGameServer(GameServer* server) {
         auto& handler = CrashHandler::Instance();
         
@@ -16,7 +16,7 @@ public:
         std::string dump_dir = "./crash_dumps";
         handler.Initialize(dump_dir);
         
-        // [SEQUENCE: MVP16-33] Register system info provider
+        // [SEQUENCE: 2559] Register system info provider
         handler.RegisterStateProvider([server](CrashInfo& info) {
             // Get memory usage
             struct rusage usage;
@@ -36,7 +36,7 @@ public:
             info.system_info.os_info = GetOSInfo();
         });
         
-        // [SEQUENCE: MVP16-34] Register game state provider
+        // [SEQUENCE: 2560] Register game state provider
         handler.RegisterStateProvider([server](CrashInfo& info) {
             // Get current game phase
             info.game_state.current_phase = server->GetCurrentPhase();
@@ -48,12 +48,12 @@ public:
             }
         });
         
-        // [SEQUENCE: MVP16-35] Set up automatic crash reports
+        // [SEQUENCE: 2561] Set up automatic crash reports
         SetupAutomaticCrashReporting(dump_dir);
     }
     
 private:
-    // [SEQUENCE: MVP16-36] Get OS information
+    // [SEQUENCE: 2562] Get OS information
     static std::string GetOSInfo() {
         std::string os_info;
         
@@ -80,7 +80,7 @@ private:
         return os_info;
     }
     
-    // [SEQUENCE: MVP16-37] Set up automatic crash reporting
+    // [SEQUENCE: 2563] Set up automatic crash reporting
     static void SetupAutomaticCrashReporting(const std::string& dump_dir) {
         // Create monitoring thread for crash analysis
         std::thread analyzer_thread([dump_dir]() {
@@ -110,7 +110,7 @@ private:
         analyzer_thread.detach();
     }
     
-    // [SEQUENCE: MVP16-38] Send crash alert
+    // [SEQUENCE: 2564] Send crash alert
     static void SendCrashAlert(const CrashReportAnalyzer::CrashStatistics& stats) {
         // This would send alerts via various channels
         // - Email to administrators
@@ -124,10 +124,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP16-39] Crash debugging utilities
+// [SEQUENCE: 2565] Crash debugging utilities
 class CrashDebugger {
 public:
-    // [SEQUENCE: MVP16-40] Symbolicate addresses for better debugging
+    // [SEQUENCE: 2566] Symbolicate addresses for better debugging
     static std::vector<std::string> SymbolicateAddresses(
         const std::vector<void*>& addresses,
         const std::string& binary_path) {
@@ -161,7 +161,7 @@ public:
         return symbolicated;
     }
     
-    // [SEQUENCE: MVP16-41] Generate crash report summary
+    // [SEQUENCE: 2567] Generate crash report summary
     static std::string GenerateCrashSummary(const std::string& dump_file) {
         std::stringstream summary;
         std::ifstream file(dump_file);
@@ -199,10 +199,10 @@ public:
     }
 };
 
-// [SEQUENCE: MVP16-42] Memory corruption detector
+// [SEQUENCE: 2568] Memory corruption detector
 class MemoryCorruptionDetector {
 public:
-    // [SEQUENCE: MVP16-43] Check for common memory issues
+    // [SEQUENCE: 2569] Check for common memory issues
     static void EnableMemoryChecks() {
         // Enable core dumps
         struct rlimit core_limit;
@@ -222,7 +222,7 @@ public:
         spdlog::info("Memory corruption detection enabled");
     }
     
-    // [SEQUENCE: MVP16-44] Validate memory regions
+    // [SEQUENCE: 2570] Validate memory regions
     static bool ValidateMemoryRegion(void* ptr, size_t size) {
         // Check if memory is readable
         if (ptr == nullptr) return false;
@@ -239,7 +239,7 @@ public:
 #endif
     }
     
-    // [SEQUENCE: MVP16-45] Detect use-after-free patterns
+    // [SEQUENCE: 2571] Detect use-after-free patterns
     static bool DetectUseAfterFree(const std::vector<std::string>& backtrace) {
         // Look for patterns indicating use-after-free
         for (const auto& frame : backtrace) {
@@ -255,10 +255,10 @@ public:
     }
 };
 
-// [SEQUENCE: MVP16-46] Crash recovery system
+// [SEQUENCE: 2572] Crash recovery system
 class CrashRecovery {
 public:
-    // [SEQUENCE: MVP16-47] Attempt automatic recovery
+    // [SEQUENCE: 2573] Attempt automatic recovery
     static bool AttemptRecovery(const CrashInfo& crash_info) {
         spdlog::warn("Attempting crash recovery for signal: {}", 
                     crash_info.signal_name);
@@ -269,7 +269,7 @@ public:
             return false;
         }
         
-        // [SEQUENCE: MVP16-48] Recovery strategies
+        // [SEQUENCE: 2574] Recovery strategies
         switch (crash_info.signal_number) {
             case SIGSEGV:
                 return RecoverFromSegfault(crash_info);
@@ -287,7 +287,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP16-49] Check if crash is recoverable
+    // [SEQUENCE: 2575] Check if crash is recoverable
     static bool IsRecoverable(const CrashInfo& crash_info) {
         // Some crashes are not recoverable
         if (crash_info.signal_number == SIGABRT) {

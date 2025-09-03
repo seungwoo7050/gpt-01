@@ -13,7 +13,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-576] 데이터베이스 샤딩 관리자
+// [SEQUENCE: 936] 데이터베이스 샤딩 관리자
 class DatabaseShardingManager {
 public:
     struct ShardInfo {
@@ -56,7 +56,7 @@ public:
         Shutdown();
     }
 
-    // [SEQUENCE: MVP14-577] 샤드 초기화
+    // [SEQUENCE: 937] 샤드 초기화
     bool InitializeShards() {
         std::lock_guard<std::mutex> lock(shards_mutex_);
         
@@ -78,7 +78,7 @@ public:
         return !shards_.empty();
     }
 
-    // [SEQUENCE: MVP14-578] 사용자별 데이터 조회
+    // [SEQUENCE: 938] 사용자별 데이터 조회
     template<typename T>
     std::future<std::optional<T>> GetUserDataAsync(uint64_t user_id, const std::string& table, 
                                                   const std::string& columns = "*") {
@@ -94,7 +94,7 @@ public:
         });
     }
 
-    // [SEQUENCE: MVP14-579] 사용자별 데이터 저장
+    // [SEQUENCE: 939] 사용자별 데이터 저장
     template<typename T>
     std::future<bool> SaveUserDataAsync(uint64_t user_id, const std::string& table, 
                                        const T& data) {
@@ -109,7 +109,7 @@ public:
         });
     }
 
-    // [SEQUENCE: MVP14-580] 크로스 샤드 트랜잭션
+    // [SEQUENCE: 940] 크로스 샤드 트랜잭션
     struct CrossShardTransaction {
         std::string transaction_id;
         std::vector<std::string> involved_shards;
@@ -149,7 +149,7 @@ public:
         });
     }
 
-    // [SEQUENCE: MVP14-581] 샤드 리밸런싱
+    // [SEQUENCE: 941] 샤드 리밸런싱
     std::future<bool> RebalanceShardsAsync() {
         return std::async(std::launch::async, [this]() -> bool {
             std::lock_guard<std::mutex> lock(shards_mutex_);
@@ -183,7 +183,7 @@ public:
         });
     }
 
-    // [SEQUENCE: MVP14-582] 샤드 통계 및 모니터링
+    // [SEQUENCE: 942] 샤드 통계 및 모니터링
     struct ShardStats {
         std::string shard_id;
         bool is_healthy;
@@ -228,7 +228,7 @@ public:
         return stats;
     }
 
-    // [SEQUENCE: MVP14-583] 동적 샤드 추가
+    // [SEQUENCE: 943] 동적 샤드 추가
     std::future<bool> AddShardAsync(const ShardInfo& new_shard_info) {
         return std::async(std::launch::async, [this, new_shard_info]() -> bool {
             std::lock_guard<std::mutex> lock(shards_mutex_);
@@ -269,7 +269,7 @@ private:
     std::atomic<bool> is_running_;
     std::thread health_check_thread_;
 
-    // [SEQUENCE: MVP14-584] 샤드 선택 로직
+    // [SEQUENCE: 944] 샤드 선택 로직
     std::shared_ptr<ShardInfo> GetShardForUser(uint64_t user_id) {
         std::lock_guard<std::mutex> lock(shards_mutex_);
         
@@ -302,7 +302,7 @@ private:
         return nullptr;
     }
 
-    // [SEQUENCE: MVP14-585] 쿼리 실행
+    // [SEQUENCE: 945] 쿼리 실행
     template<typename T>
     std::optional<T> ExecuteQuery(std::shared_ptr<ShardInfo> shard, 
                                  const std::string& query, bool is_write) {
@@ -336,7 +336,7 @@ private:
         }
     }
 
-    // [SEQUENCE: MVP14-586] 쿼리 빌더
+    // [SEQUENCE: 946] 쿼리 빌더
     std::string BuildSelectQuery(const std::string& table, const std::string& columns, 
                                 uint64_t user_id) {
         return "SELECT " + columns + " FROM " + table + " WHERE user_id = " + std::to_string(user_id);
@@ -355,7 +355,7 @@ private:
         return "{}"; // 시뮬레이션
     }
 
-    // [SEQUENCE: MVP14-587] 2PC (Two-Phase Commit) 구현
+    // [SEQUENCE: 947] 2PC (Two-Phase Commit) 구현
     bool ExecuteTwoPhaseCommit(std::shared_ptr<CrossShardTransaction> transaction,
                               const std::unordered_map<std::string, std::vector<std::string>>& shard_operations) {
         
@@ -417,7 +417,7 @@ private:
         transaction->is_rolled_back.store(true);
     }
 
-    // [SEQUENCE: MVP14-588] 부하 계산
+    // [SEQUENCE: 948] 부하 계산
     double CalculateShardLoad(std::shared_ptr<ShardInfo> shard) const {
         double connection_load = static_cast<double>(shard->connection_count.load()) / 
                                config_.max_connections_per_shard;
@@ -431,7 +431,7 @@ private:
         return std::max({connection_load, storage_load, user_load});
     }
 
-    // [SEQUENCE: MVP14-589] 리밸런싱 실행
+    // [SEQUENCE: 949] 리밸런싱 실행
     bool ExecuteRebalancingPlan(const std::vector<std::string>& overloaded_shards,
                                const std::vector<std::string>& underloaded_shards) {
         // 사용자 데이터 마이그레이션 계획 수립
@@ -462,7 +462,7 @@ private:
         return true;
     }
 
-    // [SEQUENCE: MVP14-590] 헬스체크 및 유틸리티
+    // [SEQUENCE: 950] 헬스체크 및 유틸리티
     void HealthCheckLoop() {
         while (is_running_) {
             {

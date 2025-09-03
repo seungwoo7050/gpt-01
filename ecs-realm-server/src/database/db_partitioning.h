@@ -12,7 +12,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-267] Database partitioning strategies
+// [SEQUENCE: 2937] Database partitioning strategies
 enum class PartitionStrategy {
     RANGE,          // 범위 기반 (날짜, ID 범위)
     HASH,           // 해시 기반 (균등 분산)
@@ -21,7 +21,7 @@ enum class PartitionStrategy {
     ROUND_ROBIN     // 라운드 로빈
 };
 
-// [SEQUENCE: MVP14-268] Partition key types
+// [SEQUENCE: 2938] Partition key types
 enum class PartitionKeyType {
     PLAYER_ID,      // 플레이어 ID 기반
     TIMESTAMP,      // 시간 기반
@@ -31,7 +31,7 @@ enum class PartitionKeyType {
     CUSTOM          // 커스텀 키
 };
 
-// [SEQUENCE: MVP14-269] Partition metadata
+// [SEQUENCE: 2939] Partition metadata
 struct PartitionInfo {
     std::string partition_name;
     uint32_t partition_id;
@@ -58,7 +58,7 @@ struct PartitionInfo {
     std::chrono::system_clock::time_point last_accessed;
 };
 
-// [SEQUENCE: MVP14-270] Partition scheme definition
+// [SEQUENCE: 2940] Partition scheme definition
 struct PartitionScheme {
     std::string scheme_name;
     PartitionStrategy strategy;
@@ -92,10 +92,10 @@ struct PartitionScheme {
     uint64_t max_size_per_partition{10737418240}; // 10GB
 };
 
-// [SEQUENCE: MVP14-271] Partitioned table interface
+// [SEQUENCE: 2941] Partitioned table interface
 class PartitionedTable {
 public:
-    // [SEQUENCE: MVP14-272] Initialize partitioned table
+    // [SEQUENCE: 2942] Initialize partitioned table
     PartitionedTable(const std::string& table_name, 
                     const PartitionScheme& scheme)
         : table_name_(table_name)
@@ -104,7 +104,7 @@ public:
         InitializePartitions();
     }
     
-    // [SEQUENCE: MVP14-273] Get partition for key
+    // [SEQUENCE: 2943] Get partition for key
     PartitionInfo* GetPartition(const std::string& partition_key) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -124,7 +124,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP14-274] Get all partitions
+    // [SEQUENCE: 2944] Get all partitions
     std::vector<PartitionInfo> GetAllPartitions() const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -136,7 +136,7 @@ public:
         return result;
     }
     
-    // [SEQUENCE: MVP14-275] Split partition
+    // [SEQUENCE: 2945] Split partition
     bool SplitPartition(uint32_t partition_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -172,7 +172,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP14-276] Merge partitions
+    // [SEQUENCE: 2946] Merge partitions
     bool MergePartitions(uint32_t partition1_id, uint32_t partition2_id) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -213,7 +213,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP14-277] Maintenance operations
+    // [SEQUENCE: 2947] Maintenance operations
     void RunMaintenance() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -238,7 +238,7 @@ public:
         UpdatePartitionStatistics();
     }
     
-    // [SEQUENCE: MVP14-278] Get partition statistics
+    // [SEQUENCE: 2948] Get partition statistics
     struct PartitionStatistics {
         uint32_t total_partitions{0};
         uint32_t active_partitions{0};
@@ -302,7 +302,7 @@ private:
     mutable std::mutex mutex_;
     std::atomic<uint32_t> next_partition_id_{1000};
     
-    // [SEQUENCE: MVP14-279] Calculate partition ID for key
+    // [SEQUENCE: 2949] Calculate partition ID for key
     uint32_t CalculatePartitionId(const std::string& partition_key) {
         switch (scheme_.strategy) {
             case PartitionStrategy::HASH:
@@ -323,7 +323,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP14-280] Initialize partitions
+    // [SEQUENCE: 2950] Initialize partitions
     void InitializePartitions() {
         switch (scheme_.strategy) {
             case PartitionStrategy::HASH:
@@ -518,10 +518,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-281] Partition manager for multiple tables
+// [SEQUENCE: 2951] Partition manager for multiple tables
 class PartitionManager {
 public:
-    // [SEQUENCE: MVP14-282] Register partitioned table
+    // [SEQUENCE: 2952] Register partitioned table
     void RegisterTable(const std::string& table_name,
                       const PartitionScheme& scheme) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -533,7 +533,7 @@ public:
                     table_name, GetStrategyName(scheme.strategy));
     }
     
-    // [SEQUENCE: MVP14-283] Get partitioned table
+    // [SEQUENCE: 2953] Get partitioned table
     PartitionedTable* GetTable(const std::string& table_name) {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -545,7 +545,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP14-284] Run maintenance on all tables
+    // [SEQUENCE: 2954] Run maintenance on all tables
     void RunGlobalMaintenance() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -565,7 +565,7 @@ public:
         UpdateGlobalStatistics();
     }
     
-    // [SEQUENCE: MVP14-285] Get global statistics
+    // [SEQUENCE: 2955] Get global statistics
     struct GlobalStatistics {
         uint32_t total_tables{0};
         uint32_t total_partitions{0};
@@ -619,10 +619,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-286] Common partition schemes
+// [SEQUENCE: 2956] Common partition schemes
 class CommonPartitionSchemes {
 public:
-    // [SEQUENCE: MVP14-287] Time-based partitioning (logs, events)
+    // [SEQUENCE: 2957] Time-based partitioning (logs, events)
     static PartitionScheme CreateTimeBasedScheme(const std::string& table_name,
                                                 uint32_t days_per_partition = 30) {
         PartitionScheme scheme;
@@ -651,7 +651,7 @@ public:
         return scheme;
     }
     
-    // [SEQUENCE: MVP14-288] Player-based partitioning
+    // [SEQUENCE: 2958] Player-based partitioning
     static PartitionScheme CreatePlayerBasedScheme(const std::string& table_name,
                                                   uint32_t partition_count = 16) {
         PartitionScheme scheme;
@@ -668,7 +668,7 @@ public:
         return scheme;
     }
     
-    // [SEQUENCE: MVP14-289] Region-based partitioning
+    // [SEQUENCE: 2959] Region-based partitioning
     static PartitionScheme CreateRegionBasedScheme(const std::string& table_name) {
         PartitionScheme scheme;
         scheme.scheme_name = table_name + "_region_based";
@@ -699,7 +699,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-290] Partition query info for routing
+// [SEQUENCE: 2975] Partition query info for routing
 struct PartitionQueryInfo {
     std::string table_name;
     std::string partition_key;
@@ -715,7 +715,7 @@ struct PartitionQueryInfo {
     bool is_read_only{false};
 };
 
-// [SEQUENCE: MVP14-291] Partition health report
+// [SEQUENCE: 2976] Partition health report
 struct PartitionHealthReport {
     std::chrono::system_clock::time_point timestamp;
     bool healthy{true};
@@ -728,7 +728,7 @@ struct PartitionHealthReport {
     std::vector<std::string> tables_needing_rebalance;
 };
 
-// [SEQUENCE: MVP14-292] Public API functions
+// [SEQUENCE: 2977] Public API functions
 void InitializePartitionManager();
 void CleanupPartitionManager();
 PartitionManager* GetPartitionManager();

@@ -5,7 +5,7 @@
 
 namespace mmorpg::game::components {
 
-// [SEQUENCE: MVP5-1] Guild member ranks
+// [SEQUENCE: 1] Guild member ranks
 enum class GuildRank : uint8_t {
     MEMBER = 0,
     OFFICER = 1,
@@ -13,20 +13,21 @@ enum class GuildRank : uint8_t {
     LEADER = 3
 };
 
-// [SEQUENCE: MVP5-2] Guild component for player entities
+// [SEQUENCE: 2] Guild component for player entities
+// [SEQUENCE: MVP5-5]
 struct GuildComponent {
     uint32_t guild_id = 0;
     std::string guild_name;
     uint32_t guild_level = 1;
     GuildRank member_rank = GuildRank::MEMBER;
     
-    // [SEQUENCE: MVP5-3] Guild war participation
+    // [SEQUENCE: 3] Guild war participation
     bool in_guild_war = false;
     uint32_t war_contribution = 0;  // Points earned in current war
     uint32_t total_war_participation = 0;  // Historical count
 };
 
-// [SEQUENCE: MVP5-5] Guild war status
+// [SEQUENCE: 5] Guild war status
 enum class GuildWarState : uint8_t {
     PEACE = 0,
     WAR_DECLARED = 1,
@@ -34,7 +35,7 @@ enum class GuildWarState : uint8_t {
     WAR_ENDING = 3
 };
 
-
+// [SEQUENCE: 6] Guild war participation stats
 struct GuildWarStats {
     uint32_t wars_won = 0;
     uint32_t wars_lost = 0;
@@ -42,12 +43,6 @@ struct GuildWarStats {
     uint32_t total_kills = 0;
     uint32_t total_deaths = 0;
     uint32_t objectives_captured = 0;
-};
-
-} // namespace mmorpg::game::components
-nents
-onents
-aptured = 0;
 };
 
 } // namespace mmorpg::game::components

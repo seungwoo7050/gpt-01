@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP4-38] Damage over time (DoT) system
 #pragma once
 
 #include <unordered_map>
@@ -10,10 +9,10 @@
 
 namespace mmorpg::game::combat {
 
+// [SEQUENCE: 1786] Damage over time (DoT) system for periodic damage effects
+// 지속 피해(DoT) 시스템으로 주기적 피해 효과 관리
 
-
-
-
+// [SEQUENCE: 1787] DoT damage type
 enum class DotDamageType {
     PHYSICAL,       // Bleed, Deep Wounds
     FIRE,           // Burn, Ignite
@@ -25,7 +24,7 @@ enum class DotDamageType {
     CHAOS           // Mixed damage
 };
 
-
+// [SEQUENCE: 1788] DoT stacking behavior
 enum class DotStackingType {
     NONE,           // Cannot stack, refreshes duration
     STACK_DAMAGE,   // Each stack adds damage
@@ -35,7 +34,7 @@ enum class DotStackingType {
     REPLACE_WEAKER  // Only stronger effects apply
 };
 
-
+// [SEQUENCE: 1789] DoT spread type
 enum class DotSpreadType {
     NONE,           // Does not spread
     ON_DEATH,       // Spreads when target dies
@@ -44,7 +43,7 @@ enum class DotSpreadType {
     PANDEMIC        // Refreshing adds 30% of remaining duration
 };
 
-
+// [SEQUENCE: 1790] DoT effect definition
 struct DotEffect {
     uint32_t effect_id;
     std::string effect_name;
@@ -83,7 +82,7 @@ struct DotEffect {
     std::function<void(uint64_t)> on_expire_callback;
 };
 
-
+// [SEQUENCE: 1791] Active DoT instance
 class DotInstance {
 public:
     DotInstance(uint64_t instance_id, const DotEffect& effect,
@@ -120,7 +119,7 @@ public:
         next_tick_time_ = start_time_ + actual_tick_interval_;
     }
     
-    
+    // [SEQUENCE: 1792] Process tick
     struct TickResult {
         bool should_tick = false;
         float damage = 0.0f;
@@ -179,7 +178,7 @@ public:
         return result;
     }
     
-    
+    // [SEQUENCE: 1793] Refresh DoT (for pandemic mechanics)
     void Refresh(float new_sp = -1, float new_ap = -1) {
         auto now = std::chrono::system_clock::now();
         
@@ -221,7 +220,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1794] Add stack
     bool AddStack() {
         if (current_stacks_ < effect_.max_stacks) {
             current_stacks_++;
@@ -238,7 +237,7 @@ public:
         return false;
     }
     
-    
+    // [SEQUENCE: 1795] Force expire
     void ForceExpire() {
         remaining_ticks_ = 0;
         end_time_ = std::chrono::system_clock::now();
@@ -290,7 +289,7 @@ private:
     uint32_t tick_count_ = 0;
     float total_damage_ = 0.0f;
     
-    
+    // [SEQUENCE: 1796] Calculate damage per tick
     float CalculateDamage() {
         float damage = effect_.base_damage;
         damage += snapshot_spell_power_ * effect_.spell_power_scaling;
@@ -302,7 +301,7 @@ private:
         return damage;
     }
     
-    
+    // [SEQUENCE: 1797] Helper functions
     float GetHasteModifier() {
         // TODO: Get actual haste from source
         return 1.0f;
@@ -320,12 +319,12 @@ private:
     }
 };
 
-
+// [SEQUENCE: 1798] DoT manager for a single entity
 class DotManager {
 public:
     DotManager(uint64_t entity_id) : entity_id_(entity_id) {}
     
-    
+    // [SEQUENCE: 1799] Apply DoT effect
     uint64_t ApplyDot(const DotEffect& effect, uint64_t source_id,
                      float spell_power, float attack_power) {
         uint64_t instance_id = GenerateInstanceId();
@@ -369,7 +368,7 @@ public:
         return instance_id;
     }
     
-    
+    // [SEQUENCE: 1800] Process all DoTs
     struct ProcessResult {
         float total_damage = 0.0f;
         std::vector<uint64_t> expired_dots;
@@ -405,7 +404,7 @@ public:
         return result;
     }
     
-    
+    // [SEQUENCE: 1801] Remove specific DoT
     void RemoveDot(uint64_t instance_id) {
         auto it = active_dots_.find(instance_id);
         if (it != active_dots_.end()) {
@@ -414,7 +413,7 @@ public:
         }
     }
     
-    
+    // [SEQUENCE: 1802] Remove all DoTs
     void RemoveAllDots() {
         for (auto& [id, dot] : active_dots_) {
             dot->ForceExpire();
@@ -422,7 +421,7 @@ public:
         active_dots_.clear();
     }
     
-    
+    // [SEQUENCE: 1803] Dispel DoTs
     uint32_t DispelDots(DotDamageType type, uint32_t max_count = 1) {
         std::vector<uint64_t> to_remove;
         
@@ -465,7 +464,7 @@ private:
         return next_instance_id_++;
     }
     
-    
+    // [SEQUENCE: 1804] Helper methods
     void RemoveDotsFromSource(uint64_t source_id, uint32_t effect_id) {
         std::erase_if(active_dots_, [source_id, effect_id](const auto& pair) {
             return pair.second->GetSourceId() == source_id &&
@@ -500,13 +499,13 @@ private:
         return strongest;
     }
     
-    
+    // [SEQUENCE: 1805] Get effect definition
     const DotEffect* GetDotEffect(uint32_t effect_id) const;  // Implemented by DotSystem
 };
 
 std::atomic<uint64_t> DotManager::next_instance_id_{1};
 
-
+// [SEQUENCE: 1806] Global DoT system
 class DotSystem {
 public:
     static DotSystem& Instance() {
@@ -514,13 +513,13 @@ public:
         return instance;
     }
     
-    
+    // [SEQUENCE: 1807] Initialize effects
     void Initialize() {
         LoadDotEffects();
         spdlog::info("DoT system initialized with {} effects", dot_effects_.size());
     }
     
-    
+    // [SEQUENCE: 1808] Get or create manager
     std::shared_ptr<DotManager> GetManager(uint64_t entity_id) {
         auto it = entity_managers_.find(entity_id);
         if (it == entity_managers_.end()) {
@@ -531,13 +530,13 @@ public:
         return it->second;
     }
     
-    
+    // [SEQUENCE: 1809] Get effect definition
     const DotEffect* GetEffect(uint32_t effect_id) const {
         auto it = dot_effects_.find(effect_id);
         return (it != dot_effects_.end()) ? &it->second : nullptr;
     }
     
-    
+    // [SEQUENCE: 1810] Process all DoTs
     void ProcessAll() {
         for (auto& [entity_id, manager] : entity_managers_) {
             auto result = manager->ProcessDots();
@@ -564,7 +563,7 @@ private:
     std::unordered_map<uint32_t, DotEffect> dot_effects_;
     std::unordered_map<uint64_t, std::shared_ptr<DotManager>> entity_managers_;
     
-    
+    // [SEQUENCE: 1811] Load effect definitions
     void LoadDotEffects() {
         // Example: Bleed effect
         DotEffect bleed;
@@ -598,7 +597,7 @@ private:
     }
 };
 
-
+// [SEQUENCE: 1812] Helper for manager
 const DotEffect* DotManager::GetDotEffect(uint32_t effect_id) const {
     return DotSystem::Instance().GetEffect(effect_id);
 }

@@ -12,10 +12,10 @@
 
 namespace mmorpg::ui {
 
-// [SEQUENCE: MVP12-100] Map interface system for navigation
+// [SEQUENCE: 2493] Map interface system for navigation
 // 맵 인터페이스 - 월드 네비게이션을 위한 UI 시스템
 
-// [SEQUENCE: MVP12-101] Map icon types
+// [SEQUENCE: 2494] Map icon types
 enum class MapIconType {
     PLAYER,                 // 플레이어 위치
     PARTY_MEMBER,          // 파티원
@@ -39,7 +39,7 @@ enum class MapIconType {
     CUSTOM                 // 커스텀 마커
 };
 
-// [SEQUENCE: MVP12-102] Map icon data
+// [SEQUENCE: 2495] Map icon data
 struct MapIcon {
     MapIconType type;
     Vector2 world_position;     // 월드 좌표
@@ -49,7 +49,7 @@ struct MapIcon {
     bool is_tracked = false;   // 추적 중인지
     uint32_t entity_id = 0;    // 연관된 엔티티 ID
     
-    // [SEQUENCE: MVP12-103] Get icon texture based on type
+    // [SEQUENCE: 2496] Get icon texture based on type
     uint32_t GetTextureId() const {
         // Would return actual texture IDs
         switch (type) {
@@ -63,7 +63,7 @@ struct MapIcon {
     }
 };
 
-// [SEQUENCE: MVP12-104] Minimap widget
+// [SEQUENCE: 2497] Minimap widget
 class Minimap : public UIPanel {
 public:
     Minimap(const std::string& name) : UIPanel(name) {
@@ -72,20 +72,20 @@ public:
         SetBorderColor({0.5f, 0.5f, 0.5f, 1.0f});
         SetBorderWidth(2.0f);
         
-        // [SEQUENCE: MVP12-105] Create map texture display
+        // [SEQUENCE: 2498] Create map texture display
         map_texture_ = std::make_shared<UIImage>("MapTexture");
         map_texture_->SetSize({196, 196});
         map_texture_->SetPosition({2, 2});
         AddChild(map_texture_);
         
-        // [SEQUENCE: MVP12-106] Create player arrow
+        // [SEQUENCE: 2499] Create player arrow
         player_arrow_ = std::make_shared<UIImage>("PlayerArrow");
         player_arrow_->SetSize({16, 16});
         player_arrow_->SetTint({1.0f, 1.0f, 0.0f, 1.0f});
         player_arrow_->SetPivot({0.5f, 0.5f});
         AddChild(player_arrow_);
         
-        // [SEQUENCE: MVP12-107] Create zoom controls
+        // [SEQUENCE: 2500] Create zoom controls
         zoom_in_ = std::make_shared<UIButton>("ZoomIn");
         zoom_in_->SetText("+");
         zoom_in_->SetSize({20, 20});
@@ -100,7 +100,7 @@ public:
         zoom_out_->SetOnClick([this]() { ZoomOut(); });
         AddChild(zoom_out_);
         
-        // [SEQUENCE: MVP12-108] Create coordinate display
+        // [SEQUENCE: 2501] Create coordinate display
         coord_label_ = std::make_shared<UILabel>("Coordinates");
         coord_label_->SetPosition({5, 180});
         coord_label_->SetSize({100, 16});
@@ -124,7 +124,7 @@ public:
         AddChild(icon_container_);
     }
     
-    // [SEQUENCE: MVP12-109] Update player position
+    // [SEQUENCE: 2502] Update player position
     void UpdatePlayerPosition(float x, float y, float facing) {
         player_world_x_ = x;
         player_world_y_ = y;
@@ -141,7 +141,7 @@ public:
         UpdateMapDisplay();
     }
     
-    // [SEQUENCE: MVP12-110] Set current zone
+    // [SEQUENCE: 2503] Set current zone
     void SetZone(const std::string& zone_name, uint32_t zone_id) {
         current_zone_ = zone_name;
         zone_id_ = zone_id;
@@ -151,7 +151,7 @@ public:
         LoadZoneTexture(zone_id);
     }
     
-    // [SEQUENCE: MVP12-111] Add map icon
+    // [SEQUENCE: 2504] Add map icon
     void AddMapIcon(const MapIcon& icon) {
         map_icons_[icon.entity_id] = icon;
         UpdateMapDisplay();
@@ -170,7 +170,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-112] Set tracking target
+    // [SEQUENCE: 2505] Set tracking target
     void SetTracking(uint32_t entity_id, bool track) {
         auto it = map_icons_.find(entity_id);
         if (it != map_icons_.end()) {
@@ -229,7 +229,7 @@ private:
     std::function<void()> on_minimap_click_;
     std::function<void(float, float)> on_waypoint_add_;
     
-    // [SEQUENCE: MVP12-113] Update minimap display
+    // [SEQUENCE: 2506] Update minimap display
     void UpdateMapDisplay() {
         // Clear existing icons
         for (auto& icon_image : icon_images_) {
@@ -268,7 +268,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-114] Convert world coordinates to minimap
+    // [SEQUENCE: 2507] Convert world coordinates to minimap
     Vector2 WorldToMinimap(const Vector2& world_pos) {
         float dx = world_pos.x - player_world_x_;
         float dy = world_pos.y - player_world_y_;
@@ -336,14 +336,14 @@ public:
     }
 };
 
-// [SEQUENCE: MVP12-115] World map window
+// [SEQUENCE: 2508] World map window
 class WorldMapWindow : public UIWindow {
 public:
     WorldMapWindow(const std::string& name) : UIWindow(name) {
         SetTitle("World Map");
         SetSize({800, 600});
         
-        // [SEQUENCE: MVP12-116] Create map viewport
+        // [SEQUENCE: 2509] Create map viewport
         map_viewport_ = std::make_shared<UIPanel>("MapViewport");
         map_viewport_->SetPosition({10, 40});
         map_viewport_->SetSize({580, 500});
@@ -356,10 +356,10 @@ public:
         map_image_->SetPosition({0, 0});
         map_viewport_->AddChild(map_image_);
         
-        // [SEQUENCE: MVP12-117] Create continent selector
+        // [SEQUENCE: 2510] Create continent selector
         CreateContinentTabs();
         
-        // [SEQUENCE: MVP12-118] Create zoom slider
+        // [SEQUENCE: 2511] Create zoom slider
         zoom_slider_ = std::make_shared<UIProgressBar>("ZoomSlider");
         zoom_slider_->SetPosition({600, 100});
         zoom_slider_->SetSize({180, 20});
@@ -372,10 +372,10 @@ public:
         zoom_label_->SetSize({180, 16});
         AddChild(zoom_label_);
         
-        // [SEQUENCE: MVP12-119] Create legend
+        // [SEQUENCE: 2512] Create legend
         CreateLegend();
         
-        // [SEQUENCE: MVP12-120] Create search box
+        // [SEQUENCE: 2513] Create search box
         search_box_ = std::make_shared<UIPanel>("SearchBox");
         search_box_->SetPosition({600, 400});
         search_box_->SetSize({180, 25});
@@ -397,7 +397,7 @@ public:
         map_viewport_->AddChild(player_marker_);
     }
     
-    // [SEQUENCE: MVP12-121] Set current continent
+    // [SEQUENCE: 2514] Set current continent
     void SetContinent(int continent_id) {
         current_continent_ = continent_id;
         
@@ -411,7 +411,7 @@ public:
         ResetView();
     }
     
-    // [SEQUENCE: MVP12-122] Update player position on world map
+    // [SEQUENCE: 2515] Update player position on world map
     void UpdatePlayerPosition(float world_x, float world_y) {
         player_world_x_ = world_x;
         player_world_y_ = world_y;
@@ -421,7 +421,7 @@ public:
         player_marker_->SetPosition(map_pos);
     }
     
-    // [SEQUENCE: MVP12-123] Add point of interest
+    // [SEQUENCE: 2516] Add point of interest
     void AddPointOfInterest(const std::string& name, float x, float y, 
                            MapIconType type) {
         PointOfInterest poi;
@@ -506,7 +506,7 @@ private:
     std::vector<std::shared_ptr<UIImage>> poi_markers_;
     std::vector<std::shared_ptr<UIImage>> waypoint_markers_;
     
-    // [SEQUENCE: MVP12-124] Create continent selection tabs
+    // [SEQUENCE: 2517] Create continent selection tabs
     void CreateContinentTabs() {
         std::vector<std::string> continent_names = {
             "Eastern Kingdoms",
@@ -532,7 +532,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP12-125] Create map legend
+    // [SEQUENCE: 2518] Create map legend
     void CreateLegend() {
         auto legend_panel = std::make_shared<UIPanel>("Legend");
         legend_panel->SetPosition({600, 200});
@@ -684,14 +684,14 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-126] Quest tracker window
+// [SEQUENCE: 2519] Quest tracker window
 class QuestTracker : public UIPanel {
 public:
     QuestTracker(const std::string& name) : UIPanel(name) {
         SetSize({250, 300});
         SetBackgroundColor({0.0f, 0.0f, 0.0f, 0.7f});
         
-        // [SEQUENCE: MVP12-127] Create title
+        // [SEQUENCE: 2520] Create title
         auto title = std::make_shared<UILabel>("Title");
         title->SetText("Quest Tracker");
         title->SetPosition({5, 5});
@@ -708,7 +708,7 @@ public:
         AddChild(quest_container_);
     }
     
-    // [SEQUENCE: MVP12-128] Add quest to tracker
+    // [SEQUENCE: 2521] Add quest to tracker
     void AddQuest(uint32_t quest_id, const std::string& quest_name,
                   const std::vector<std::string>& objectives) {
         
@@ -785,7 +785,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-129] Map UI manager
+// [SEQUENCE: 2522] Map UI manager
 class MapUIManager {
 public:
     static MapUIManager& Instance() {
@@ -797,19 +797,19 @@ public:
         auto root = UIManager::Instance().GetRoot();
         if (!root) return;
         
-        // [SEQUENCE: MVP12-130] Create minimap
+        // [SEQUENCE: 2523] Create minimap
         minimap_ = std::make_shared<Minimap>("Minimap");
         minimap_->SetPosition({-220, 20});
         minimap_->SetAnchor(AnchorType::TOP_RIGHT);
         root->AddChild(minimap_);
         
-        // [SEQUENCE: MVP12-131] Create world map
+        // [SEQUENCE: 2524] Create world map
         world_map_ = std::make_shared<WorldMapWindow>("WorldMap");
         world_map_->SetPosition({100, 50});
         world_map_->SetVisibility(Visibility::HIDDEN);
         root->AddChild(world_map_);
         
-        // [SEQUENCE: MVP12-132] Create quest tracker
+        // [SEQUENCE: 2525] Create quest tracker
         quest_tracker_ = std::make_shared<QuestTracker>("QuestTracker");
         quest_tracker_->SetPosition({-270, 250});
         quest_tracker_->SetAnchor(AnchorType::TOP_RIGHT);
@@ -819,7 +819,7 @@ public:
         minimap_->SetOnMinimapClick([this]() { ToggleWorldMap(); });
     }
     
-    // [SEQUENCE: MVP12-133] Update player position
+    // [SEQUENCE: 2526] Update player position
     void UpdatePlayerPosition(float x, float y, float facing) {
         if (minimap_) {
             minimap_->UpdatePlayerPosition(x, y, facing);

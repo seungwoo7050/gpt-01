@@ -6,13 +6,13 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-201] Placed decoration constructor
+// [SEQUENCE: 3364] Placed decoration constructor
 PlacedDecoration::PlacedDecoration(uint64_t instance_id, const DecorationItem& item)
     : instance_id_(instance_id)
     , item_(item) {
 }
 
-// [SEQUENCE: MVP14-202] Set decoration scale
+// [SEQUENCE: 3365] Set decoration scale
 void PlacedDecoration::SetScale(const Vector3& scale) {
     // Clamp to allowed scale range
     scale_.x = std::clamp(scale.x, item_.min_scale.x, item_.max_scale.x);
@@ -20,21 +20,21 @@ void PlacedDecoration::SetScale(const Vector3& scale) {
     scale_.z = std::clamp(scale.z, item_.min_scale.z, item_.max_scale.z);
 }
 
-// [SEQUENCE: MVP14-203] Set material variant
+// [SEQUENCE: 3366] Set material variant
 void PlacedDecoration::SetMaterialVariant(uint32_t variant_index) {
     if (variant_index < item_.material_variants.size()) {
         material_variant_ = variant_index;
     }
 }
 
-// [SEQUENCE: MVP14-204] Set emissive intensity
+// [SEQUENCE: 3367] Set emissive intensity
 void PlacedDecoration::SetEmissiveIntensity(float intensity) {
     if (item_.emits_light) {
         emissive_intensity_ = std::max(0.0f, intensity);
     }
 }
 
-// [SEQUENCE: MVP14-205] Set custom data
+// [SEQUENCE: 3368] Set custom data
 void PlacedDecoration::SetCustomData(const std::string& key, const std::string& value) {
     custom_data_[key] = value;
 }
@@ -44,7 +44,7 @@ std::string PlacedDecoration::GetCustomData(const std::string& key) const {
     return it != custom_data_.end() ? it->second : "";
 }
 
-// [SEQUENCE: MVP14-206] Get world bounds
+// [SEQUENCE: 3369] Get world bounds
 BoundingBox PlacedDecoration::GetWorldBounds() const {
     // Transform local bounds to world space
     BoundingBox world_bounds;
@@ -61,7 +61,7 @@ BoundingBox PlacedDecoration::GetWorldBounds() const {
     return world_bounds;
 }
 
-// [SEQUENCE: MVP14-207] Check collision
+// [SEQUENCE: 3370] Check collision
 bool PlacedDecoration::CheckCollision(const PlacedDecoration& other) const {
     auto bounds_a = GetWorldBounds();
     auto bounds_b = other.GetWorldBounds();
@@ -69,7 +69,7 @@ bool PlacedDecoration::CheckCollision(const PlacedDecoration& other) const {
     return bounds_a.Intersects(bounds_b);
 }
 
-// [SEQUENCE: MVP14-208] Validate decoration placement
+// [SEQUENCE: 3371] Validate decoration placement
 DecorationPlacementValidator::ValidationResult 
 DecorationPlacementValidator::ValidatePlacement(
     const DecorationItem& item,
@@ -116,7 +116,7 @@ DecorationPlacementValidator::ValidatePlacement(
     return result;
 }
 
-// [SEQUENCE: MVP14-209] Check surface requirement
+// [SEQUENCE: 3372] Check surface requirement
 bool DecorationPlacementValidator::CheckSurfaceRequirement(
     const DecorationItem& item,
     const Vector3& position,
@@ -134,7 +134,7 @@ bool DecorationPlacementValidator::CheckSurfaceRequirement(
     return true;
 }
 
-// [SEQUENCE: MVP14-210] Check overlap
+// [SEQUENCE: 3373] Check overlap
 bool DecorationPlacementValidator::CheckOverlap(
     const BoundingBox& bounds,
     const std::vector<PlacedDecoration*>& existing_decorations) {
@@ -159,7 +159,7 @@ bool DecorationPlacementValidator::CheckOverlap(
     return true;
 }
 
-// [SEQUENCE: MVP14-211] Check placement rules
+// [SEQUENCE: 3374] Check placement rules
 bool DecorationPlacementValidator::CheckPlacementRules(
     const DecorationItem& item,
     const Vector3& position,
@@ -201,14 +201,14 @@ bool DecorationPlacementValidator::CheckPlacementRules(
     return true;
 }
 
-// [SEQUENCE: MVP14-212] Check if position is on floor
+// [SEQUENCE: 3375] Check if position is on floor
 bool DecorationPlacementValidator::IsOnFloor(const Vector3& position, 
                                             const HouseRoom& room) {
     const float floor_threshold = 0.1f;
     return std::abs(position.y - room.bounds.min.y) < floor_threshold;
 }
 
-// [SEQUENCE: MVP14-213] Check if position is on wall
+// [SEQUENCE: 3376] Check if position is on wall
 bool DecorationPlacementValidator::IsOnWall(const Vector3& position,
                                            const HouseRoom& room) {
     const float wall_threshold = 0.1f;
@@ -219,14 +219,14 @@ bool DecorationPlacementValidator::IsOnWall(const Vector3& position,
             std::abs(position.z - room.bounds.max.z) < wall_threshold);
 }
 
-// [SEQUENCE: MVP14-214] Check if position is on ceiling
+// [SEQUENCE: 3377] Check if position is on ceiling
 bool DecorationPlacementValidator::IsOnCeiling(const Vector3& position,
                                               const HouseRoom& room) {
     const float ceiling_threshold = 0.1f;
     return std::abs(position.y - room.bounds.max.y) < ceiling_threshold;
 }
 
-// [SEQUENCE: MVP14-215] Theme data
+// [SEQUENCE: 3378] Theme data
 std::unordered_map<std::string, DecorationTheme::ThemeData> DecorationTheme::themes_ = {
     {"modern", {
         .name = "Modern",
@@ -262,7 +262,7 @@ std::unordered_map<std::string, DecorationTheme::ThemeData> DecorationTheme::the
     }}
 };
 
-// [SEQUENCE: MVP14-216] Get available themes
+// [SEQUENCE: 3379] Get available themes
 std::vector<DecorationTheme::ThemeData> DecorationTheme::GetAvailableThemes() {
     std::vector<ThemeData> themes;
     for (const auto& [name, data] : themes_) {
@@ -271,7 +271,7 @@ std::vector<DecorationTheme::ThemeData> DecorationTheme::GetAvailableThemes() {
     return themes;
 }
 
-// [SEQUENCE: MVP14-217] Apply theme to house
+// [SEQUENCE: 3380] Apply theme to house
 void DecorationTheme::ApplyTheme(PlayerHouse& house, const std::string& theme_name) {
     auto it = themes_.find(theme_name);
     if (it == themes_.end()) {
@@ -293,7 +293,7 @@ void DecorationTheme::ApplyTheme(PlayerHouse& house, const std::string& theme_na
                 theme_name, house.GetHouseId());
 }
 
-// [SEQUENCE: MVP14-218] Apply light effect
+// [SEQUENCE: 3381] Apply light effect
 void DecorationEffects::ApplyLightEffect(PlacedDecoration& decoration,
                                         const LightEffect& effect) {
     if (!decoration.GetItem().emits_light) {
@@ -314,7 +314,7 @@ void DecorationEffects::ApplyLightEffect(PlacedDecoration& decoration,
                  decoration.GetInstanceId());
 }
 
-// [SEQUENCE: MVP14-219] Register decoration item
+// [SEQUENCE: 3382] Register decoration item
 void DecorationCatalog::RegisterItem(const DecorationItem& item) {
     items_[item.item_id] = item;
     items_by_category_[item.category].push_back(item.item_id);
@@ -323,13 +323,13 @@ void DecorationCatalog::RegisterItem(const DecorationItem& item) {
                  item.name, static_cast<int>(item.category));
 }
 
-// [SEQUENCE: MVP14-220] Get decoration item
+// [SEQUENCE: 3383] Get decoration item
 DecorationItem* DecorationCatalog::GetItem(uint32_t item_id) {
     auto it = items_.find(item_id);
     return it != items_.end() ? &it->second : nullptr;
 }
 
-// [SEQUENCE: MVP14-221] Get items by category
+// [SEQUENCE: 3384] Get items by category
 std::vector<DecorationItem> DecorationCatalog::GetItemsByCategory(
     DecorationCategory category) {
     
@@ -347,7 +347,7 @@ std::vector<DecorationItem> DecorationCatalog::GetItemsByCategory(
     return result;
 }
 
-// [SEQUENCE: MVP14-222] Search decoration items
+// [SEQUENCE: 3385] Search decoration items
 std::vector<DecorationItem> DecorationCatalog::SearchItems(const std::string& query) {
     std::vector<DecorationItem> results;
     
@@ -368,7 +368,7 @@ std::vector<DecorationItem> DecorationCatalog::SearchItems(const std::string& qu
     return results;
 }
 
-// [SEQUENCE: MVP14-223] Filter decoration items
+// [SEQUENCE: 3386] Filter decoration items
 std::vector<DecorationItem> DecorationCatalog::FilterItems(
     const FilterCriteria& criteria) {
     
@@ -412,12 +412,12 @@ std::vector<DecorationItem> DecorationCatalog::FilterItems(
     return results;
 }
 
-// [SEQUENCE: MVP14-224] House decoration manager constructor
+// [SEQUENCE: 3387] House decoration manager constructor
 HouseDecorationManager::HouseDecorationManager(PlayerHouse& house)
     : house_(house) {
 }
 
-// [SEQUENCE: MVP14-225] Place decoration
+// [SEQUENCE: 3388] Place decoration
 std::shared_ptr<PlacedDecoration> HouseDecorationManager::PlaceDecoration(
     uint32_t item_id,
     uint32_t room_id,
@@ -473,7 +473,7 @@ std::shared_ptr<PlacedDecoration> HouseDecorationManager::PlaceDecoration(
     return decoration;
 }
 
-// [SEQUENCE: MVP14-226] Remove decoration
+// [SEQUENCE: 3389] Remove decoration
 bool HouseDecorationManager::RemoveDecoration(uint64_t instance_id) {
     auto it = decorations_.find(instance_id);
     if (it == decorations_.end()) {
@@ -494,7 +494,7 @@ bool HouseDecorationManager::RemoveDecoration(uint64_t instance_id) {
     return true;
 }
 
-// [SEQUENCE: MVP14-227] Get room decorations
+// [SEQUENCE: 3390] Get room decorations
 std::vector<std::shared_ptr<PlacedDecoration>> 
 HouseDecorationManager::GetRoomDecorations(uint32_t room_id) {
     std::vector<std::shared_ptr<PlacedDecoration>> result;
@@ -512,7 +512,7 @@ HouseDecorationManager::GetRoomDecorations(uint32_t room_id) {
     return result;
 }
 
-// [SEQUENCE: MVP14-228] Get decoration statistics
+// [SEQUENCE: 3391] Get decoration statistics
 HouseDecorationManager::DecorationStats HouseDecorationManager::GetStatistics() const {
     DecorationStats stats;
     stats.total_decorations = decorations_.size();
@@ -536,7 +536,7 @@ HouseDecorationManager::DecorationStats HouseDecorationManager::GetStatistics() 
     return stats;
 }
 
-// [SEQUENCE: MVP14-229] Get seasonal items
+// [SEQUENCE: 3392] Get seasonal items
 std::vector<DecorationItem> SeasonalDecorationManager::GetSeasonalItems(Season season) {
     std::vector<DecorationItem> items;
     
@@ -552,7 +552,7 @@ std::vector<DecorationItem> SeasonalDecorationManager::GetSeasonalItems(Season s
     return items;
 }
 
-// [SEQUENCE: MVP14-230] Auto-decorate for season
+// [SEQUENCE: 3393] Auto-decorate for season
 void SeasonalDecorationManager::AutoDecorateForSeason(PlayerHouse& house, Season season) {
     HouseDecorationManager dec_manager(house);
     
@@ -577,7 +577,7 @@ void SeasonalDecorationManager::AutoDecorateForSeason(PlayerHouse& house, Season
                 house.GetHouseId(), static_cast<int>(season));
 }
 
-// [SEQUENCE: MVP14-231] Decoration interactions
+// [SEQUENCE: 3394] Decoration interactions
 std::unordered_map<uint32_t, 
     std::unordered_map<std::string, DecorationInteractionHandler::InteractionCallback>>
     DecorationInteractionHandler::interactions_;
@@ -593,7 +593,7 @@ void DecorationInteractionHandler::RegisterInteraction(
                  action_name, item_id);
 }
 
-// [SEQUENCE: MVP14-232] Execute interaction
+// [SEQUENCE: 3395] Execute interaction
 bool DecorationInteractionHandler::ExecuteInteraction(
     Player& player,
     PlacedDecoration& decoration,
@@ -618,7 +618,7 @@ bool DecorationInteractionHandler::ExecuteInteraction(
     return true;
 }
 
-// [SEQUENCE: MVP14-233] Decoration utility functions
+// [SEQUENCE: 3396] Decoration utility functions
 namespace DecorationUtils {
 
 bool IsValidPosition(const Vector3& position, const BoundingBox& room_bounds) {

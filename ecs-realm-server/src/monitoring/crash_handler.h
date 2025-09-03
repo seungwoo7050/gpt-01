@@ -15,10 +15,10 @@
 
 namespace mmorpg::monitoring {
 
-// [SEQUENCE: MVP16-1] Crash handler system for debugging and diagnostics
+// [SEQUENCE: 2527] Crash handler system for debugging and diagnostics
 // 크래시 핸들러 - 서버 크래시 시 덤프 생성 및 분석
 
-// [SEQUENCE: MVP16-2] Crash information structure
+// [SEQUENCE: 2528] Crash information structure
 struct CrashInfo {
     std::chrono::system_clock::time_point timestamp;
     int signal_number;                      // 시그널 번호 (SIGSEGV, SIGABRT 등)
@@ -28,7 +28,7 @@ struct CrashInfo {
     std::vector<std::string> backtrace_symbols; // 심볼 정보
     std::thread::id thread_id;              // 크래시 발생 스레드
     
-    // [SEQUENCE: MVP16-3] System information at crash time
+    // [SEQUENCE: 2529] System information at crash time
     struct SystemInfo {
         size_t memory_usage_bytes;          // 메모리 사용량
         size_t peak_memory_bytes;           // 최대 메모리 사용량
@@ -40,7 +40,7 @@ struct CrashInfo {
         std::chrono::milliseconds uptime;   // 서버 가동 시간
     } system_info;
     
-    // [SEQUENCE: MVP16-4] Game state at crash time
+    // [SEQUENCE: 2530] Game state at crash time
     struct GameState {
         std::vector<std::string> recent_commands;  // 최근 실행된 명령어
         std::vector<std::string> recent_errors;    // 최근 에러 로그
@@ -49,17 +49,17 @@ struct CrashInfo {
     } game_state;
 };
 
-// [SEQUENCE: MVP16-5] Crash dump writer
+// [SEQUENCE: 2531] Crash dump writer
 class CrashDumpWriter {
 public:
     CrashDumpWriter(const std::string& dump_directory) 
         : dump_directory_(dump_directory) {
         
-        // [SEQUENCE: MVP16-6] Create dump directory if not exists
+        // [SEQUENCE: 2532] Create dump directory if not exists
         std::filesystem::create_directories(dump_directory_);
     }
     
-    // [SEQUENCE: MVP16-7] Write crash dump to file
+    // [SEQUENCE: 2533] Write crash dump to file
     void WriteDump(const CrashInfo& crash_info) {
         auto timestamp = std::chrono::system_clock::now();
         auto time_t = std::chrono::system_clock::to_time_t(timestamp);
@@ -78,7 +78,7 @@ public:
             return;
         }
         
-        // [SEQUENCE: MVP16-8] Write crash header
+        // [SEQUENCE: 2534] Write crash header
         dump_file << "=== MMORPG Server Crash Dump ===" << std::endl;
         dump_file << "Timestamp: " << FormatTimestamp(crash_info.timestamp) << std::endl;
         dump_file << "Server Version: " << crash_info.system_info.server_version << std::endl;
@@ -86,7 +86,7 @@ public:
         dump_file << "Uptime: " << crash_info.system_info.uptime.count() << " ms" << std::endl;
         dump_file << std::endl;
         
-        // [SEQUENCE: MVP16-9] Write signal information
+        // [SEQUENCE: 2535] Write signal information
         dump_file << "=== Crash Information ===" << std::endl;
         dump_file << "Signal: " << crash_info.signal_name 
                   << " (" << crash_info.signal_number << ")" << std::endl;
@@ -94,14 +94,14 @@ public:
         dump_file << "Thread ID: " << crash_info.thread_id << std::endl;
         dump_file << std::endl;
         
-        // [SEQUENCE: MVP16-10] Write backtrace
+        // [SEQUENCE: 2536] Write backtrace
         dump_file << "=== Backtrace ===" << std::endl;
         for (size_t i = 0; i < crash_info.backtrace_symbols.size(); ++i) {
             dump_file << "#" << i << " " << crash_info.backtrace_symbols[i] << std::endl;
         }
         dump_file << std::endl;
         
-        // [SEQUENCE: MVP16-11] Write system state
+        // [SEQUENCE: 2537] Write system state
         dump_file << "=== System State ===" << std::endl;
         dump_file << "Memory Usage: " << FormatBytes(crash_info.system_info.memory_usage_bytes) << std::endl;
         dump_file << "Peak Memory: " << FormatBytes(crash_info.system_info.peak_memory_bytes) << std::endl;
@@ -110,7 +110,7 @@ public:
         dump_file << "Active Players: " << crash_info.system_info.active_player_count << std::endl;
         dump_file << std::endl;
         
-        // [SEQUENCE: MVP16-12] Write game state
+        // [SEQUENCE: 2538] Write game state
         dump_file << "=== Game State ===" << std::endl;
         dump_file << "Current Phase: " << crash_info.game_state.current_phase << std::endl;
         dump_file << "Last Packet: " << crash_info.game_state.last_processed_packet << std::endl;
@@ -127,7 +127,7 @@ public:
         
         dump_file.close();
         
-        // [SEQUENCE: MVP16-13] Also write minidump for analysis tools
+        // [SEQUENCE: 2539] Also write minidump for analysis tools
         WriteMinidump(crash_info, filepath + ".dmp");
         
         spdlog::critical("Crash dump written to: {}", filepath);
@@ -166,10 +166,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP16-14] Stack trace analyzer
+// [SEQUENCE: 2540] Stack trace analyzer
 class StackTraceAnalyzer {
 public:
-    // [SEQUENCE: MVP16-15] Capture current stack trace
+    // [SEQUENCE: 2541] Capture current stack trace
     static std::vector<std::string> CaptureStackTrace(int skip_frames = 1) {
         std::vector<std::string> stack_trace;
         
@@ -193,7 +193,7 @@ public:
         return stack_trace;
     }
     
-    // [SEQUENCE: MVP16-16] Analyze crash pattern
+    // [SEQUENCE: 2542] Analyze crash pattern
     static std::string AnalyzeCrashPattern(const std::vector<std::string>& backtrace) {
         // Common crash patterns
         if (ContainsPattern(backtrace, "malloc") || ContainsPattern(backtrace, "free")) {
@@ -220,7 +220,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP16-17] Demangle C++ symbols
+    // [SEQUENCE: 2543] Demangle C++ symbols
     static std::string DemangleSymbol(const char* symbol) {
         std::string result(symbol);
         
@@ -255,7 +255,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP16-18] Crash handler singleton
+// [SEQUENCE: 2544] Crash handler singleton
 class CrashHandler {
 public:
     static CrashHandler& Instance() {
@@ -263,7 +263,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP16-19] Initialize crash handler
+    // [SEQUENCE: 2545] Initialize crash handler
     void Initialize(const std::string& dump_directory) {
         dump_writer_ = std::make_unique<CrashDumpWriter>(dump_directory);
         
@@ -278,12 +278,12 @@ public:
         spdlog::info("Crash handler initialized with dump directory: {}", dump_directory);
     }
     
-    // [SEQUENCE: MVP16-20] Register state provider
+    // [SEQUENCE: 2546] Register state provider
     void RegisterStateProvider(std::function<void(CrashInfo&)> provider) {
         state_providers_.push_back(provider);
     }
     
-    // [SEQUENCE: MVP16-21] Manual crash dump
+    // [SEQUENCE: 2547] Manual crash dump
     void GenerateManualDump(const std::string& reason) {
         CrashInfo crash_info;
         crash_info.timestamp = std::chrono::system_clock::now();
@@ -308,7 +308,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP16-22] Add recent command for crash context
+    // [SEQUENCE: 2548] Add recent command for crash context
     void AddRecentCommand(const std::string& command) {
         std::lock_guard<std::mutex> lock(command_mutex_);
         recent_commands_.push_back(command);
@@ -341,7 +341,7 @@ private:
     std::mutex command_mutex_;
     std::mutex error_mutex_;
     
-    // [SEQUENCE: MVP16-23] Install signal handlers
+    // [SEQUENCE: 2549] Install signal handlers
     void InstallSignalHandlers() {
         struct sigaction sa;
         sa.sa_sigaction = SignalHandler;
@@ -356,7 +356,7 @@ private:
         sigaction(SIGBUS, &sa, nullptr);   // Bus error
     }
     
-    // [SEQUENCE: MVP16-24] Signal handler
+    // [SEQUENCE: 2550] Signal handler
     static void SignalHandler(int signal, siginfo_t* info, void* context) {
         // Prevent recursive crashes
         static std::atomic<bool> handling_crash{false};
@@ -403,7 +403,7 @@ private:
         raise(signal);
     }
     
-    // [SEQUENCE: MVP16-25] Unhandled exception handler
+    // [SEQUENCE: 2551] Unhandled exception handler
     static void OnUnhandledException() {
         try {
             // Re-throw to get exception info
@@ -421,7 +421,7 @@ private:
         std::abort();
     }
     
-    // [SEQUENCE: MVP16-26] Collect crash state from providers
+    // [SEQUENCE: 2552] Collect crash state from providers
     void CollectCrashState(CrashInfo& crash_info) {
         // Copy recent activity
         {
@@ -460,16 +460,16 @@ private:
     }
 };
 
-// [SEQUENCE: MVP16-27] Crash report analyzer for post-mortem analysis
+// [SEQUENCE: 2553] Crash report analyzer for post-mortem analysis
 class CrashReportAnalyzer {
 public:
     struct CrashStatistics {
         std::unordered_map<std::string, int> crash_by_signal;
         std::unordered_map<std::string, int> crash_by_pattern;
         std::unordered_map<std::string, int> crash_by_function;
-        std::vector<std::chrono::system_clock::time_point> crash_times; 
+        std::vector<std::chrono::system_clock::time_point> crash_times;
         
-        // [SEQUENCE: MVP16-28] Calculate crash frequency
+        // [SEQUENCE: 2554] Calculate crash frequency
         float GetCrashFrequency() const {
             if (crash_times.size() < 2) return 0;
             
@@ -479,7 +479,7 @@ public:
             return hours > 0 ? static_cast<float>(crash_times.size()) / hours : 0;
         }
         
-        // [SEQUENCE: MVP16-29] Get most common crash
+        // [SEQUENCE: 2555] Get most common crash
         std::string GetMostCommonCrash() const {
             std::string most_common;
             int max_count = 0;
@@ -495,7 +495,7 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP16-30] Analyze crash dump files
+    // [SEQUENCE: 2556] Analyze crash dump files
     static CrashStatistics AnalyzeCrashDumps(const std::string& dump_directory) {
         CrashStatistics stats;
         

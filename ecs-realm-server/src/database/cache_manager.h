@@ -9,11 +9,12 @@
 #include <list>
 #include <functional>
 #include <vector>
-#include "../core/types.h"
+#include <thread>
+#include "core/ecs/types.h"
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-373] Cache entry status
+// [SEQUENCE: 3043] Cache entry status
 enum class CacheStatus {
     VALID,          // 캐시 데이터 유효
     STALE,          // 만료되었지만 사용 가능
@@ -21,7 +22,7 @@ enum class CacheStatus {
     INVALID         // 무효화됨
 };
 
-// [SEQUENCE: MVP14-374] Cache eviction policy
+// [SEQUENCE: 3044] Cache eviction policy
 enum class EvictionPolicy {
     LRU,            // Least Recently Used
     LFU,            // Least Frequently Used
@@ -31,7 +32,7 @@ enum class EvictionPolicy {
     ADAPTIVE        // Adaptive policy
 };
 
-// [SEQUENCE: MVP14-375] Cache consistency model
+// [SEQUENCE: 3045] Cache consistency model
 enum class ConsistencyModel {
     WRITE_THROUGH,      // 쓰기 시 즉시 DB 업데이트
     WRITE_BEHIND,       // 비동기 DB 업데이트
@@ -40,7 +41,7 @@ enum class ConsistencyModel {
     EVENTUAL            // 최종 일관성
 };
 
-// [SEQUENCE: MVP14-376] Cache statistics
+// [SEQUENCE: 3046] Cache statistics
 struct CacheStats {
     // Hit/Miss statistics
     std::atomic<uint64_t> hits{0};
@@ -76,7 +77,7 @@ struct CacheStats {
     }
 };
 
-// [SEQUENCE: MVP14-377] Cache entry metadata
+// [SEQUENCE: 3047] Cache entry metadata
 template<typename T>
 struct CacheEntry {
     T data;
@@ -102,7 +103,7 @@ struct CacheEntry {
     }
 };
 
-// [SEQUENCE: MVP14-378] Cache layer base class
+// [SEQUENCE: 3048] Cache layer base class
 template<typename KeyType, typename ValueType>
 class CacheLayer {
 public:
@@ -115,14 +116,14 @@ public:
     
     virtual ~CacheLayer() = default;
     
-    // [SEQUENCE: MVP14-379] Core cache operations
+    // [SEQUENCE: 3049] Core cache operations
     virtual bool Get(const Key& key, Value& value) = 0;
     virtual void Set(const Key& key, const Value& value, 
                     std::chrono::seconds ttl = std::chrono::seconds(300)) = 0;
     virtual bool Delete(const Key& key) = 0;
     virtual void Clear() = 0;
     
-    // [SEQUENCE: MVP14-380] Batch operations
+    // [SEQUENCE: 3050] Batch operations
     virtual std::unordered_map<Key, Value> MultiGet(const std::vector<Key>& keys) {
         std::unordered_map<Key, Value> results;
         for (const auto& key : keys) {
@@ -141,7 +142,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP14-381] Cache management
+    // [SEQUENCE: 3051] Cache management
     virtual size_t Size() const = 0;
     virtual CacheStats GetStats() const { return stats_; }
     virtual void ResetStats() { stats_ = CacheStats(); }
@@ -152,7 +153,7 @@ protected:
     mutable CacheStats stats_;
 };
 
-// [SEQUENCE: MVP14-382] LRU cache implementation
+// [SEQUENCE: 3052] LRU cache implementation
 template<typename KeyType, typename ValueType>
 class LRUCache : public CacheLayer<KeyType, ValueType> {
 public:
@@ -164,7 +165,7 @@ public:
     LRUCache(size_t max_size) 
         : Base(max_size, EvictionPolicy::LRU) {}
     
-    // [SEQUENCE: MVP14-383] LRU Get implementation
+    // [SEQUENCE: 3053] LRU Get implementation
     bool Get(const Key& key, Value& value) override {
         auto start = std::chrono::high_resolution_clock::now();
         std::lock_guard<std::mutex> lock(mutex_);
@@ -199,7 +200,7 @@ public:
         return true;
     }
     
-    // [SEQUENCE: MVP14-384] LRU Set implementation
+    // [SEQUENCE: 3054] LRU Set implementation
     void Set(const Key& key, const Value& value, 
             std::chrono::seconds ttl = std::chrono::seconds(300)) override {
         auto start = std::chrono::high_resolution_clock::now();
@@ -239,7 +240,7 @@ public:
         UpdateSetStats(start);
     }
     
-    // [SEQUENCE: MVP14-385] Delete entry
+    // [SEQUENCE: 3055] Delete entry
     bool Delete(const Key& key) override {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -251,7 +252,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-386] Clear all entries
+    // [SEQUENCE: 3056] Clear all entries
     void Clear() override {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -283,7 +284,7 @@ private:
     
     mutable std::mutex mutex_;
     
-    // [SEQUENCE: MVP14-387] Evict least recently used
+    // [SEQUENCE: 3057] Evict least recently used
     void EvictLRU() {
         if (lru_list_.empty()) return;
         
@@ -329,7 +330,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-388] Two-level cache (L1 + L2)
+// [SEQUENCE: 3058] Two-level cache (L1 + L2)
 template<typename KeyType, typename ValueType>
 class TwoLevelCache {
 public:
@@ -340,7 +341,7 @@ public:
         : l1_cache_(std::make_unique<LRUCache<Key, Value>>(l1_size))
         , l2_cache_(std::make_unique<LRUCache<Key, Value>>(l2_size)) {}
     
-    // [SEQUENCE: MVP14-389] Two-level get
+    // [SEQUENCE: 3059] Two-level get
     bool Get(const Key& key, Value& value) {
         // Check L1 first
         if (l1_cache_->Get(key, value)) {
@@ -360,7 +361,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-390] Two-level set
+    // [SEQUENCE: 3060] Two-level set
     void Set(const Key& key, const Value& value, 
             std::chrono::seconds ttl = std::chrono::seconds(300)) {
         // Always set in L1
@@ -405,7 +406,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-391] Write-through cache wrapper
+// [SEQUENCE: 3061] Write-through cache wrapper
 template<typename KeyType, typename ValueType>
 class WriteThroughCache {
 public:
@@ -421,7 +422,7 @@ public:
         , loader_(loader)
         , storer_(storer) {}
     
-    // [SEQUENCE: MVP14-392] Read-through get
+    // [SEQUENCE: 3062] Read-through get
     bool Get(const Key& key, Value& value) {
         // Try cache first
         if (cache_->Get(key, value)) {
@@ -438,7 +439,7 @@ public:
         return false;
     }
     
-    // [SEQUENCE: MVP14-393] Write-through set
+    // [SEQUENCE: 3063] Write-through set
     bool Set(const Key& key, const Value& value) {
         // Write to storage first
         if (!storer_(key, value)) {
@@ -456,10 +457,10 @@ private:
     StoreFunction storer_;
 };
 
-// [SEQUENCE: MVP14-394] Cache invalidation strategies
+// [SEQUENCE: 3064] Cache invalidation strategies
 class CacheInvalidator {
 public:
-    // [SEQUENCE: MVP14-395] Invalidation patterns
+    // [SEQUENCE: 3065] Invalidation patterns
     enum class InvalidationPattern {
         SINGLE_KEY,         // 단일 키 무효화
         KEY_PATTERN,        // 패턴 매칭 무효화
@@ -468,23 +469,23 @@ public:
         CASCADE             // 연쇄 무효화
     };
     
-    // [SEQUENCE: MVP14-396] Invalidate by pattern
+    // [SEQUENCE: 3066] Invalidate by pattern
     template<typename Cache>
     static void InvalidateByPattern(Cache& cache, const std::string& pattern) {
         // Implementation would iterate and invalidate matching keys
     }
     
-    // [SEQUENCE: MVP14-397] Invalidate by tags
+    // [SEQUENCE: 3067] Invalidate by tags
     template<typename Cache>
     static void InvalidateByTags(Cache& cache, const std::vector<std::string>& tags) {
         // Implementation would track and invalidate tagged entries
     }
 };
 
-// [SEQUENCE: MVP14-398] Cache warming strategies
+// [SEQUENCE: 3068] Cache warming strategies
 class CacheWarmer {
 public:
-    // [SEQUENCE: MVP14-399] Warming strategies
+    // [SEQUENCE: 3069] Warming strategies
     enum class WarmingStrategy {
         LAZY,               // 요청 시 로드
         EAGER,              // 즉시 전체 로드
@@ -493,7 +494,7 @@ public:
         ADAPTIVE            // 적응형 로드
     };
     
-    // [SEQUENCE: MVP14-400] Warm cache with data
+    // [SEQUENCE: 3070] Warm cache with data
     template<typename Cache, typename DataSource>
     static void WarmCache(Cache& cache, DataSource& source, 
                          WarmingStrategy strategy = WarmingStrategy::LAZY) {
@@ -514,7 +515,7 @@ public:
     }
 };
 
-// [SEQUENCE: MVP14-401] Global cache manager
+// [SEQUENCE: 3071] Global cache manager
 class GlobalCacheManager {
 public:
     static GlobalCacheManager& Instance() {
@@ -522,21 +523,21 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-402] Register named cache
+    // [SEQUENCE: 3072] Register named cache
     template<typename Key, typename Value>
     void RegisterCache(const std::string& name, 
                       std::unique_ptr<CacheLayer<Key, Value>> cache) {
         // Store cache with type erasure
     }
     
-    // [SEQUENCE: MVP14-403] Get named cache
+    // [SEQUENCE: 3073] Get named cache
     template<typename Key, typename Value>
     CacheLayer<Key, Value>* GetCache(const std::string& name) {
         // Retrieve cache with type checking
         return nullptr;
     }
     
-    // [SEQUENCE: MVP14-404] Global cache operations
+    // [SEQUENCE: 3074] Global cache operations
     void ClearAllCaches();
     void PrintAllStats();
     void StartMaintenanceThread(std::chrono::seconds interval);
@@ -550,6 +551,7 @@ private:
     std::mutex mutex_;
     std::thread maintenance_thread_;
     std::atomic<bool> maintenance_running_{false};
+    void PerformMaintenance();
 };
 
 } // namespace mmorpg::database

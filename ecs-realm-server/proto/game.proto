@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP1-44] game.proto: 게임 월드 진입, 캐릭터 이동 등 핵심 게임플레이 관련 메시지를 정의합니다.
+// [SEQUENCE: MVP1-29] game.proto: 핵심 게임플레이 관련 메시지를 정의합니다.
 syntax = "proto3";
 
 package mmorpg.proto;

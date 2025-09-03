@@ -17,10 +17,10 @@
 
 namespace mmorpg::ranking {
 
-// [SEQUENCE: MVP13-64] Comprehensive leaderboard system for displaying rankings
+// [SEQUENCE: 2734] Comprehensive leaderboard system for displaying rankings
 // 종합 리더보드 시스템 - 순위 표시 및 관리
 
-// [SEQUENCE: MVP13-65] Leaderboard types
+// [SEQUENCE: 2735] Leaderboard types
 enum class LeaderboardType {
     GLOBAL,                 // 전체 서버 리더보드
     REGIONAL,               // 지역별 리더보드
@@ -31,7 +31,7 @@ enum class LeaderboardType {
     CUSTOM                  // 커스텀 리더보드
 };
 
-// [SEQUENCE: MVP13-66] Leaderboard display modes
+// [SEQUENCE: 2736] Leaderboard display modes
 enum class DisplayMode {
     STANDARD,               // 표준 표시 (순위, 이름, 레이팅)
     DETAILED,               // 상세 표시 (통계 포함)
@@ -40,9 +40,9 @@ enum class DisplayMode {
     HEATMAP                 // 히트맵 표시
 };
 
-// [SEQUENCE: MVP13-67] Leaderboard entry with display data
+// [SEQUENCE: 2737] Leaderboard entry with display data
 struct LeaderboardEntry {
-    // [SEQUENCE: MVP13-68] Basic information
+    // [SEQUENCE: 2738] Basic information
     uint32_t rank;
     uint32_t previous_rank;
     int32_t rank_change;            // 순위 변동
@@ -52,13 +52,13 @@ struct LeaderboardEntry {
     std::string guild_name;
     std::string guild_tag;          // 길드 태그 (짧은 이름)
     
-    // [SEQUENCE: MVP13-69] Visual elements
+    // [SEQUENCE: 2739] Visual elements
     std::string class_icon_url;     // 직업 아이콘 URL
     std::string tier_icon_url;      // 티어 아이콘 URL
     std::string country_flag_url;   // 국가 깃발 URL
     std::string avatar_url;         // 플레이어 아바타 URL
     
-    // [SEQUENCE: MVP13-70] Rating and performance
+    // [SEQUENCE: 2740] Rating and performance
     int32_t rating;
     int32_t peak_rating;
     std::string tier_name;
@@ -69,18 +69,18 @@ struct LeaderboardEntry {
     uint32_t losses;
     double win_rate;
     
-    // [SEQUENCE: MVP13-71] Recent performance
+    // [SEQUENCE: 2741] Recent performance
     std::vector<bool> recent_matches;    // 최근 5경기 (true=승리)
     int32_t rating_trend;                // 최근 레이팅 변화 추세
     std::string trend_indicator;         // "↑", "↓", "→"
     
-    // [SEQUENCE: MVP13-72] Activity status
+    // [SEQUENCE: 2742] Activity status
     bool is_online;
     bool is_in_match;
     std::chrono::system_clock::time_point last_seen;
     std::string activity_status;        // "온라인", "경기 중", "5분 전"
     
-    // [SEQUENCE: MVP13-73] Achievements and badges
+    // [SEQUENCE: 2743] Achievements and badges
     std::vector<std::string> badge_urls;    // 업적 배지 URL들
     std::string special_title;              // 특별 칭호
     bool is_season_champion;                // 지난 시즌 챔피언
@@ -91,14 +91,14 @@ struct LeaderboardEntry {
     std::optional<double> win_rate_difference;    // 나와의 승률 차이
 };
 
-// [SEQUENCE: MVP13-74] Leaderboard configuration
+// [SEQUENCE: 2744] Leaderboard configuration
 struct LeaderboardConfig {
     LeaderboardType type;
     RankingCategory category;
     RankingPeriod period;
     DisplayMode display_mode;
     
-    // [SEQUENCE: MVP13-75] Filtering options
+    // [SEQUENCE: 2745] Filtering options
     struct Filters {
         std::optional<std::string> region;          // 지역 필터
         std::optional<std::string> class_name;      // 직업 필터
@@ -110,7 +110,7 @@ struct LeaderboardConfig {
         bool active_only{false};                    // 활성 플레이어만 (7일 이내)
     } filters;
     
-    // [SEQUENCE: MVP13-76] Display options
+    // [SEQUENCE: 2746] Display options
     struct DisplayOptions {
         uint32_t entries_per_page{20};              // 페이지당 항목 수
         bool show_offline_status{true};             // 오프라인 상태 표시
@@ -121,7 +121,7 @@ struct LeaderboardConfig {
         bool highlight_guild_members{true};         // 길드원 강조
     } display_options;
     
-    // [SEQUENCE: MVP13-77] Sorting options
+    // [SEQUENCE: 2747] Sorting options
     enum class SortBy {
         RANK,               // 순위순 (기본)
         RATING,             // 레이팅순
@@ -135,7 +135,7 @@ struct LeaderboardConfig {
     bool sort_ascending{true};
 };
 
-// [SEQUENCE: MVP13-78] Leaderboard service
+// [SEQUENCE: 2748] Leaderboard service
 class LeaderboardService {
 public:
     LeaderboardService(std::shared_ptr<RankingService> ranking_service)
@@ -148,14 +148,14 @@ public:
         StopCacheWorker();
     }
     
-    // [SEQUENCE: MVP13-79] Get leaderboard page
+    // [SEQUENCE: 2749] Get leaderboard page
     struct LeaderboardPage {
         std::vector<LeaderboardEntry> entries;
         uint32_t current_page;
         uint32_t total_pages;
         uint32_t total_entries;
         
-        // [SEQUENCE: MVP13-80] Page metadata
+        // [SEQUENCE: 2750] Page metadata
         struct Metadata {
             std::chrono::system_clock::time_point last_updated;
             std::chrono::seconds update_interval{60};
@@ -179,7 +179,7 @@ public:
                                   uint32_t page = 0) {
         std::lock_guard<std::mutex> lock(cache_mutex_);
         
-        // [SEQUENCE: MVP13-81] Check cache first
+        // [SEQUENCE: 2751] Check cache first
         auto cache_key = GenerateCacheKey(config, page);
         auto cache_it = leaderboard_cache_.find(cache_key);
         
@@ -192,7 +192,7 @@ public:
             }
         }
         
-        // [SEQUENCE: MVP13-82] Build fresh leaderboard
+        // [SEQUENCE: 2752] Build fresh leaderboard
         LeaderboardPage page_data = BuildLeaderboard(config, page);
         
         // Cache the result
@@ -204,7 +204,7 @@ public:
         return page_data;
     }
     
-    // [SEQUENCE: MVP13-83] Get player's position in leaderboard
+    // [SEQUENCE: 2753] Get player's position in leaderboard
     struct PlayerPosition {
         uint32_t rank;
         uint32_t page;
@@ -236,7 +236,7 @@ public:
         position.rank = rank_info->rank_data.rank;
         position.page = (position.rank - 1) / config.display_options.entries_per_page;
         
-        // [SEQUENCE: MVP13-84] Get surrounding entries
+        // [SEQUENCE: 2754] Get surrounding entries
         int32_t start_rank = std::max(1, static_cast<int32_t>(position.rank) - 5);
         int32_t end_rank = position.rank + 5;
         
@@ -249,7 +249,7 @@ public:
                 ConvertToLeaderboardEntry(all_players[i], config));
         }
         
-        // [SEQUENCE: MVP13-85] Calculate percentile
+        // [SEQUENCE: 2755] Calculate percentile
         auto total_players = GetTotalPlayers(config);
         if (total_players > 0) {
             position.percentile = (1.0 - static_cast<double>(position.rank) / 
@@ -275,7 +275,7 @@ public:
         return position;
     }
     
-    // [SEQUENCE: MVP13-86] Search leaderboard
+    // [SEQUENCE: 2756] Search leaderboard
     std::vector<LeaderboardEntry> SearchLeaderboard(
         const std::string& query,
         const LeaderboardConfig& config,
@@ -317,7 +317,7 @@ public:
         return results;
     }
     
-    // [SEQUENCE: MVP13-87] Get friends leaderboard
+    // [SEQUENCE: 2757] Get friends leaderboard
     std::vector<LeaderboardEntry> GetFriendsLeaderboard(
         uint64_t player_id,
         const std::vector<uint64_t>& friend_ids,
@@ -350,7 +350,7 @@ public:
         return entries;
     }
     
-    // [SEQUENCE: MVP13-88] Get guild leaderboard
+    // [SEQUENCE: 2758] Get guild leaderboard
     std::vector<LeaderboardEntry> GetGuildLeaderboard(
         const std::string& guild_name,
         const LeaderboardConfig& config) {
@@ -369,13 +369,13 @@ public:
         return entries;
     }
     
-    // [SEQUENCE: MVP13-89] Get leaderboard statistics
+    // [SEQUENCE: 2759] Get leaderboard statistics
     struct LeaderboardStatistics {
         uint32_t total_ranked_players;
         uint32_t active_players_24h;
         uint32_t active_players_7d;
         
-        // [SEQUENCE: MVP13-90] Rating statistics
+        // [SEQUENCE: 2760] Rating statistics
         struct RatingStats {
             int32_t highest_rating;
             int32_t lowest_rating;
@@ -384,7 +384,7 @@ public:
             double standard_deviation;
         } rating_stats;
         
-        // [SEQUENCE: MVP13-91] Activity statistics
+        // [SEQUENCE: 2761] Activity statistics
         struct ActivityStats {
             uint32_t total_matches_24h;
             uint32_t unique_players_24h;
@@ -395,7 +395,7 @@ public:
             uint32_t quiet_hour;
         } activity_stats;
         
-        // [SEQUENCE: MVP13-92] Class balance
+        // [SEQUENCE: 2762] Class balance
         struct ClassBalance {
             std::unordered_map<std::string, uint32_t> class_counts;
             std::unordered_map<std::string, double> class_win_rates;
@@ -417,7 +417,7 @@ public:
         auto all_players = ranking_service_->GetTopPlayers(category, 100000);
         stats.total_ranked_players = all_players.size();
         
-        // [SEQUENCE: MVP13-93] Calculate various statistics
+        // [SEQUENCE: 2763] Calculate various statistics
         CalculateRatingStats(all_players, stats.rating_stats);
         CalculateActivityStats(all_players, stats.activity_stats);
         CalculateClassBalance(all_players, stats.class_balance);
@@ -428,7 +428,7 @@ public:
         return stats;
     }
     
-    // [SEQUENCE: MVP13-94] Export leaderboard data
+    // [SEQUENCE: 2764] Export leaderboard data
     void ExportLeaderboard(const LeaderboardConfig& config,
                           const std::string& format,
                           const std::string& filename) {
@@ -446,7 +446,7 @@ public:
 private:
     std::shared_ptr<RankingService> ranking_service_;
     
-    // [SEQUENCE: MVP13-95] Cache system
+    // [SEQUENCE: 2765] Cache system
     struct CachedLeaderboard {
         LeaderboardPage page;
         std::chrono::steady_clock::time_point timestamp;
@@ -459,7 +459,7 @@ private:
     std::atomic<bool> cache_worker_running_{false};
     std::thread cache_worker_thread_;
     
-    // [SEQUENCE: MVP13-96] Initialize cache system
+    // [SEQUENCE: 2766] Initialize cache system
     void InitializeCache() {
         // Pre-populate cache for common leaderboards
         std::vector<LeaderboardConfig> common_configs = {
@@ -482,7 +482,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-97] Cache maintenance worker
+    // [SEQUENCE: 2767] Cache maintenance worker
     void StartCacheWorker() {
         cache_worker_running_ = true;
         cache_worker_thread_ = std::thread([this]() {
@@ -525,7 +525,7 @@ private:
         // This would track access patterns and refresh popular ones
     }
     
-    // [SEQUENCE: MVP13-98] Build leaderboard from ranking data
+    // [SEQUENCE: 2768] Build leaderboard from ranking data
     LeaderboardPage BuildLeaderboard(const LeaderboardConfig& config, 
                                     uint32_t page) {
         LeaderboardPage page_data;
@@ -559,7 +559,7 @@ private:
         return page_data;
     }
     
-    // [SEQUENCE: MVP13-99] Get filtered players
+    // [SEQUENCE: 2769] Get filtered players
     std::vector<PlayerRankInfo> GetFilteredPlayers(const LeaderboardConfig& config) {
         auto all_players = ranking_service_->GetTopPlayers(config.category, 100000);
         std::vector<PlayerRankInfo> filtered;
@@ -573,7 +573,7 @@ private:
         return filtered;
     }
     
-    // [SEQUENCE: MVP13-100] Check if player matches filters
+    // [SEQUENCE: 2770] Check if player matches filters
     bool MatchesFilters(const PlayerRankInfo& player,
                        const LeaderboardConfig::Filters& filters) {
         // Class filter
@@ -619,7 +619,7 @@ private:
         return true;
     }
     
-    // [SEQUENCE: MVP13-101] Sort players according to config
+    // [SEQUENCE: 2771] Sort players according to config
     void SortPlayers(std::vector<PlayerRankInfo>& players,
                     const LeaderboardConfig& config) {
         switch (config.sort_by) {
@@ -679,7 +679,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-102] Convert rank info to leaderboard entry
+    // [SEQUENCE: 2772] Convert rank info to leaderboard entry
     LeaderboardEntry ConvertToLeaderboardEntry(const PlayerRankInfo& rank_info,
                                               const LeaderboardConfig& config) {
         LeaderboardEntry entry;
@@ -732,7 +732,7 @@ private:
         return entry;
     }
     
-    // [SEQUENCE: MVP13-103] Calculate page metadata
+    // [SEQUENCE: 2773] Calculate page metadata
     void CalculatePageMetadata(LeaderboardPage& page,
                               const std::vector<PlayerRankInfo>& all_players) {
         page.metadata.last_updated = std::chrono::system_clock::now();
@@ -772,7 +772,7 @@ private:
         page.metadata.class_distribution = class_counts;
     }
     
-    // [SEQUENCE: MVP13-104] Helper functions
+    // [SEQUENCE: 2774] Helper functions
     std::string GenerateCacheKey(const LeaderboardConfig& config, uint32_t page) {
         return std::to_string(static_cast<int>(config.type)) + "_" +
                std::to_string(static_cast<int>(config.category)) + "_" +
@@ -888,7 +888,7 @@ private:
         return all_players.size();
     }
     
-    // [SEQUENCE: MVP13-105] Statistics calculation
+    // [SEQUENCE: 2775] Statistics calculation
     void CalculateRatingStats(const std::vector<PlayerRankInfo>& players,
                             LeaderboardStatistics::RatingStats& stats) {
         if (players.empty()) return;
@@ -990,7 +990,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-106] Export functions
+    // [SEQUENCE: 2776] Export functions
     void ExportToCSV(const LeaderboardConfig& config, const std::string& filename) {
         std::ofstream file(filename);
         if (!file.is_open()) {
@@ -1034,10 +1034,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP13-107] Leaderboard UI components
+// [SEQUENCE: 2777] Leaderboard UI components
 class LeaderboardUIComponents {
 public:
-    // [SEQUENCE: MVP13-108] Generate HTML for leaderboard entry
+    // [SEQUENCE: 2778] Generate HTML for leaderboard entry
     static std::string GenerateEntryHTML(const LeaderboardEntry& entry) {
         std::stringstream html;
         
@@ -1116,7 +1116,7 @@ public:
         return html.str();
     }
     
-    // [SEQUENCE: MVP13-109] Generate tier distribution chart
+    // [SEQUENCE: 2779] Generate tier distribution chart
     static std::string GenerateTierDistributionChart(
         const std::unordered_map<RankingTier, uint32_t>& distribution) {
         
@@ -1189,6 +1189,5 @@ private:
         return it != classes.end() ? it->second : "tier-unranked";
     }
 };
-
 
 } // namespace mmorpg::ranking

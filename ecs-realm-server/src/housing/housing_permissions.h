@@ -11,7 +11,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-185] Permission levels
+// [SEQUENCE: 3510] Permission levels
 enum class HousingPermissionLevel {
     NO_ACCESS = 0,      // 접근 불가
     VISITOR = 1,        // 방문자
@@ -23,7 +23,7 @@ enum class HousingPermissionLevel {
     OWNER = 7           // 소유자
 };
 
-// [SEQUENCE: MVP14-186] Permission flags
+// [SEQUENCE: 3511] Permission flags
 enum class PermissionFlag : uint32_t {
     ENTER_HOUSE = 1 << 0,           // 집 진입
     USE_FURNITURE = 1 << 1,         // 가구 사용
@@ -42,7 +42,7 @@ enum class PermissionFlag : uint32_t {
     SELL_HOUSE = 1 << 14            // 집 판매
 };
 
-// [SEQUENCE: MVP14-187] Permission set
+// [SEQUENCE: 3512] Permission set
 struct PermissionSet {
     HousingPermissionLevel level;
     uint32_t flags{0};
@@ -73,10 +73,10 @@ struct PermissionSet {
     }
 };
 
-// [SEQUENCE: MVP14-188] House access control
+// [SEQUENCE: 3513] House access control
 class HouseAccessControl {
 public:
-    // [SEQUENCE: MVP14-189] Permission management
+    // [SEQUENCE: 3514] Permission management
     void GrantPermission(uint64_t player_id, const PermissionSet& permissions);
     void RevokePermission(uint64_t player_id);
     void UpdatePermission(uint64_t player_id, const PermissionSet& permissions);
@@ -91,7 +91,7 @@ public:
                             const PermissionSet& permissions);
     void RevokeAllPermissions();
     
-    // [SEQUENCE: MVP14-190] Access lists
+    // [SEQUENCE: 3515] Access lists
     std::vector<std::pair<uint64_t, PermissionSet>> GetAllPermissions() const;
     std::vector<uint64_t> GetPlayersWithLevel(HousingPermissionLevel level) const;
     std::vector<uint64_t> GetPlayersWithFlag(PermissionFlag flag) const;
@@ -129,7 +129,7 @@ private:
     bool ValidateTimeRestriction(const PermissionSet& perms) const;
 };
 
-// [SEQUENCE: MVP14-191] Permission templates
+// [SEQUENCE: 3516] Permission templates
 class PermissionTemplates {
 public:
     // Predefined templates
@@ -139,7 +139,7 @@ public:
     static PermissionSet GetDecoratorTemplate();
     static PermissionSet GetManagerTemplate();
     
-    // [SEQUENCE: MVP14-192] Custom templates
+    // [SEQUENCE: 3517] Custom templates
     struct Template {
         std::string name;
         std::string description;
@@ -157,7 +157,7 @@ private:
     std::unordered_map<std::string, Template> custom_templates_;
 };
 
-// [SEQUENCE: MVP14-193] Permission group system
+// [SEQUENCE: 3518] Permission group system
 class PermissionGroups {
 public:
     struct Group {
@@ -168,7 +168,7 @@ public:
         std::chrono::system_clock::time_point created_date;
     };
     
-    // [SEQUENCE: MVP14-194] Group management
+    // [SEQUENCE: 3519] Group management
     uint32_t CreateGroup(const std::string& name, uint64_t creator_id);
     void DeleteGroup(uint32_t group_id);
     void RenameGroup(uint32_t group_id, const std::string& new_name);
@@ -188,7 +188,7 @@ private:
     std::atomic<uint32_t> next_group_id_{1};
 };
 
-// [SEQUENCE: MVP14-195] House sharing system
+// [SEQUENCE: 3520] House sharing system
 class HouseSharingSystem {
 public:
     enum class SharingType {
@@ -217,7 +217,7 @@ public:
         uint32_t total_ratings{0};
     };
     
-    // [SEQUENCE: MVP14-196] Sharing management
+    // [SEQUENCE: 3521] Sharing management
     void UpdateSharingSettings(uint64_t house_id, const SharingSettings& settings);
     SharingSettings GetSharingSettings(uint64_t house_id) const;
     
@@ -247,7 +247,7 @@ private:
     std::unordered_map<uint64_t, std::unordered_map<uint64_t, uint8_t>> ratings_;
 };
 
-// [SEQUENCE: MVP14-197] Permission manager
+// [SEQUENCE: 3522] Permission manager
 class HousingPermissionManager {
 public:
     static HousingPermissionManager& Instance() {
@@ -255,7 +255,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-198] House access control
+    // [SEQUENCE: 3523] House access control
     HouseAccessControl* GetHouseAccess(uint64_t house_id);
     void CreateHouseAccess(uint64_t house_id, uint64_t owner_id);
     void DeleteHouseAccess(uint64_t house_id);
@@ -273,7 +273,7 @@ public:
     // Template system
     PermissionTemplates& GetTemplates() { return templates_; }
     
-    // [SEQUENCE: MVP14-199] Bulk operations
+    // [SEQUENCE: 3524] Bulk operations
     void ApplyTemplateToHouse(uint64_t house_id, const std::string& template_name,
                             const std::vector<uint64_t>& player_ids);
     
@@ -306,7 +306,7 @@ private:
         lockdown_cache_;
 };
 
-// [SEQUENCE: MVP14-200] Permission utilities
+// [SEQUENCE: 3525] Permission utilities
 namespace PermissionUtils {
     // Permission level checks
     bool IsHigherLevel(HousingPermissionLevel a, HousingPermissionLevel b);

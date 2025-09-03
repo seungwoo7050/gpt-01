@@ -1,10 +1,9 @@
 #include "cache_manager.h"
-#include "../core/logger.h"
 #include <spdlog/spdlog.h>
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-405] Global cache manager implementation
+// [SEQUENCE: 3075] Global cache manager implementation
 void GlobalCacheManager::ClearAllCaches() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -14,7 +13,7 @@ void GlobalCacheManager::ClearAllCaches() {
     caches_.clear();
 }
 
-// [SEQUENCE: MVP14-406] Print statistics for all caches
+// [SEQUENCE: 3076] Print statistics for all caches
 void GlobalCacheManager::PrintAllStats() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -25,7 +24,7 @@ void GlobalCacheManager::PrintAllStats() {
     // This requires storing type information with the caches
 }
 
-// [SEQUENCE: MVP14-407] Start maintenance thread
+// [SEQUENCE: 3077] Start maintenance thread
 void GlobalCacheManager::StartMaintenanceThread(std::chrono::seconds interval) {
     if (maintenance_running_) {
         spdlog::warn("[CACHE_MANAGER] Maintenance thread already running");
@@ -48,7 +47,7 @@ void GlobalCacheManager::StartMaintenanceThread(std::chrono::seconds interval) {
                 interval.count());
 }
 
-// [SEQUENCE: MVP14-408] Perform cache maintenance
+// [SEQUENCE: 3078] Perform cache maintenance
 void GlobalCacheManager::PerformMaintenance() {
     std::lock_guard<std::mutex> lock(mutex_);
     

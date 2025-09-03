@@ -8,7 +8,7 @@
 
 namespace mmorpg::testing {
 
-// [SEQUENCE: MVP19-67] Performance comparison between callback and coroutine approaches
+// [SEQUENCE: 545] Performance comparison between callback and coroutine approaches
 class CoroutinePerformanceTest {
 public:
     struct BenchmarkResult {
@@ -22,36 +22,36 @@ public:
         size_t memory_usage_kb;
     };
     
-    // [SEQUENCE: MVP19-68] Run comprehensive performance comparison
+    // [SEQUENCE: 546] Run comprehensive performance comparison
     static std::vector<BenchmarkResult> RunPerformanceComparison();
     
-    // [SEQUENCE: MVP19-69] Individual test methods
+    // [SEQUENCE: 547] Individual test methods
     static BenchmarkResult TestCallbackApproach(size_t num_operations);
     static BenchmarkResult TestCoroutineApproach(size_t num_operations);
     static BenchmarkResult TestMemoryUsage();
     static BenchmarkResult TestConcurrentConnections(size_t num_connections);
     
-    // [SEQUENCE: MVP19-70] Simulated operations for testing
+    // [SEQUENCE: 548] Simulated operations for testing
     static boost::asio::awaitable<void> SimulateAsyncDatabaseCall();
     static boost::asio::awaitable<void> SimulateAsyncNetworkOperation();
     static boost::asio::awaitable<void> SimulateComplexCoroutineWorkflow();
     static boost::asio::awaitable<void> SimulateConcurrentUser(size_t user_id);
     
-    // [SEQUENCE: MVP19-71] Helper methods
+    // [SEQUENCE: 549] Helper methods
     static void PrintBenchmarkResults(const std::vector<BenchmarkResult>& results);
     static double CalculatePercentageImprovement(double baseline, double improved);
     
 private:
-    // [SEQUENCE: MVP19-72] Callback-style simulation
+    // [SEQUENCE: 550] Callback-style simulation
     static void SimulateCallbackChain(boost::asio::io_context& io, 
                                      std::function<void()> completion_handler);
     
-    // [SEQUENCE: MVP19-73] Memory monitoring
+    // [SEQUENCE: 551] Memory monitoring
     static size_t GetCurrentMemoryUsage();
     static void WarmupMemoryPools();
 };
 
-// [SEQUENCE: MVP19-74] Detailed performance metrics collector
+// [SEQUENCE: 552] Detailed performance metrics collector
 class PerformanceMetrics {
 public:
     void StartTimer(const std::string& operation);
@@ -75,16 +75,16 @@ private:
     mutable std::mutex metrics_mutex_;
 };
 
-// [SEQUENCE: MVP19-75] Real-world scenario simulation
+// [SEQUENCE: 553] Real-world scenario simulation
 class ScenarioTester {
 public:
-    // [SEQUENCE: MVP19-76] Login flood simulation
+    // [SEQUENCE: 554] Login flood simulation
     static boost::asio::awaitable<void> SimulateLoginFlood(size_t concurrent_users);
     
-    // [SEQUENCE: MVP19-77] Mixed workload simulation
+    // [SEQUENCE: 555] Mixed workload simulation
     static boost::asio::awaitable<void> SimulateMixedWorkload();
     
-    // [SEQUENCE: MVP19-78] Stress test with error conditions
+    // [SEQUENCE: 556] Stress test with error conditions
     static boost::asio::awaitable<void> SimulateStressWithErrors();
     
 private:

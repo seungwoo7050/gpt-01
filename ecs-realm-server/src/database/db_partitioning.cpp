@@ -8,10 +8,10 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-293] Partition manager singleton
+// [SEQUENCE: 2960] Partition manager singleton
 static PartitionManager* g_partition_manager = nullptr;
 
-// [SEQUENCE: MVP14-294] Initialize global partition manager
+// [SEQUENCE: 2961] Initialize global partition manager
 void InitializePartitionManager() {
     if (!g_partition_manager) {
         g_partition_manager = new PartitionManager();
@@ -23,10 +23,10 @@ void InitializePartitionManager() {
     }
 }
 
-// [SEQUENCE: MVP14-295] Register common partitioned tables
+// [SEQUENCE: 2962] Register common partitioned tables
 void RegisterCommonPartitions() {
     auto* manager = GetPartitionManager();
-    if (!manager) return; 
+    if (!manager) return;
     
     // Player inventory (플레이어 인벤토리)
     manager->RegisterTable("player_inventory", 
@@ -63,12 +63,12 @@ void RegisterCommonPartitions() {
     spdlog::info("[DB_PARTITION] Registered {} common partitioned tables", 8);
 }
 
-// [SEQUENCE: MVP14-296] Get partition manager instance
+// [SEQUENCE: 2963] Get partition manager instance
 PartitionManager* GetPartitionManager() {
     return g_partition_manager;
 }
 
-// [SEQUENCE: MVP14-297] Cleanup partition manager
+// [SEQUENCE: 2964] Cleanup partition manager
 void CleanupPartitionManager() {
     if (g_partition_manager) {
         delete g_partition_manager;
@@ -77,7 +77,7 @@ void CleanupPartitionManager() {
     }
 }
 
-// [SEQUENCE: MVP14-298] Hash-based partition scheme helper
+// [SEQUENCE: 2965] Hash-based partition scheme helper
 PartitionScheme CommonPartitionSchemes::CreateHashBasedScheme(
     const std::string& table_name, 
     uint32_t partition_count) {
@@ -97,7 +97,7 @@ PartitionScheme CommonPartitionSchemes::CreateHashBasedScheme(
     return scheme;
 }
 
-// [SEQUENCE: MVP14-299] Maintenance worker thread
+// [SEQUENCE: 2966] Maintenance worker thread
 class PartitionMaintenanceWorker {
 public:
     PartitionMaintenanceWorker() : running_(false) {}
@@ -150,7 +150,7 @@ private:
 
 static std::unique_ptr<PartitionMaintenanceWorker> g_maintenance_worker;
 
-// [SEQUENCE: MVP14-300] Start partition maintenance
+// [SEQUENCE: 2967] Start partition maintenance
 void StartPartitionMaintenance() {
     if (!g_maintenance_worker) {
         g_maintenance_worker = std::make_unique<PartitionMaintenanceWorker>();
@@ -158,7 +158,7 @@ void StartPartitionMaintenance() {
     }
 }
 
-// [SEQUENCE: MVP14-301] Stop partition maintenance
+// [SEQUENCE: 2968] Stop partition maintenance
 void StopPartitionMaintenance() {
     if (g_maintenance_worker) {
         g_maintenance_worker->Stop();
@@ -166,7 +166,7 @@ void StopPartitionMaintenance() {
     }
 }
 
-// [SEQUENCE: MVP14-302] Execute partition split operation
+// [SEQUENCE: 2969] Execute partition split operation
 bool ExecutePartitionSplit(const std::string& table_name, 
                           uint32_t partition_id) {
     auto* manager = GetPartitionManager();
@@ -184,7 +184,7 @@ bool ExecutePartitionSplit(const std::string& table_name,
     return table->SplitPartition(partition_id);
 }
 
-// [SEQUENCE: MVP14-303] Execute partition merge operation
+// [SEQUENCE: 2970] Execute partition merge operation
 bool ExecutePartitionMerge(const std::string& table_name,
                          uint32_t partition1_id,
                          uint32_t partition2_id) {
@@ -203,7 +203,7 @@ bool ExecutePartitionMerge(const std::string& table_name,
     return table->MergePartitions(partition1_id, partition2_id);
 }
 
-// [SEQUENCE: MVP14-304] Get partition info for query
+// [SEQUENCE: 2971] Get partition info for query
 PartitionQueryInfo GetPartitionForQuery(const std::string& table_name,
                                       const std::string& partition_key) {
     PartitionQueryInfo info;
@@ -244,7 +244,7 @@ PartitionQueryInfo GetPartitionForQuery(const std::string& table_name,
     return info;
 }
 
-// [SEQUENCE: MVP14-305] Monitor partition health
+// [SEQUENCE: 2972] Monitor partition health
 PartitionHealthReport MonitorPartitionHealth() {
     PartitionHealthReport report;
     report.timestamp = std::chrono::system_clock::now();
@@ -291,7 +291,7 @@ PartitionHealthReport MonitorPartitionHealth() {
     return report;
 }
 
-// [SEQUENCE: MVP14-306] Rebalance partitions
+// [SEQUENCE: 2973] Rebalance partitions
 bool RebalancePartitions(const std::string& table_name) {
     auto* manager = GetPartitionManager();
     if (!manager) return false;
@@ -345,7 +345,7 @@ bool RebalancePartitions(const std::string& table_name) {
     return true;
 }
 
-// [SEQUENCE: MVP14-307] Generate partition report
+// [SEQUENCE: 2974] Generate partition report
 std::string GeneratePartitionReport() {
     std::stringstream report;
     
@@ -363,8 +363,8 @@ std::string GeneratePartitionReport() {
     auto stats = manager->GetGlobalStatistics();
     
     report << "Global Statistics:\n";
-    report << fmt::format("  Total Tables: {}\\n", stats.total_tables);
-    report << fmt::format("  Total Partitions: {}\\n", stats.total_partitions);
+    report << fmt::format("  Total Tables: {}\n", stats.total_tables);
+    report << fmt::format("  Total Partitions: {}\n", stats.total_partitions);
     report << fmt::format("  Total Data Size: {:.2f} GB\n", 
                         stats.total_data_size / (1024.0 * 1024.0 * 1024.0));
     report << "\n";
@@ -372,20 +372,20 @@ std::string GeneratePartitionReport() {
     // Per-table statistics
     report << "Table Statistics:\n";
     for (const auto& [table_name, table_stats] : stats.table_stats) {
-        report << fmt::format("\n  Table: {}\\n", table_name);
-        report << fmt::format("    Partitions: {} (active: {})\\n", 
+        report << fmt::format("\n  Table: {}\n", table_name);
+        report << fmt::format("    Partitions: {} (active: {})\n", 
                             table_stats.total_partitions, 
                             table_stats.active_partitions);
-        report << fmt::format("    Total Rows: {}\\n", table_stats.total_rows);
-        report << fmt::format("    Avg Rows/Partition: {:.0f}\\n", 
+        report << fmt::format("    Total Rows: {}\n", table_stats.total_rows);
+        report << fmt::format("    Avg Rows/Partition: {:.0f}\n", 
                             table_stats.avg_rows_per_partition);
-        report << fmt::format("    Data Size: {:.2f} GB\\n", 
+        report << fmt::format("    Data Size: {:.2f} GB\n", 
                             table_stats.total_data_size / (1024.0 * 1024.0 * 1024.0));
-        report << fmt::format("    Hot Partitions: {}\\n", table_stats.hot_partitions);
-        report << fmt::format("    Empty Partitions: {}\\n", table_stats.empty_partitions);
+        report << fmt::format("    Hot Partitions: {}\n", table_stats.hot_partitions);
+        report << fmt::format("    Empty Partitions: {}\n", table_stats.empty_partitions);
         
         if (table_stats.avg_query_time_ms > 0) {
-            report << fmt::format("    Avg Query Time: {:.2f} ms\\n", 
+            report << fmt::format("    Avg Query Time: {:.2f} ms\n", 
                                 table_stats.avg_query_time_ms);
         }
     }

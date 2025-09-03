@@ -1,11 +1,10 @@
 #include "connection_pool.h"
-#include "../core/logger.h"
 #include <spdlog/spdlog.h>
 #include <algorithm>
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-500] Pooled connection implementation
+// [SEQUENCE: 3192] Pooled connection implementation
 PooledConnection::PooledConnection(uint64_t id, const ConnectionPoolConfig& config)
     : id_(id)
     , config_(config)
@@ -19,7 +18,7 @@ PooledConnection::~PooledConnection() {
     }
 }
 
-// [SEQUENCE: MVP14-501] Connect to database
+// [SEQUENCE: 3193] Connect to database
 bool PooledConnection::Connect() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -44,7 +43,7 @@ bool PooledConnection::Connect() {
     }
 }
 
-// [SEQUENCE: MVP14-502] Validate connection
+// [SEQUENCE: 3194] Validate connection
 bool PooledConnection::Validate() {
     std::lock_guard<std::mutex> lock(mutex_);
     
@@ -66,22 +65,22 @@ bool PooledConnection::Validate() {
     }
 }
 
-// [SEQUENCE: MVP14-503] Check if connection is expired
+// [SEQUENCE: 3195] Check if connection is expired
 bool PooledConnection::IsExpired() const {
     auto age = std::chrono::system_clock::now() - created_time_;
     auto age_ms = std::chrono::duration_cast<std::chrono::milliseconds>(age).count();
     return age_ms > config_.max_lifetime_ms;
 }
 
-// [SEQUENCE: MVP14-504] Check if connection is idle
+// [SEQUENCE: 3196] Check if connection is idle
 bool PooledConnection::IsIdle(std::chrono::milliseconds threshold) const {
     auto idle_time = std::chrono::system_clock::now() - last_used_time_;
     return std::chrono::duration_cast<std::chrono::milliseconds>(idle_time) > threshold;
 }
 
-// [SEQUENCE: MVP14-505] Execute query
-QueryResult PooledConnection::Execute(const std::string& query,
-                                    const std::vector<std::string>& params) {
+// [SEQUENCE: 3197] Execute query
+QueryResult PooledConnection::Execute(const std::string& /*query*/,
+                                    const std::vector<std::string>& /*params*/) {
     std::lock_guard<std::mutex> lock(mutex_);
     
     if (state_ != ConnectionState::IN_USE) {
@@ -96,7 +95,8 @@ QueryResult PooledConnection::Execute(const std::string& query,
     return result;
 }
 
-// [SEQUENCE: MVP14-506] Connection pool constructor
+// [SEQUENCE: MVP1-38] `ConnectionPool::ConnectionPool()`: 설정에 따라 커넥션 풀을 초기화합니다.
+// [SEQUENCE: 3198] Connection pool constructor
 ConnectionPool::ConnectionPool(const ConnectionPoolConfig& config)
     : config_(config) {
 }
@@ -105,7 +105,7 @@ ConnectionPool::~ConnectionPool() {
     Shutdown();
 }
 
-// [SEQUENCE: MVP14-507] Initialize connection pool
+// [SEQUENCE: 3199] Initialize connection pool
 bool ConnectionPool::Initialize() {
     std::lock_guard<std::mutex> lock(pool_mutex_);
     
@@ -140,7 +140,7 @@ bool ConnectionPool::Initialize() {
     return true;
 }
 
-// [SEQUENCE: MVP14-508] Shutdown connection pool
+// [SEQUENCE: 3200] Shutdown connection pool
 void ConnectionPool::Shutdown() {
     spdlog::info("[CONNECTION_POOL] Shutting down connection pool");
     
@@ -170,7 +170,8 @@ void ConnectionPool::Shutdown() {
     stats_ = ConnectionStats();
 }
 
-// [SEQUENCE: MVP14-509] Acquire connection from pool
+// [SEQUENCE: MVP1-39] `ConnectionPool::Acquire()`: 풀에서 사용 가능한 연결을 가져옵니다.
+// [SEQUENCE: 3201] Acquire connection from pool
 std::shared_ptr<PooledConnection> ConnectionPool::Acquire() {
     auto start = std::chrono::high_resolution_clock::now();
     
@@ -233,7 +234,7 @@ std::shared_ptr<PooledConnection> ConnectionPool::Acquire() {
     return conn;
 }
 
-// [SEQUENCE: MVP14-510] Wait for available connection
+// [SEQUENCE: 3202] Wait for available connection
 std::shared_ptr<PooledConnection> ConnectionPool::WaitForConnection(
     std::chrono::milliseconds timeout) {
     
@@ -262,7 +263,8 @@ std::shared_ptr<PooledConnection> ConnectionPool::WaitForConnection(
     return nullptr;
 }
 
-// [SEQUENCE: MVP14-511] Release connection back to pool
+// [SEQUENCE: MVP1-40] `ConnectionPool::Release()`: 사용이 끝난 연결을 풀에 반환합니다.
+// [SEQUENCE: 3203] Release connection back to pool
 void ConnectionPool::Release(std::shared_ptr<PooledConnection> conn) {
     if (!conn) return;
     
@@ -293,7 +295,7 @@ void ConnectionPool::Release(std::shared_ptr<PooledConnection> conn) {
     pool_cv_.notify_one();
 }
 
-// [SEQUENCE: MVP14-512] Create new connection
+// [SEQUENCE: 3204] Create new connection
 std::shared_ptr<PooledConnection> ConnectionPool::CreateConnection() {
     uint64_t id = next_connection_id_++;
     auto conn = std::make_shared<PooledConnection>(id, config_);
@@ -304,7 +306,7 @@ std::shared_ptr<PooledConnection> ConnectionPool::CreateConnection() {
     return conn;
 }
 
-// [SEQUENCE: MVP14-513] Destroy connection
+// [SEQUENCE: 3205] Destroy connection
 void ConnectionPool::DestroyConnection(std::shared_ptr<PooledConnection> conn) {
     if (!conn) return;
     
@@ -322,7 +324,7 @@ void ConnectionPool::DestroyConnection(std::shared_ptr<PooledConnection> conn) {
     spdlog::debug("[CONNECTION_POOL] Destroyed connection {}", conn->GetId());
 }
 
-// [SEQUENCE: MVP14-514] Validation loop
+// [SEQUENCE: 3206] Validation loop
 void ConnectionPool::ValidationLoop() {
     while (running_) {
         std::this_thread::sleep_for(
@@ -334,7 +336,7 @@ void ConnectionPool::ValidationLoop() {
     }
 }
 
-// [SEQUENCE: MVP14-515] Validate all connections
+// [SEQUENCE: 3207] Validate all connections
 void ConnectionPool::ValidateConnections() {
     std::lock_guard<std::mutex> lock(pool_mutex_);
     
@@ -369,7 +371,7 @@ void ConnectionPool::ValidateConnections() {
     }
 }
 
-// [SEQUENCE: MVP14-516] Eviction loop
+// [SEQUENCE: 3208] Eviction loop
 void ConnectionPool::EvictionLoop() {
     while (running_) {
         std::this_thread::sleep_for(std::chrono::seconds(60));  // Check every minute
@@ -380,7 +382,7 @@ void ConnectionPool::EvictionLoop() {
     }
 }
 
-// [SEQUENCE: MVP14-517] Evict expired connections
+// [SEQUENCE: 3209] Evict expired connections
 void ConnectionPool::EvictExpiredConnections() {
     std::lock_guard<std::mutex> lock(pool_mutex_);
     
@@ -419,7 +421,7 @@ void ConnectionPool::EvictExpiredConnections() {
     }
 }
 
-// [SEQUENCE: MVP14-518] Get pool health status
+// [SEQUENCE: 3210] Get pool health status
 ConnectionPool::HealthStatus ConnectionPool::GetHealthStatus() const {
     std::lock_guard<std::mutex> lock(pool_mutex_);
     
@@ -460,7 +462,7 @@ ConnectionPool::HealthStatus ConnectionPool::GetHealthStatus() const {
     return health;
 }
 
-// [SEQUENCE: MVP14-519] Connection pool manager implementation
+// [SEQUENCE: 3211] Connection pool manager implementation
 ConnectionPoolManager::~ConnectionPoolManager() {
     ShutdownAll();
 }
@@ -483,7 +485,7 @@ void ConnectionPoolManager::CreatePool(const std::string& pool_name,
     }
 }
 
-// [SEQUENCE: MVP14-520] Get pool by name
+// [SEQUENCE: 3212] Get pool by name
 std::shared_ptr<ConnectionPool> ConnectionPoolManager::GetPool(
     const std::string& pool_name) {
     
@@ -497,7 +499,7 @@ std::shared_ptr<ConnectionPool> ConnectionPoolManager::GetPool(
     return nullptr;
 }
 
-// [SEQUENCE: MVP14-521] Shutdown all pools
+// [SEQUENCE: 3213] Shutdown all pools
 void ConnectionPoolManager::ShutdownAll() {
     std::lock_guard<std::mutex> lock(manager_mutex_);
     
@@ -510,7 +512,7 @@ void ConnectionPoolManager::ShutdownAll() {
     pools_.clear();
 }
 
-// [SEQUENCE: MVP14-522] Get global health status
+// [SEQUENCE: 3214] Get global health status
 ConnectionPoolManager::GlobalHealthStatus ConnectionPoolManager::GetGlobalHealth() const {
     std::lock_guard<std::mutex> lock(manager_mutex_);
     
@@ -531,7 +533,7 @@ ConnectionPoolManager::GlobalHealthStatus ConnectionPoolManager::GetGlobalHealth
     return global;
 }
 
-// [SEQUENCE: MVP14-523] Connection pool utilities
+// [SEQUENCE: 3215] Connection pool utilities
 namespace ConnectionPoolUtils {
 
 ConnectionPoolConfig CreateDefaultConfig(const std::string& host,

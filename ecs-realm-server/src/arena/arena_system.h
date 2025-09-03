@@ -14,7 +14,7 @@
 
 namespace mmorpg::arena {
 
-// [SEQUENCE: MVP13-110] Arena match types and configurations
+// [SEQUENCE: 2793] Arena match types and configurations
 enum class ArenaType {
     ARENA_1V1,      // Solo duel
     ARENA_2V2,      // Small team battle
@@ -24,7 +24,7 @@ enum class ArenaType {
     CUSTOM          // Custom rules
 };
 
-// [SEQUENCE: MVP13-111] Arena map types
+// [SEQUENCE: 2794] Arena map types
 enum class ArenaMap {
     COLOSSEUM,      // Classic circular arena
     RUINS,          // Ancient ruins with obstacles
@@ -35,7 +35,7 @@ enum class ArenaMap {
     RANDOM          // Random selection
 };
 
-// [SEQUENCE: MVP13-112] Arena match states
+// [SEQUENCE: 2795] Arena match states
 enum class ArenaState {
     WAITING_FOR_PLAYERS,
     COUNTDOWN,
@@ -45,7 +45,7 @@ enum class ArenaState {
     ABANDONED
 };
 
-// [SEQUENCE: MVP13-113] Arena player data
+// [SEQUENCE: 2796] Arena player data
 struct ArenaPlayer {
     uint64_t player_id;
     std::string player_name;
@@ -72,7 +72,7 @@ struct ArenaPlayer {
     int32_t rating_change{0};
 };
 
-// [SEQUENCE: MVP13-114] Arena match configuration
+// [SEQUENCE: 2797] Arena match configuration
 struct ArenaConfig {
     ArenaType type{ArenaType::ARENA_3V3};
     ArenaMap map{ArenaMap::RANDOM};
@@ -96,10 +96,10 @@ struct ArenaConfig {
     double loser_xp_multiplier{1.0};
 };
 
-// [SEQUENCE: MVP13-115] Arena match instance
+// [SEQUENCE: 2798] Arena match instance
 class ArenaMatch {
 public:
-    // [SEQUENCE: MVP13-116] Initialize arena match
+    // [SEQUENCE: 2799] Initialize arena match
     ArenaMatch(uint64_t match_id, const ArenaConfig& config)
         : match_id_(match_id)
         , config_(config)
@@ -110,7 +110,7 @@ public:
         InitializeMapEffects();
     }
     
-    // [SEQUENCE: MVP13-117] Add player to arena
+    // [SEQUENCE: 2800] Add player to arena
     void AddPlayer(uint64_t player_id, const std::string& name, 
                   uint32_t team_id, int32_t rating) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -128,7 +128,7 @@ public:
                     name, match_id_, team_id);
     }
     
-    // [SEQUENCE: MVP13-118] Start match countdown
+    // [SEQUENCE: 2801] Start match countdown
     void StartCountdown() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -143,7 +143,7 @@ public:
         BroadcastCountdownStart();
     }
     
-    // [SEQUENCE: MVP13-119] Start the match
+    // [SEQUENCE: 2802] Start the match
     void StartMatch() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -160,7 +160,7 @@ public:
                     match_id_, players_.size());
     }
     
-    // [SEQUENCE: MVP13-120] Handle player kill
+    // [SEQUENCE: 2803] Handle player kill
     void HandlePlayerKill(uint64_t killer_id, uint64_t victim_id, 
                          uint64_t assister_id = 0) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -198,7 +198,7 @@ public:
         CheckVictoryConditions();
     }
     
-    // [SEQUENCE: MVP13-121] Update match state
+    // [SEQUENCE: 2804] Update match state
     void Update() {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -241,7 +241,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-122] Get match statistics
+    // [SEQUENCE: 2805] Get match statistics
     struct MatchStatistics {
         uint32_t total_kills{0};
         uint32_t match_duration_seconds{0};
@@ -331,7 +331,7 @@ private:
     
     static constexpr int COUNTDOWN_DURATION = 10; // seconds
     
-    // [SEQUENCE: MVP13-123] Initialize map-specific effects
+    // [SEQUENCE: 2806] Initialize map-specific effects
     void InitializeMapEffects() {
         switch (config_.map) {
             case ArenaMap::PILLARS:
@@ -351,7 +351,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-124] Process player respawns
+    // [SEQUENCE: 2807] Process player respawns
     void ProcessRespawns(std::chrono::steady_clock::time_point now) {
         for (auto& [id, player] : players_) {
             if (!player.is_alive && now >= player.respawn_time) {
@@ -360,7 +360,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-125] Check victory conditions
+    // [SEQUENCE: 2808] Check victory conditions
     void CheckVictoryConditions() {
         // Score limit check
         if (config_.score_limit > 0) {
@@ -385,7 +385,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-126] Enter sudden death mode
+    // [SEQUENCE: 2809] Enter sudden death mode
     void EnterSuddenDeath() {
         state_ = ArenaState::SUDDEN_DEATH;
         
@@ -401,7 +401,7 @@ private:
         BroadcastSuddenDeathStart();
     }
     
-    // [SEQUENCE: MVP13-127] End match
+    // [SEQUENCE: 2810] End match
     void EndMatch(uint32_t winning_team) {
         state_ = ArenaState::FINISHED;
         match_end_time_ = std::chrono::steady_clock::now();
@@ -420,7 +420,7 @@ private:
                     match_id_, winning_team);
     }
     
-    // [SEQUENCE: MVP13-128] Calculate rating changes
+    // [SEQUENCE: 2811] Calculate rating changes
     void CalculateRatingChanges() {
         // 팀별 평균 레이팅 계산
         std::unordered_map<uint32_t, int32_t> team_avg_ratings;
@@ -459,7 +459,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP13-129] Calculate MVP
+    // [SEQUENCE: 2812] Calculate MVP
     void CalculateMVP(MatchStatistics& stats) const {
         uint64_t mvp_id = 0;
         double best_score = 0;
@@ -530,10 +530,10 @@ private:
     std::vector<std::unique_ptr<MapEffect>> map_effects_;
 };
 
-// [SEQUENCE: MVP13-130] Arena system service
+// [SEQUENCE: 2813] Arena system service
 class ArenaSystem {
 public:
-    // [SEQUENCE: MVP13-131] Create arena match
+    // [SEQUENCE: 2814] Create arena match
     uint64_t CreateArenaMatch(const ArenaConfig& config) {
         uint64_t match_id = next_match_id_++;
         
@@ -550,7 +550,7 @@ public:
         return match_id;
     }
     
-    // [SEQUENCE: MVP13-132] Queue for arena
+    // [SEQUENCE: 2815] Queue for arena
     void QueueForArena(uint64_t player_id, ArenaType type, int32_t rating) {
         MatchmakingProfile profile;
         profile.player_id = player_id;
@@ -564,7 +564,7 @@ public:
                     player_id, GetArenaTypeName(type), rating);
     }
     
-    // [SEQUENCE: MVP13-133] Get active matches
+    // [SEQUENCE: 2816] Get active matches
     std::vector<std::shared_ptr<ArenaMatch>> GetActiveMatches() const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -578,7 +578,7 @@ public:
         return matches;
     }
     
-    // [SEQUENCE: MVP13-134] Get match by ID
+    // [SEQUENCE: 2817] Get match by ID
     std::shared_ptr<ArenaMatch> GetMatch(uint64_t match_id) const {
         std::lock_guard<std::mutex> lock(mutex_);
         
@@ -590,7 +590,7 @@ public:
         return nullptr;
     }
     
-    // [SEQUENCE: MVP13-135] Update all active matches
+    // [SEQUENCE: 2818] Update all active matches
     void Update() {
         std::vector<std::shared_ptr<ArenaMatch>> matches_to_update;
         
@@ -618,7 +618,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP13-136] Get arena statistics
+    // [SEQUENCE: 2819] Get arena statistics
     struct ArenaStatistics {
         uint32_t total_matches_today{0};
         uint32_t active_matches{0};

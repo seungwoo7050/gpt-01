@@ -15,16 +15,16 @@
 
 namespace mmorpg::monitoring {
 
-// [SEQUENCE: MVP14-624] A/B testing framework for game feature experimentation
+// [SEQUENCE: 2576] A/B testing framework for game feature experimentation
 // A/B 테스트 프레임워크 - 게임 기능 실험 및 최적화
 
-// [SEQUENCE: MVP14-625] Experiment variant definition
+// [SEQUENCE: 2577] Experiment variant definition
 struct Variant {
     std::string name;                      // 변종 이름 ("control", "variant_a" 등)
     double allocation_percentage;          // 할당 비율 (0-100)
     Json::Value parameters;                // 변종별 파라미터
     
-    // [SEQUENCE: MVP14-626] Variant metrics tracking
+    // [SEQUENCE: 2578] Variant metrics tracking
     struct Metrics {
         std::atomic<uint64_t> player_count{0};        // 참여 플레이어 수
         std::atomic<uint64_t> session_count{0};       // 세션 수
@@ -38,14 +38,14 @@ struct Variant {
     } metrics;
 };
 
-// [SEQUENCE: MVP14-627] Experiment configuration
+// [SEQUENCE: 2579] Experiment configuration
 struct ExperimentConfig {
     std::string id;                        // 실험 ID
     std::string name;                      // 실험 이름
     std::string description;               // 실험 설명
     std::vector<Variant> variants;         // 실험 변종들
     
-    // [SEQUENCE: MVP14-628] Targeting criteria
+    // [SEQUENCE: 2580] Targeting criteria
     struct TargetingCriteria {
         std::optional<int> min_level;                 // 최소 레벨
         std::optional<int> max_level;                 // 최대 레벨
@@ -57,7 +57,7 @@ struct ExperimentConfig {
         bool Matches(const PlayerProfile& player) const;
     } targeting;
     
-    // [SEQUENCE: MVP14-629] Experiment schedule
+    // [SEQUENCE: 2581] Experiment schedule
     struct Schedule {
         std::chrono::system_clock::time_point start_time;
         std::chrono::system_clock::time_point end_time;
@@ -69,7 +69,7 @@ struct ExperimentConfig {
         }
     } schedule;
     
-    // [SEQUENCE: MVP14-630] Success metrics definition
+    // [SEQUENCE: 2582] Success metrics definition
     struct SuccessMetrics {
         std::string primary_metric;            // 주요 성공 지표
         std::vector<std::string> secondary_metrics; // 보조 지표
@@ -78,7 +78,7 @@ struct ExperimentConfig {
     } success_metrics;
 };
 
-// [SEQUENCE: MVP14-631] Player profile for targeting
+// [SEQUENCE: 2583] Player profile for targeting
 struct PlayerProfile {
     uint64_t player_id;
     int level;
@@ -89,7 +89,7 @@ struct PlayerProfile {
     std::vector<std::string> enabled_features;
 };
 
-// [SEQUENCE: MVP14-632] A/B test assignment
+// [SEQUENCE: 2584] A/B test assignment
 struct TestAssignment {
     std::string experiment_id;
     std::string variant_name;
@@ -97,12 +97,12 @@ struct TestAssignment {
     Json::Value parameters;                    // 적용할 파라미터
 };
 
-// [SEQUENCE: MVP14-633] A/B testing service
+// [SEQUENCE: 2585] A/B testing service
 class ABTestingService {
 public:
     ABTestingService() : rng_(std::random_device{}()) {}
     
-    // [SEQUENCE: MVP14-634] Load experiments from configuration
+    // [SEQUENCE: 2586] Load experiments from configuration
     void LoadExperiments(const std::string& config_file) {
         Json::Value root;
         std::ifstream file(config_file);
@@ -119,7 +119,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP14-635] Get player's test assignments
+    // [SEQUENCE: 2587] Get player's test assignments
     std::vector<TestAssignment> GetPlayerAssignments(const PlayerProfile& player) {
         std::vector<TestAssignment> assignments;
         std::shared_lock<std::shared_mutex> lock(experiments_mutex_);
@@ -145,7 +145,7 @@ public:
         return assignments;
     }
     
-    // [SEQUENCE: MVP14-636] Track experiment event
+    // [SEQUENCE: 2588] Track experiment event
     void TrackEvent(uint64_t player_id, const std::string& experiment_id, 
                    const std::string& event_name, double value = 1.0) {
         std::shared_lock<std::shared_mutex> exp_lock(experiments_mutex_);
@@ -184,7 +184,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP14-637] Get experiment results
+    // [SEQUENCE: 2589] Get experiment results
     Json::Value GetExperimentResults(const std::string& experiment_id) {
         std::shared_lock<std::shared_mutex> lock(experiments_mutex_);
         
@@ -200,7 +200,7 @@ public:
         results["experiment_name"] = experiment.name;
         results["status"] = experiment.schedule.IsRunning() ? "running" : "completed";
         
-        // [SEQUENCE: MVP14-638] Calculate statistics for each variant
+        // [SEQUENCE: 2590] Calculate statistics for each variant
         Json::Value variants_results;
         for (const auto& variant : experiment.variants) {
             Json::Value variant_result;
@@ -237,7 +237,7 @@ public:
         
         results["variants"] = variants_results;
         
-        // [SEQUENCE: MVP14-639] Statistical significance testing
+        // [SEQUENCE: 2591] Statistical significance testing
         if (experiment.variants.size() == 2) {
             results["statistical_analysis"] = 
                 PerformStatisticalAnalysis(experiment.variants[0], experiment.variants[1]);
@@ -246,7 +246,7 @@ public:
         return results;
     }
     
-    // [SEQUENCE: MVP14-640] Update player session metrics
+    // [SEQUENCE: 2592] Update player session metrics
     void UpdateSessionMetrics(uint64_t player_id, double session_duration, 
                              double session_revenue) {
         std::shared_lock<std::shared_mutex> lock(assignments_mutex_);
@@ -269,7 +269,7 @@ private:
     
     std::mt19937 rng_;
     
-    // [SEQUENCE: MVP14-641] Parse experiment from JSON
+    // [SEQUENCE: 2593] Parse experiment from JSON
     ExperimentConfig ParseExperiment(const Json::Value& json) {
         ExperimentConfig config;
         
@@ -323,7 +323,7 @@ private:
         return config;
     }
     
-    // [SEQUENCE: MVP14-642] Get or create assignment for player
+    // [SEQUENCE: 2594] Get or create assignment for player
     std::optional<TestAssignment> GetOrCreateAssignment(uint64_t player_id, 
                                                        const ExperimentConfig& experiment) {
         auto key = std::make_pair(player_id, experiment.id);
@@ -376,7 +376,7 @@ private:
         return assignment;
     }
     
-    // [SEQUENCE: MVP14-643] Assign player to variant
+    // [SEQUENCE: 2595] Assign player to variant
     std::optional<std::reference_wrapper<const Variant>> AssignToVariant(
         uint64_t player_id, const ExperimentConfig& experiment) {
         
@@ -401,7 +401,7 @@ private:
         return std::nullopt;
     }
     
-    // [SEQUENCE: MVP14-644] Update variant metrics
+    // [SEQUENCE: 2596] Update variant metrics
     void UpdateVariantMetrics(const std::string& experiment_id, 
                              const std::string& variant_name,
                              double session_duration, 
@@ -433,7 +433,7 @@ private:
         }
     }
     
-    // [SEQUENCE: MVP14-645] Perform statistical analysis
+    // [SEQUENCE: 2597] Perform statistical analysis
     Json::Value PerformStatisticalAnalysis(const Variant& control, 
                                           const Variant& treatment) {
         Json::Value analysis;
@@ -473,14 +473,14 @@ private:
         return analysis;
     }
     
-    // [SEQUENCE: MVP14-646] Calculate Z-score for proportion test
+    // [SEQUENCE: 2598] Calculate Z-score for proportion test
     double CalculateZScore(double p1, uint64_t n1, double p2, uint64_t n2) {
         double p_pooled = (p1 * n1 + p2 * n2) / (n1 + n2);
         double se = std::sqrt(p_pooled * (1 - p_pooled) * (1.0/n1 + 1.0/n2));
         return (p2 - p1) / se;
     }
     
-    // [SEQUENCE: MVP14-647] Calculate P-value from Z-score
+    // [SEQUENCE: 2599] Calculate P-value from Z-score
     double CalculatePValue(double z_score) {
         // Simplified normal CDF calculation
         // In production, use proper statistical library
@@ -488,10 +488,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-648] A/B test configuration manager
+// [SEQUENCE: 2600] A/B test configuration manager
 class ABTestConfigManager {
 public:
-    // [SEQUENCE: MVP14-649] Create experiment configuration
+    // [SEQUENCE: 2601] Create experiment configuration
     static Json::Value CreateExperimentConfig(
         const std::string& id,
         const std::string& name,
@@ -525,7 +525,7 @@ public:
         return config;
     }
     
-    // [SEQUENCE: MVP14-650] Common experiment templates
+    // [SEQUENCE: 2602] Common experiment templates
     static Json::Value CreateFeatureFlagExperiment(
         const std::string& feature_name,
         double rollout_percentage) {
@@ -573,7 +573,7 @@ private:
     }
 };
 
-// [SEQUENCE: MVP14-651] Targeting criteria implementation
+// [SEQUENCE: 2603] Targeting criteria implementation
 bool ExperimentConfig::TargetingCriteria::Matches(const PlayerProfile& player) const {
     // Level check
     if (min_level.has_value() && player.level < min_level.value()) {

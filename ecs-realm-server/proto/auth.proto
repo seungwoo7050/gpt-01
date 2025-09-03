@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP1-42] auth.proto: 로그인, 로그아웃, 서버 목록 등 인증 관련 메시지를 정의합니다.
+// [SEQUENCE: MVP1-27] auth.proto: 인증 관련 메시지를 정의합니다.
 syntax = "proto3";
 
 package mmorpg.proto;

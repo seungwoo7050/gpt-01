@@ -1,36 +1,17 @@
 #include "game/systems/guild/guild_war_seamless_system.h"
 #include "game/components/transform_component.h"
 #include "game/components/health_component.h"
-#include "core/ecs/world.h"
+#include "game/components/guild_component.h"
+#include "core/ecs/optimized/optimized_world.h"
+#include <cmath>
 #include <spdlog/spdlog.h>
 #include <algorithm>
 
 namespace mmorpg::game::systems::guild {
 
-// [SEQUENCE: MVP5-270] System initialization
-void GuildWarSeamlessSystem::OnSystemInit() {
-    // Register main world territories
-    RegisterTerritory(1, "Northern Fortress", {0, 1000, 0}, 200.0f);
-    RegisterTerritory(2, "Eastern Mines", {1000, 0, 0}, 150.0f);
-    RegisterTerritory(3, "Southern Port", {0, -1000, 0}, 180.0f);
-    RegisterTerritory(4, "Western Plains", {-1000, 0, 0}, 250.0f);
-    RegisterTerritory(5, "Central Market", {0, 0, 0}, 100.0f);
-    
-    spdlog::info("GuildWarSeamlessSystem initialized with {} territories", territories_.size());
-}
+using namespace mmorpg::game::components;
 
-// [SEQUENCE: MVP5-271] System cleanup
-void GuildWarSeamlessSystem::OnSystemShutdown() {
-    // End all active wars
-    for (auto& [war_id, war] : active_wars_) {
-        EndWar(*war);
-    }
-    active_wars_.clear();
-    territories_.clear();
-    spdlog::info("GuildWarSeamlessSystem shut down");
-}
-
-// [SEQUENCE: MVP5-272] Main update loop
+// [SEQUENCE: 3] Main update loop
 void GuildWarSeamlessSystem::Update(float delta_time) {
     // Update player positions in territories
     UpdatePlayerTerritories();
@@ -50,7 +31,7 @@ void GuildWarSeamlessSystem::Update(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP5-273] Register territory
+// [SEQUENCE: 4] Register territory
 void GuildWarSeamlessSystem::RegisterTerritory(uint32_t territory_id, const std::string& name,
                                               const core::utils::Vector3& center, float radius) {
     TerritoryInfo territory;
@@ -74,7 +55,7 @@ void GuildWarSeamlessSystem::RegisterTerritory(uint32_t territory_id, const std:
                 name, center.x, center.y, center.z, radius);
 }
 
-// [SEQUENCE: MVP5-274] Declare seamless war
+// [SEQUENCE: 5] Declare seamless war
 bool GuildWarSeamlessSystem::DeclareSeamlessWar(uint32_t guild_a, uint32_t guild_b,
                                                const std::vector<uint32_t>& contested_territory_ids) {
     // Check war limits
@@ -135,27 +116,26 @@ bool GuildWarSeamlessSystem::DeclareSeamlessWar(uint32_t guild_a, uint32_t guild
     return true;
 }
 
-// [SEQUENCE: MVP5-275] Update player territories
+// [SEQUENCE: 6] Update player territories
 void GuildWarSeamlessSystem::UpdatePlayerTerritories() {
-    auto* world = world_;
-    if (!world) return;
+    if (!world_) return;
     
     // Clear previous mappings
-    player_in_territory_.clear();
     for (auto& [territory_id, players] : territory_players_) {
         players.clear();
     }
     
     // Check all players with transforms
-    for (const auto& player : entities_) {
-        auto* transform = world->GetComponent<components::TransformComponent>(player);
-        if (!transform) continue;
+    for (auto player : world_->GetEntitiesWith<TransformComponent>()) {
+        auto& transform = world_->GetComponent<TransformComponent>(player);
         
         // Check which territory player is in
         for (const auto& [territory_id, territory] : territories_) {
-            float distance = (transform->position - territory.center).Length();
+            float dx = transform.position.x - territory.center.x;
+            float dy = transform.position.y - territory.center.y;
+            float dz = transform.position.z - territory.center.z;
+            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
             if (distance <= territory.radius) {
-                player_in_territory_[player] = territory_id;
                 territory_players_[territory_id].insert(player);
                 break;  // Player can only be in one territory
             }
@@ -163,7 +143,7 @@ void GuildWarSeamlessSystem::UpdatePlayerTerritories() {
     }
 }
 
-// [SEQUENCE: MVP5-276] Update war phases
+// [SEQUENCE: 7] Update war phases
 void GuildWarSeamlessSystem::UpdateWarPhases() {
     auto now = std::chrono::steady_clock::now();
     
@@ -212,7 +192,7 @@ void GuildWarSeamlessSystem::UpdateWarPhases() {
     }
 }
 
-// [SEQUENCE: MVP5-277] Start war
+// [SEQUENCE: 8] Start war
 void GuildWarSeamlessSystem::StartWar(SeamlessWar& war) {
     war.phase = SeamlessWar::WarPhase::ACTIVE;
     war.war_start_time = std::chrono::steady_clock::now();
@@ -229,7 +209,7 @@ void GuildWarSeamlessSystem::StartWar(SeamlessWar& war) {
     spdlog::info("Seamless war {} is now active", war.war_id);
 }
 
-// [SEQUENCE: MVP5-278] Update wars
+// [SEQUENCE: 9] Update wars
 void GuildWarSeamlessSystem::UpdateWars(float delta_time) {
     for (auto& [war_id, war] : active_wars_) {
         if (war->phase != SeamlessWar::WarPhase::ACTIVE) {
@@ -248,10 +228,9 @@ void GuildWarSeamlessSystem::UpdateWars(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP5-279] Update territory battles
+// [SEQUENCE: 10] Update territory battles
 void GuildWarSeamlessSystem::UpdateTerritoryBattles(float delta_time) {
-    auto* world = GetWorld();
-    if (!world) return;
+    if (!world_) return;
     
     for (auto& [war_id, war] : active_wars_) {
         if (war->phase != SeamlessWar::WarPhase::ACTIVE) continue;
@@ -264,15 +243,13 @@ void GuildWarSeamlessSystem::UpdateTerritoryBattles(float delta_time) {
             auto ter_players_it = territory_players_.find(territory.territory_id);
             if (ter_players_it != territory_players_.end()) {
                 for (auto player : ter_players_it->second) {
-                    auto* guild_comp = world->GetComponent<GuildComponent>(player);
-                    if (guild_comp) {
-                        if (guild_comp->guild_id == war->guild_a_id) {
-                            guild_a_count++;
-                            war->guild_a_participants.insert(player);
-                        } else if (guild_comp->guild_id == war->guild_b_id) {
-                            guild_b_count++;
-                            war->guild_b_participants.insert(player);
-                        }
+                    auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+                    if (guild_comp.guild_id == war->guild_a_id) {
+                        guild_a_count++;
+                        war->guild_a_participants.insert(player);
+                    } else if (guild_comp.guild_id == war->guild_b_id) {
+                        guild_b_count++;
+                        war->guild_b_participants.insert(player);
                     }
                 }
             }
@@ -331,30 +308,27 @@ void GuildWarSeamlessSystem::UpdateTerritoryBattles(float delta_time) {
     }
 }
 
-// [SEQUENCE: MVP5-280] Handle war kill
+// [SEQUENCE: 11] Handle war kill
 void GuildWarSeamlessSystem::OnWarKill(core::ecs::EntityId killer, core::ecs::EntityId victim) {
-    auto* world = GetWorld();
-    if (!world) return;
+    if (!world_) return;
     
-    auto* killer_guild = world->GetComponent<GuildComponent>(killer);
-    auto* victim_guild = world->GetComponent<GuildComponent>(victim);
-    
-    if (!killer_guild || !victim_guild) return;
+    auto& killer_guild = world_->GetComponent<GuildComponent>(killer);
+    auto& victim_guild = world_->GetComponent<GuildComponent>(victim);
     
     // Find relevant wars
     for (auto& [war_id, war] : active_wars_) {
         if (war->phase != SeamlessWar::WarPhase::ACTIVE) continue;
         
-        bool killer_in_war = (killer_guild->guild_id == war->guild_a_id || 
-                             killer_guild->guild_id == war->guild_b_id);
-        bool victim_in_war = (victim_guild->guild_id == war->guild_a_id || 
-                             victim_guild->guild_id == war->guild_b_id);
+        bool killer_in_war = (killer_guild.guild_id == war->guild_a_id || 
+                             killer_guild.guild_id == war->guild_b_id);
+        bool victim_in_war = (victim_guild.guild_id == war->guild_a_id || 
+                             victim_guild.guild_id == war->guild_b_id);
         
         if (killer_in_war && victim_in_war && 
-            killer_guild->guild_id != victim_guild->guild_id) {
+            killer_guild.guild_id != victim_guild.guild_id) {
             
             // Update kill counts
-            if (killer_guild->guild_id == war->guild_a_id) {
+            if (killer_guild.guild_id == war->guild_a_id) {
                 war->guild_a_kills++;
                 war->guild_b_deaths++;
             } else {
@@ -366,7 +340,7 @@ void GuildWarSeamlessSystem::OnWarKill(core::ecs::EntityId killer, core::ecs::En
             war->player_war_score[killer] += config_.points_per_kill;
             
             // Update guild component
-            killer_guild->war_contribution += config_.points_per_kill;
+            killer_guild.war_contribution += config_.points_per_kill;
             
             spdlog::debug("War kill in war {}: {} killed {}", 
                          war_id, killer, victim);
@@ -374,7 +348,7 @@ void GuildWarSeamlessSystem::OnWarKill(core::ecs::EntityId killer, core::ecs::En
     }
 }
 
-// [SEQUENCE: MVP5-281] End war
+// [SEQUENCE: 12] End war
 void GuildWarSeamlessSystem::EndWar(SeamlessWar& war) {
     war.phase = SeamlessWar::WarPhase::RESOLUTION;
     war.war_end_time = std::chrono::steady_clock::now();
@@ -396,7 +370,7 @@ void GuildWarSeamlessSystem::EndWar(SeamlessWar& war) {
                 war.war_id, war.guild_a_kills, war.guild_b_kills);
 }
 
-// [SEQUENCE: MVP5-282] Determine war victor
+// [SEQUENCE: 13] Determine war victor
 void GuildWarSeamlessSystem::DetermineWarVictor(const SeamlessWar& war) {
     uint32_t guild_a_score = 0;
     uint32_t guild_b_score = 0;
@@ -443,42 +417,39 @@ void GuildWarSeamlessSystem::DetermineWarVictor(const SeamlessWar& war) {
     }
 }
 
-// [SEQUENCE: MVP5-283] Distribute war rewards
+// [SEQUENCE: 14] Distribute war rewards
 void GuildWarSeamlessSystem::DistributeWarRewards(const SeamlessWar& war) {
-    auto* world = GetWorld();
-    if (!world) return;
+    if (!world_) return;
     
     // Reward participants based on contribution
     for (const auto& [player, score] : war.player_war_score) {
-        auto* guild_comp = world->GetComponent<GuildComponent>(player);
-        if (guild_comp) {
-            // Base participation reward
-            uint32_t reward = 500;
-            
-            // Contribution bonus
-            reward += score * 10;
-            
-            // Victory bonus
-            bool in_winning_guild = false;
-            if (war.guild_a_kills > war.guild_b_kills && 
-                guild_comp->guild_id == war.guild_a_id) {
-                in_winning_guild = true;
-            } else if (war.guild_b_kills > war.guild_a_kills && 
-                      guild_comp->guild_id == war.guild_b_id) {
-                in_winning_guild = true;
-            }
-            
-            if (in_winning_guild) {
-                reward *= 2;
-            }
-            
-            // TODO: Actually grant rewards
-            spdlog::debug("Player {} earned {} war rewards", player, reward);
+        auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+        // Base participation reward
+        uint32_t reward = 500;
+        
+        // Contribution bonus
+        reward += score * 10;
+        
+        // Victory bonus
+        bool in_winning_guild = false;
+        if (war.guild_a_kills > war.guild_b_kills && 
+            guild_comp.guild_id == war.guild_a_id) {
+            in_winning_guild = true;
+        } else if (war.guild_b_kills > war.guild_a_kills && 
+                    guild_comp.guild_id == war.guild_b_id) {
+            in_winning_guild = true;
         }
+        
+        if (in_winning_guild) {
+            reward *= 2;
+        }
+        
+        // TODO: Actually grant rewards
+        spdlog::debug("Player {} earned {} war rewards", player, reward);
     }
 }
 
-// [SEQUENCE: MVP5-284] Distribute territory resources
+// [SEQUENCE: 15] Distribute territory resources
 void GuildWarSeamlessSystem::DistributeTerritoryResources() {
     for (const auto& [territory_id, territory] : territories_) {
         if (territory.current_owner != 0) {
@@ -494,7 +465,7 @@ void GuildWarSeamlessSystem::DistributeTerritoryResources() {
     }
 }
 
-// [SEQUENCE: MVP5-285] Query functions
+// [SEQUENCE: 16] Query functions
 bool GuildWarSeamlessSystem::IsGuildInWar(uint32_t guild_id) const {
     auto it = guild_wars_.find(guild_id);
     if (it == guild_wars_.end()) return false;
@@ -531,31 +502,28 @@ bool GuildWarSeamlessSystem::IsInWarZone(core::ecs::EntityId player) const {
     return false;
 }
 
-// [SEQUENCE: MVP5-286] Can attack check
+// [SEQUENCE: 17] Can attack check
 bool GuildWarSeamlessSystem::CanAttackInWar(core::ecs::EntityId attacker, core::ecs::EntityId target) const {
     if (!IsInWarZone(attacker) || !IsInWarZone(target)) {
         return false;
     }
     
-    auto* world = GetWorld();
-    if (!world) return false;
+    if (!world_) return false;
     
-    auto* attacker_guild = world->GetComponent<GuildComponent>(attacker);
-    auto* target_guild = world->GetComponent<GuildComponent>(target);
-    
-    if (!attacker_guild || !target_guild) return false;
+    auto& attacker_guild = world_->GetComponent<GuildComponent>(attacker);
+    auto& target_guild = world_->GetComponent<GuildComponent>(target);
     
     // Can't attack same guild
-    if (attacker_guild->guild_id == target_guild->guild_id) return false;
+    if (attacker_guild.guild_id == target_guild.guild_id) return false;
     
     // Check if guilds are at war
     for (const auto& [war_id, war] : active_wars_) {
         if (war->phase != SeamlessWar::WarPhase::ACTIVE) continue;
         
-        bool attacker_in_war = (attacker_guild->guild_id == war->guild_a_id || 
-                               attacker_guild->guild_id == war->guild_b_id);
-        bool target_in_war = (target_guild->guild_id == war->guild_a_id || 
-                             target_guild->guild_id == war->guild_b_id);
+        bool attacker_in_war = (attacker_guild.guild_id == war->guild_a_id || 
+                               attacker_guild.guild_id == war->guild_b_id);
+        bool target_in_war = (target_guild.guild_id == war->guild_a_id || 
+                             target_guild.guild_id == war->guild_b_id);
         
         if (attacker_in_war && target_in_war) {
             return true;
@@ -565,7 +533,7 @@ bool GuildWarSeamlessSystem::CanAttackInWar(core::ecs::EntityId attacker, core::
     return false;
 }
 
-// [SEQUENCE: MVP5-287] Claim territory
+// [SEQUENCE: 18] Claim territory
 bool GuildWarSeamlessSystem::ClaimTerritory(uint32_t guild_id, uint32_t territory_id) {
     auto it = territories_.find(territory_id);
     if (it == territories_.end()) return false;
@@ -582,22 +550,16 @@ bool GuildWarSeamlessSystem::ClaimTerritory(uint32_t guild_id, uint32_t territor
     return false;
 }
 
-// [SEQUENCE: MVP5-288] Get territory controller
+// [SEQUENCE: 19] Get territory controller
 uint32_t GuildWarSeamlessSystem::GetTerritoryController(uint32_t territory_id) const {
     auto it = territories_.find(territory_id);
     return (it != territories_.end()) ? it->second.current_owner : 0;
 }
 
-
+// [SEQUENCE: 20] Notify guild members
 void GuildWarSeamlessSystem::NotifyGuildMembers(uint32_t guild_id, const std::string& message) {
     // TODO: Implement actual notification system
     spdlog::info("[Guild {}] {}", guild_id, message);
-}
-
-} // namespace mmorpg::game::systems::guild
-uild
-::guild
-_id, message);
 }
 
 } // namespace mmorpg::game::systems::guild

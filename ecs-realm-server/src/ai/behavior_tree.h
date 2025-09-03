@@ -11,7 +11,7 @@
 
 namespace mmorpg::ai {
 
-// [SEQUENCE: MVP14-234] Behavior tree node status
+// [SEQUENCE: 3597] Behavior tree node status
 enum class NodeStatus {
     IDLE,       // 유휴
     RUNNING,    // 실행 중
@@ -19,7 +19,7 @@ enum class NodeStatus {
     FAILURE     // 실패
 };
 
-// [SEQUENCE: MVP14-235] Blackboard for shared data
+// [SEQUENCE: 3598] Blackboard for shared data
 class Blackboard {
 public:
     template<typename T>
@@ -69,7 +69,7 @@ private:
     std::unordered_map<std::string, std::any> data_;
 };
 
-// [SEQUENCE: MVP14-236] Base behavior tree node
+// [SEQUENCE: 3599] Base behavior tree node
 class BTNode {
 public:
     BTNode(const std::string& name = "BTNode") : name_(name) {}
@@ -93,7 +93,7 @@ protected:
 
 using BTNodePtr = std::shared_ptr<BTNode>;
 
-// [SEQUENCE: MVP14-237] Composite nodes
+// [SEQUENCE: 3600] Composite nodes
 class CompositeNode : public BTNode {
 public:
     CompositeNode(const std::string& name) : BTNode(name) {}
@@ -115,7 +115,7 @@ protected:
     std::vector<BTNodePtr> children_;
 };
 
-// [SEQUENCE: MVP14-238] Sequence node - executes children in order until one fails
+// [SEQUENCE: 3601] Sequence node - executes children in order until one fails
 class SequenceNode : public CompositeNode {
 public:
     SequenceNode(const std::string& name = "Sequence") : CompositeNode(name) {}
@@ -127,7 +127,7 @@ private:
     size_t current_child_{0};
 };
 
-// [SEQUENCE: MVP14-239] Selector node - executes children until one succeeds
+// [SEQUENCE: 3602] Selector node - executes children until one succeeds
 class SelectorNode : public CompositeNode {
 public:
     SelectorNode(const std::string& name = "Selector") : CompositeNode(name) {}
@@ -139,7 +139,7 @@ private:
     size_t current_child_{0};
 };
 
-// [SEQUENCE: MVP14-240] Parallel node - executes all children simultaneously
+// [SEQUENCE: 3603] Parallel node - executes all children simultaneously
 class ParallelNode : public CompositeNode {
 public:
     enum class Policy {
@@ -162,7 +162,7 @@ private:
     std::vector<NodeStatus> child_status_;
 };
 
-// [SEQUENCE: MVP14-241] Decorator nodes
+// [SEQUENCE: 3604] Decorator nodes
 class DecoratorNode : public BTNode {
 public:
     DecoratorNode(BTNodePtr child, const std::string& name = "Decorator")
@@ -172,7 +172,7 @@ protected:
     BTNodePtr child_;
 };
 
-// [SEQUENCE: MVP14-242] Repeater decorator - repeats child execution
+// [SEQUENCE: 3605] Repeater decorator - repeats child execution
 class RepeaterNode : public DecoratorNode {
 public:
     RepeaterNode(BTNodePtr child, int repeat_count = -1,
@@ -188,7 +188,7 @@ private:
     int current_count_{0};
 };
 
-// [SEQUENCE: MVP14-243] Inverter decorator - inverts child result
+// [SEQUENCE: 3606] Inverter decorator - inverts child result
 class InverterNode : public DecoratorNode {
 public:
     InverterNode(BTNodePtr child, const std::string& name = "Inverter")
@@ -197,7 +197,7 @@ public:
     NodeStatus Execute(NPC& npc, Blackboard& blackboard) override;
 };
 
-// [SEQUENCE: MVP14-244] Condition decorator - executes child only if condition is true
+// [SEQUENCE: 3607] Condition decorator - executes child only if condition is true
 class ConditionNode : public DecoratorNode {
 public:
     using ConditionFunc = std::function<bool(NPC&, Blackboard&)>;
@@ -213,13 +213,13 @@ private:
     ConditionFunc condition_;
 };
 
-// [SEQUENCE: MVP14-245] Leaf nodes - actual behaviors
+// [SEQUENCE: 3608] Leaf nodes - actual behaviors
 class LeafNode : public BTNode {
 public:
     LeafNode(const std::string& name = "Leaf") : BTNode(name) {}
 };
 
-// [SEQUENCE: MVP14-246] Action node - executes a function
+// [SEQUENCE: 3609] Action node - executes a function
 class ActionNode : public LeafNode {
 public:
     using ActionFunc = std::function<NodeStatus(NPC&, Blackboard&)>;
@@ -239,7 +239,7 @@ private:
     ActionFunc action_;
 };
 
-// [SEQUENCE: MVP14-247] Common behavior nodes
+// [SEQUENCE: 3610] Common behavior nodes
 namespace BehaviorNodes {
     // Movement behaviors
     BTNodePtr MoveToTarget(const std::string& target_key);
@@ -271,7 +271,7 @@ namespace BehaviorNodes {
     BTNodePtr HasLineOfSight(const std::string& target_key);
 }
 
-// [SEQUENCE: MVP14-248] Behavior tree builder
+// [SEQUENCE: 3611] Behavior tree builder
 class BehaviorTreeBuilder {
 public:
     BehaviorTreeBuilder& Sequence(const std::string& name = "Sequence");
@@ -298,12 +298,12 @@ private:
     std::vector<std::shared_ptr<CompositeNode>> composites_;
 };
 
-// [SEQUENCE: MVP14-249] Behavior tree instance
+// [SEQUENCE: 3612] Behavior tree instance
 class BehaviorTree {
 public:
     BehaviorTree(BTNodePtr root) : root_(root) {}
     
-    // [SEQUENCE: MVP14-250] Tree execution
+    // [SEQUENCE: 3613] Tree execution
     NodeStatus Tick(NPC& npc);
     void Reset();
     
@@ -323,7 +323,7 @@ private:
     void RecordExecution(const std::string& node_name);
 };
 
-// [SEQUENCE: MVP14-251] Behavior tree factory
+// [SEQUENCE: 3614] Behavior tree factory
 class BehaviorTreeFactory {
 public:
     static BehaviorTreeFactory& Instance() {
@@ -331,7 +331,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-252] Tree registration
+    // [SEQUENCE: 3615] Tree registration
     void RegisterTree(const std::string& name, 
                      std::function<BTNodePtr()> creator);
     
@@ -346,7 +346,7 @@ private:
     std::unordered_map<std::string, std::function<BTNodePtr()>> tree_creators_;
 };
 
-// [SEQUENCE: MVP14-253] Common AI behaviors
+// [SEQUENCE: 3616] Common AI behaviors
 namespace CommonBehaviors {
     // Guard behavior
     BTNodePtr CreateGuardBehavior(const Vector3& guard_position, float radius);
@@ -370,7 +370,7 @@ namespace CommonBehaviors {
     BTNodePtr CreateBossBehavior(const std::vector<uint32_t>& phase_skills);
 }
 
-// [SEQUENCE: MVP14-254] Behavior tree utilities
+// [SEQUENCE: 3617] Behavior tree utilities
 namespace BTUtils {
     // Tree visualization
     std::string VisualizeTree(BTNodePtr root, int indent = 0);

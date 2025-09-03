@@ -13,7 +13,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-51] World snapshot for time rewind
+// [SEQUENCE: 3746] World snapshot for time rewind
 struct WorldSnapshot {
     uint32_t tick;
     std::chrono::steady_clock::time_point timestamp;
@@ -43,7 +43,7 @@ struct WorldSnapshot {
     std::vector<ProjectileState> projectile_states;
 };
 
-// [SEQUENCE: MVP13-52] Hit validation result
+// [SEQUENCE: 3747] Hit validation result
 struct HitValidation {
     bool is_valid{false};
     Vector3 impact_point;
@@ -53,10 +53,10 @@ struct HitValidation {
     std::string rejection_reason;
 };
 
-// [SEQUENCE: MVP13-53] Lag compensation system
+// [SEQUENCE: 3748] Lag compensation system
 class LagCompensation : public Singleton<LagCompensation> {
 public:
-    // [SEQUENCE: MVP13-54] Snapshot management
+    // [SEQUENCE: 3749] Snapshot management
     void RecordSnapshot();
     void SetSnapshotInterval(std::chrono::milliseconds interval);
     
@@ -68,7 +68,7 @@ public:
         const WorldSnapshot& after,
         std::chrono::steady_clock::time_point target_time);
     
-    // [SEQUENCE: MVP13-55] Hit validation
+    // [SEQUENCE: 3750] Hit validation
     HitValidation ValidateHit(
         uint64_t attacker_id,
         uint64_t victim_id,
@@ -83,7 +83,7 @@ public:
         const Vector3& impact_point,
         std::chrono::steady_clock::time_point impact_time);
     
-    // [SEQUENCE: MVP13-56] Movement validation
+    // [SEQUENCE: 3751] Movement validation
     bool ValidateMovement(
         uint64_t player_id,
         const Vector3& from_position,
@@ -143,7 +143,7 @@ private:
                                  float weapon_spread);
 };
 
-// [SEQUENCE: MVP13-57] Rewind context for temporary state
+// [SEQUENCE: 3752] Rewind context for temporary state
 class RewindContext {
 public:
     RewindContext(std::chrono::steady_clock::time_point target_time);
@@ -168,10 +168,10 @@ private:
     std::chrono::steady_clock::time_point target_time_;
 };
 
-// [SEQUENCE: MVP13-58] Hit registration system
+// [SEQUENCE: 3753] Hit registration system
 class HitRegistration {
 public:
-    // [SEQUENCE: MVP13-59] Hit request from client
+    // [SEQUENCE: 3754] Hit request from client
     struct HitRequest {
         uint64_t request_id;
         uint64_t attacker_id;
@@ -212,7 +212,7 @@ private:
                         float tolerance = 0.1f);
 };
 
-// [SEQUENCE: MVP13-60] Interpolation utilities
+// [SEQUENCE: 3755] Interpolation utilities
 namespace InterpolationUtils {
     // Entity state interpolation
     WorldSnapshot::EntityState InterpolateEntityState(
@@ -239,7 +239,7 @@ namespace InterpolationUtils {
         std::chrono::steady_clock::time_point target);
 }
 
-// [SEQUENCE: MVP13-61] Favor the shooter settings
+// [SEQUENCE: 3756] Favor the shooter settings
 struct FavorTheShooterSettings {
     float max_rewind_time_ms{1000.0f};      // Maximum time to rewind
     float hit_tolerance{0.1f};               // Hit box expansion
@@ -250,12 +250,12 @@ struct FavorTheShooterSettings {
     float confidence_threshold{0.7f};        // Minimum confidence for hit
 };
 
-// [SEQUENCE: MVP13-62] Advanced lag compensation manager
+// [SEQUENCE: 3757] Advanced lag compensation manager
 class AdvancedLagCompensation {
 public:
     AdvancedLagCompensation();
     
-    // [SEQUENCE: MVP13-63] Predictive lag compensation
+    // [SEQUENCE: 3758] Predictive lag compensation
     struct PredictedHit {
         Vector3 predicted_position;
         Vector3 predicted_velocity;
@@ -309,10 +309,10 @@ private:
     std::unordered_map<uint64_t, PredictionCache> prediction_cache_;
 };
 
-// [SEQUENCE: MVP13-64] Rollback networking
+// [SEQUENCE: 3759] Rollback networking
 class RollbackNetworking {
 public:
-    // [SEQUENCE: MVP13-65] Rollback state
+    // [SEQUENCE: 3760] Rollback state
     struct RollbackState {
         uint32_t frame;
         std::unordered_map<uint64_t, PlayerInput> inputs;
@@ -355,7 +355,7 @@ private:
     void ApplyInputs(const std::unordered_map<uint64_t, PlayerInput>& inputs);
 };
 
-// [SEQUENCE: MVP13-66] Lag compensation utilities
+// [SEQUENCE: 3761] Lag compensation utilities
 namespace LagCompensationUtils {
     // Calculate actual server time from client timestamp
     std::chrono::steady_clock::time_point ClientToServerTime(

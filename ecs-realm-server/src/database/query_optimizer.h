@@ -11,7 +11,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP14-409] Query optimization hints
+// [SEQUENCE: 3101] Query optimization hints
 enum class OptimizationHint {
     USE_INDEX,          // 특정 인덱스 사용
     FORCE_INDEX,        // 인덱스 강제 사용
@@ -22,7 +22,7 @@ enum class OptimizationHint {
     BATCH_SIZE          // 배치 크기 지정
 };
 
-// [SEQUENCE: MVP14-410] Query execution plan
+// [SEQUENCE: 3102] Query execution plan
 struct QueryPlan {
     std::string original_query;
     std::string optimized_query;
@@ -46,10 +46,10 @@ struct QueryPlan {
     bool cache_hit{false};
 };
 
-// [SEQUENCE: MVP14-411] Query pattern analyzer
+// [SEQUENCE: 3103] Query pattern analyzer
 class QueryPatternAnalyzer {
 public:
-    // [SEQUENCE: MVP14-412] Analyze query pattern
+    // [SEQUENCE: 3104] Analyze query pattern
     struct QueryPattern {
         enum Type {
             SIMPLE_SELECT,      // 단순 SELECT
@@ -77,14 +77,14 @@ public:
     
     static QueryPattern AnalyzeQuery(const std::string& query);
     
-    // [SEQUENCE: MVP14-413] Suggest optimizations
+    // [SEQUENCE: 3105] Suggest optimizations
     static std::vector<std::string> SuggestOptimizations(const QueryPattern& pattern);
 };
 
-// [SEQUENCE: MVP14-414] Index advisor
+// [SEQUENCE: 3106] Index advisor
 class IndexAdvisor {
 public:
-    // [SEQUENCE: MVP14-415] Index recommendation
+    // [SEQUENCE: 3107] Index recommendation
     struct IndexRecommendation {
         std::string table_name;
         std::vector<std::string> columns;
@@ -97,16 +97,16 @@ public:
         std::string GetCreateIndexSQL() const;
     };
     
-    // [SEQUENCE: MVP14-416] Analyze table access patterns
+    // [SEQUENCE: 3108] Analyze table access patterns
     void RecordQueryExecution(const std::string& query, 
                             const QueryPlan& plan,
                             double execution_time_ms);
     
-    // [SEQUENCE: MVP14-417] Get index recommendations
+    // [SEQUENCE: 3109] Get index recommendations
     std::vector<IndexRecommendation> GetRecommendations(
         const std::string& table_name = "") const;
     
-    // [SEQUENCE: MVP14-418] Check for unused indexes
+    // [SEQUENCE: 3110] Check for unused indexes
     std::vector<std::string> GetUnusedIndexes(
         std::chrono::hours threshold = std::chrono::hours(24*7)) const;
     
@@ -129,10 +129,10 @@ private:
     mutable std::mutex mutex_;
 };
 
-// [SEQUENCE: MVP14-419] Query rewriter
+// [SEQUENCE: 3111] Query rewriter
 class QueryRewriter {
 public:
-    // [SEQUENCE: MVP14-420] Rewrite rules
+    // [SEQUENCE: 3112] Rewrite rules
     enum class RewriteRule {
         SUBQUERY_TO_JOIN,       // 서브쿼리를 JOIN으로
         IN_TO_EXISTS,           // IN을 EXISTS로
@@ -143,11 +143,11 @@ public:
         MATERIALIZE_CTE         // CTE 구체화
     };
     
-    // [SEQUENCE: MVP14-421] Apply rewrite rules
+    // [SEQUENCE: 3113] Apply rewrite rules
     static std::string RewriteQuery(const std::string& query,
                                    const std::vector<RewriteRule>& rules = {});
     
-    // [SEQUENCE: MVP14-422] Optimize specific patterns
+    // [SEQUENCE: 3114] Optimize specific patterns
     static std::string OptimizeSelectN1(const std::string& query);
     static std::string OptimizePagination(const std::string& query);
     static std::string OptimizeBulkInsert(const std::string& query);
@@ -158,10 +158,10 @@ private:
     static std::string ApplyOrToUnion(const std::string& query);
 };
 
-// [SEQUENCE: MVP14-423] Query cache optimizer
+// [SEQUENCE: 3115] Query cache optimizer
 class QueryCacheOptimizer {
 public:
-    // [SEQUENCE: MVP14-424] Cache key generation
+    // [SEQUENCE: 3116] Cache key generation
     struct CacheKey {
         std::string query_hash;
         std::vector<std::string> parameter_values;
@@ -170,7 +170,7 @@ public:
         std::string ToString() const;
     };
     
-    // [SEQUENCE: MVP14-425] Cache entry
+    // [SEQUENCE: 3117] Cache entry
     struct CacheEntry {
         std::string result_data;
         size_t result_size{0};
@@ -185,37 +185,37 @@ public:
         }
     };
     
-    // [SEQUENCE: MVP14-426] Check if query is cacheable
+    // [SEQUENCE: 3118] Check if query is cacheable
     static bool IsCacheable(const std::string& query);
     
-    // [SEQUENCE: MVP14-427] Calculate optimal TTL
+    // [SEQUENCE: 3119] Calculate optimal TTL
     static std::chrono::seconds CalculateTTL(const std::string& query,
                                             const QueryPattern& pattern);
     
-    // [SEQUENCE: MVP14-428] Invalidation rules
+    // [SEQUENCE: 3120] Invalidation rules
     static std::vector<CacheKey> GetInvalidationKeys(
         const std::string& table_name,
         const std::string& operation);
 };
 
-// [SEQUENCE: MVP14-429] Batch query optimizer
+// [SEQUENCE: 3121] Batch query optimizer
 class BatchQueryOptimizer {
 public:
-    // [SEQUENCE: MVP14-430] Batch insert optimization
+    // [SEQUENCE: 3122] Batch insert optimization
     static std::string OptimizeBatchInsert(
         const std::string& table,
         const std::vector<std::unordered_map<std::string, std::string>>& rows);
     
-    // [SEQUENCE: MVP14-431] Batch update optimization
+    // [SEQUENCE: 3123] Batch update optimization
     static std::string OptimizeBatchUpdate(
         const std::string& table,
         const std::vector<std::pair<std::string, std::unordered_map<std::string, std::string>>>& updates);
     
-    // [SEQUENCE: MVP14-432] Multi-query optimization
+    // [SEQUENCE: 3124] Multi-query optimization
     static std::vector<std::string> OptimizeMultiQuery(
         const std::vector<std::string>& queries);
     
-    // [SEQUENCE: MVP14-433] Prepared statement batching
+    // [SEQUENCE: 3125] Prepared statement batching
     struct PreparedBatch {
         std::string statement;
         std::vector<std::vector<std::string>> parameter_sets;
@@ -227,10 +227,10 @@ public:
         const std::vector<std::vector<std::string>>& parameters);
 };
 
-// [SEQUENCE: MVP14-434] Query execution optimizer
+// [SEQUENCE: 3126] Query execution optimizer
 class QueryExecutionOptimizer {
 public:
-    // [SEQUENCE: MVP14-435] Execution strategies
+    // [SEQUENCE: 3127] Execution strategies
     enum class ExecutionStrategy {
         SINGLE_THREAD,      // 단일 스레드 실행
         PARALLEL,           // 병렬 실행
@@ -238,12 +238,12 @@ public:
         DISTRIBUTED         // 분산 실행
     };
     
-    // [SEQUENCE: MVP14-436] Determine optimal strategy
+    // [SEQUENCE: 3128] Determine optimal strategy
     static ExecutionStrategy DetermineStrategy(
         const QueryPattern& pattern,
         uint64_t estimated_rows);
     
-    // [SEQUENCE: MVP14-437] Parallel execution plan
+    // [SEQUENCE: 3129] Parallel execution plan
     struct ParallelPlan {
         uint32_t thread_count{1};
         std::vector<std::string> partition_queries;
@@ -255,10 +255,10 @@ public:
         uint32_t available_threads = 4);
 };
 
-// [SEQUENCE: MVP14-438] Query statistics collector
+// [SEQUENCE: 3130] Query statistics collector
 class QueryStatsCollector {
 public:
-    // [SEQUENCE: MVP14-439] Query statistics
+    // [SEQUENCE: 3131] Query statistics
     struct QueryStats {
         std::string query_template;
         uint64_t execution_count{0};
@@ -280,23 +280,23 @@ public:
         uint64_t timeout_count{0};
     };
     
-    // [SEQUENCE: MVP14-440] Record query execution
+    // [SEQUENCE: 3132] Record query execution
     void RecordExecution(const std::string& query,
                         double execution_time_ms,
                         uint64_t rows_examined,
                         uint64_t rows_returned,
                         bool success = true);
     
-    // [SEQUENCE: MVP14-441] Get slow queries
+    // [SEQUENCE: 3133] Get slow queries
     std::vector<QueryStats> GetSlowQueries(
         double threshold_ms = 100.0,
         uint32_t limit = 100) const;
     
-    // [SEQUENCE: MVP14-442] Get most frequent queries
+    // [SEQUENCE: 3134] Get most frequent queries
     std::vector<QueryStats> GetFrequentQueries(
         uint32_t limit = 100) const;
     
-    // [SEQUENCE: MVP14-443] Export statistics
+    // [SEQUENCE: 3135] Export statistics
     std::string ExportStatistics(const std::string& format = "json") const;
     
 private:
@@ -307,7 +307,7 @@ private:
     void UpdatePercentiles(QueryStats& stats);
 };
 
-// [SEQUENCE: MVP14-444] Main query optimizer
+// [SEQUENCE: 3136] Main query optimizer
 class QueryOptimizer {
 public:
     static QueryOptimizer& Instance() {
@@ -315,23 +315,23 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-445] Optimize query
+    // [SEQUENCE: 3137] Optimize query
     QueryPlan OptimizeQuery(const std::string& query,
                            const std::vector<OptimizationHint>& hints = {});
     
-    // [SEQUENCE: MVP14-446] Execute with optimization
+    // [SEQUENCE: 3138] Execute with optimization
     QueryResult ExecuteOptimized(const std::string& query,
                                 const std::vector<std::string>& params = {});
     
-    // [SEQUENCE: MVP14-447] Get optimization suggestions
+    // [SEQUENCE: 3139] Get optimization suggestions
     std::vector<std::string> GetOptimizationSuggestions(
         const std::string& query) const;
     
-    // [SEQUENCE: MVP14-448] Components
+    // [SEQUENCE: 3140] Components
     IndexAdvisor& GetIndexAdvisor() { return index_advisor_; }
     QueryStatsCollector& GetStatsCollector() { return stats_collector_; }
     
-    // [SEQUENCE: MVP14-449] Configuration
+    // [SEQUENCE: 3141] Configuration
     struct OptimizerConfig {
         bool enable_query_rewrite{true};
         bool enable_parallel_execution{true};
@@ -357,7 +357,7 @@ private:
     mutable std::mutex cache_mutex_;
 };
 
-// [SEQUENCE: MVP14-450] Query optimization utilities
+// [SEQUENCE: 3142] Query optimization utilities
 namespace QueryOptimizationUtils {
     // Generate EXPLAIN output
     std::string ExplainQuery(const std::string& query);

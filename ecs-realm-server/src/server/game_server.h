@@ -2,8 +2,10 @@
 
 #include "core/concurrent/lock_free_queue.h"
 #include "core/ecs/world.h"
-#include "core/network/packet_handler.h"
-#include "core/network/tcp_server.h"
+#include "network/packet_handler.h"
+#include "network/tcp_server.h"
+#include "game/social/guild_system.h"
+#include "game/pvp/pvp_system.h"
 #include <memory>
 #include <atomic>
 

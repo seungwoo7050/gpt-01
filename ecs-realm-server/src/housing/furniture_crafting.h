@@ -11,7 +11,7 @@
 
 namespace mmorpg::housing {
 
-// [SEQUENCE: MVP14-1] Furniture crafting categories
+// [SEQUENCE: 3397] Furniture crafting categories
 enum class FurnitureCraftingCategory {
     BASIC_FURNITURE,    // 기본 가구
     ADVANCED_FURNITURE, // 고급 가구
@@ -22,7 +22,7 @@ enum class FurnitureCraftingCategory {
     SPECIAL_FURNITURE   // 특수 가구
 };
 
-// [SEQUENCE: MVP14-2] Crafting material types
+// [SEQUENCE: 3398] Crafting material types
 enum class FurnitureMaterial {
     WOOD,           // 목재
     METAL,          // 금속
@@ -35,7 +35,7 @@ enum class FurnitureMaterial {
     MAGICAL_ESSENCE // 마법 정수
 };
 
-// [SEQUENCE: MVP14-3] Furniture recipe definition
+// [SEQUENCE: 3399] Furniture recipe definition
 struct FurnitureRecipe {
     uint32_t recipe_id;
     std::string name;
@@ -72,7 +72,7 @@ struct FurnitureRecipe {
     std::string special_requirement;  // e.g., "Near forge", "During full moon"
 };
 
-// [SEQUENCE: MVP14-4] Crafted furniture properties
+// [SEQUENCE: 3400] Crafted furniture properties
 struct CraftedFurnitureProperties {
     uint32_t base_item_id;
     
@@ -104,7 +104,7 @@ struct CraftedFurnitureProperties {
     std::vector<std::string> special_effects;
 };
 
-// [SEQUENCE: MVP14-5] Furniture crafting station
+// [SEQUENCE: 3401] Furniture crafting station
 class FurnitureCraftingStation {
 public:
     enum class StationType {
@@ -117,7 +117,7 @@ public:
         MASTER_WORKSHOP     // 마스터 작업장
     };
     
-    // [SEQUENCE: MVP14-6] Station properties
+    // [SEQUENCE: 3402] Station properties
     struct StationProperties {
         StationType type;
         std::string name;
@@ -139,7 +139,7 @@ public:
     
     FurnitureCraftingStation(uint64_t station_id, const StationProperties& props);
     
-    // [SEQUENCE: MVP14-7] Station usage
+    // [SEQUENCE: 3403] Station usage
     bool CanCraftRecipe(const FurnitureRecipe& recipe) const;
     float GetCraftingTimeModifier() const;
     float GetSuccessRateBonus() const;
@@ -156,7 +156,7 @@ private:
     uint32_t current_tier_{1};
 };
 
-// [SEQUENCE: MVP14-8] Furniture crafting session
+// [SEQUENCE: 3404] Furniture crafting session
 class FurnitureCraftingSession {
 public:
     enum class SessionState {
@@ -168,7 +168,7 @@ public:
         CANCELLED       // 취소됨
     };
     
-    // [SEQUENCE: MVP14-9] Session management
+    // [SEQUENCE: 3405] Session management
     FurnitureCraftingSession(uint64_t session_id, 
                            uint64_t player_id,
                            const FurnitureRecipe& recipe,
@@ -207,7 +207,7 @@ private:
     bool RollSuccess();
 };
 
-// [SEQUENCE: MVP14-10] Furniture crafting skill
+// [SEQUENCE: 3406] Furniture crafting skill
 class FurnitureCraftingSkill {
 public:
     struct SkillData {
@@ -226,7 +226,7 @@ public:
         uint32_t failures{0};
     };
     
-    // [SEQUENCE: MVP14-11] Skill progression
+    // [SEQUENCE: 3407] Skill progression
     static uint32_t GetRequiredExperience(uint32_t level);
     static float GetSuccessRateModifier(uint32_t skill_level, uint32_t recipe_level);
     static float GetQualityChance(uint32_t skill_level, uint32_t mastery_level);
@@ -240,7 +240,7 @@ public:
                              FurnitureCraftingCategory category);
 };
 
-// [SEQUENCE: MVP14-12] Furniture recipe manager
+// [SEQUENCE: 3408] Furniture recipe manager
 class FurnitureRecipeManager {
 public:
     static FurnitureRecipeManager& Instance() {
@@ -248,7 +248,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-13] Recipe management
+    // [SEQUENCE: 3409] Recipe management
     void RegisterRecipe(const FurnitureRecipe& recipe);
     FurnitureRecipe* GetRecipe(uint32_t recipe_id);
     
@@ -269,7 +269,7 @@ private:
     std::unordered_map<FurnitureCraftingCategory, std::vector<uint32_t>> recipes_by_category_;
 };
 
-// [SEQUENCE: MVP14-14] Furniture crafting manager
+// [SEQUENCE: 3410] Furniture crafting manager
 class FurnitureCraftingManager {
 public:
     static FurnitureCraftingManager& Instance() {
@@ -277,7 +277,7 @@ public:
         return instance;
     }
     
-    // [SEQUENCE: MVP14-15] Crafting operations
+    // [SEQUENCE: 3411] Crafting operations
     std::shared_ptr<FurnitureCraftingSession> StartCrafting(
         uint64_t player_id,
         uint32_t recipe_id,
@@ -289,7 +289,7 @@ public:
     std::vector<std::shared_ptr<FurnitureCraftingSession>> GetPlayerSessions(
         uint64_t player_id);
     
-    // [SEQUENCE: MVP14-16] Material management
+    // [SEQUENCE: 3412] Material management
     bool CheckMaterialAvailability(uint64_t player_id,
                                   const FurnitureRecipe& recipe);
     
@@ -317,7 +317,7 @@ private:
     CraftingStats global_stats_;
 };
 
-// [SEQUENCE: MVP14-17] Material gathering integration
+// [SEQUENCE: 3413] Material gathering integration
 class FurnitureMaterialGathering {
 public:
     struct GatheringNode {
@@ -328,7 +328,7 @@ public:
         std::chrono::steady_clock::time_point respawn_time;
     };
     
-    // [SEQUENCE: MVP14-18] Gathering methods
+    // [SEQUENCE: 3414] Gathering methods
     static bool CanGatherFrom(const GatheringNode& node, uint32_t skill_level);
     static uint32_t GatherMaterial(GatheringNode& node, uint32_t skill_level);
     
@@ -339,7 +339,7 @@ public:
                                   uint32_t processing_skill);
 };
 
-// [SEQUENCE: MVP14-19] Special furniture effects
+// [SEQUENCE: 3415] Special furniture effects
 class SpecialFurnitureEffects {
 public:
     // Effect types
@@ -364,7 +364,7 @@ public:
         std::string activation_condition;
     };
     
-    // [SEQUENCE: MVP14-20] Apply effects
+    // [SEQUENCE: 3416] Apply effects
     static void ApplyFurnitureEffect(Player& player,
                                    const FurnitureEffect& effect);
     
@@ -372,7 +372,7 @@ public:
         CraftedFurnitureProperties::Quality quality);
 };
 
-// [SEQUENCE: MVP14-21] Furniture customization
+// [SEQUENCE: 3417] Furniture customization
 class FurnitureCustomization {
 public:
     struct CustomizationOption {
@@ -390,7 +390,7 @@ public:
         uint64_t cost;
     };
     
-    // [SEQUENCE: MVP14-22] Customization methods
+    // [SEQUENCE: 3418] Customization methods
     static bool CanCustomize(const CraftedFurnitureProperties& furniture,
                            const CustomizationOption& option);
     
@@ -403,7 +403,7 @@ public:
         uint32_t crafter_skill);
 };
 
-// [SEQUENCE: MVP14-23] Recipe discovery system
+// [SEQUENCE: 3419] Recipe discovery system
 class RecipeDiscoverySystem {
 public:
     enum class DiscoveryMethod {
@@ -414,7 +414,7 @@ public:
         ACHIEVEMENT_REWARD  // 업적 보상
     };
     
-    // [SEQUENCE: MVP14-24] Discovery mechanics
+    // [SEQUENCE: 3420] Discovery mechanics
     static bool AttemptDiscovery(uint64_t player_id,
                                DiscoveryMethod method,
                                const std::vector<FurnitureMaterial>& materials);
@@ -427,7 +427,7 @@ public:
                            DiscoveryMethod method);
 };
 
-// [SEQUENCE: MVP14-25] Furniture crafting utilities
+// [SEQUENCE: 3421] Furniture crafting utilities
 namespace FurnitureCraftingUtils {
     // Material value calculations
     uint64_t CalculateMaterialValue(FurnitureMaterial material, 

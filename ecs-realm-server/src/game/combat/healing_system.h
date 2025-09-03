@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP4-40] Healing system for health restoration
 #pragma once
 
 #include <unordered_map>
@@ -10,6 +9,10 @@
 
 namespace mmorpg::game::combat {
 
+// [SEQUENCE: 1813] Healing system for health restoration and support
+// 치유 시스템으로 체력 회복 및 지원 관리
+
+// [SEQUENCE: 1814] Healing type
 enum class HealingType {
     DIRECT,         // Instant healing
     HOT,            // Heal over time
@@ -22,6 +25,7 @@ enum class HealingType {
     SPLASH          // Area healing
 };
 
+// [SEQUENCE: 1815] Healing school
 enum class HealingSchool {
     HOLY,           // Divine healing
     NATURE,         // Natural healing
@@ -31,6 +35,7 @@ enum class HealingSchool {
     ELEMENTAL       // Elemental restoration
 };
 
+// [SEQUENCE: 1816] Healing modifier type
 enum class HealModifierType {
     FLAT_BONUS,         // +X healing
     PERCENT_BONUS,      // +X% healing
@@ -42,6 +47,7 @@ enum class HealModifierType {
     TARGET_COUNT        // +X targets
 };
 
+// [SEQUENCE: 1817] Healing event for calculations
 struct HealingEvent {
     uint64_t healer_id;
     uint64_t target_id;
@@ -69,6 +75,7 @@ struct HealingEvent {
     std::chrono::system_clock::time_point timestamp;
 };
 
+// [SEQUENCE: 1818] Heal over time (HoT) effect
 struct HealOverTime {
     uint64_t hot_id;
     uint64_t healer_id;
@@ -95,6 +102,7 @@ struct HealOverTime {
     float total_healing = 0.0f;
     uint32_t crit_count = 0;
     
+    // [SEQUENCE: 1819] Process tick
     std::optional<float> ProcessTick() {
         auto now = std::chrono::system_clock::now();
         if (now < next_tick || remaining_ticks == 0) {
@@ -117,6 +125,7 @@ struct HealOverTime {
         return heal;
     }
     
+    // [SEQUENCE: 1820] Refresh with pandemic
     void Refresh(float new_sp_snapshot) {
         auto now = std::chrono::system_clock::now();
         spell_power_snapshot = new_sp_snapshot;
@@ -144,6 +153,7 @@ private:
     }
 };
 
+// [SEQUENCE: 1821] Absorption shield
 struct AbsorptionShield {
     uint64_t shield_id;
     uint64_t caster_id;
@@ -162,6 +172,7 @@ struct AbsorptionShield {
     std::vector<DamageType> absorbed_types;  // Empty = all types
     float absorb_percent = 1.0f;              // % of damage absorbed
     
+    // [SEQUENCE: 1822] Absorb damage
     float AbsorbDamage(float damage, DamageType type) {
         // Check if this damage type is absorbed
         if (!absorbed_types.empty()) {
@@ -188,6 +199,7 @@ struct AbsorptionShield {
     }
 };
 
+// [SEQUENCE: 1823] Healing modifier
 struct HealingModifier {
     HealModifierType type;
     float value;
@@ -199,10 +211,12 @@ struct HealingModifier {
     }
 };
 
+// [SEQUENCE: 1824] Healing target manager
 class HealingTarget {
 public:
     HealingTarget(uint64_t entity_id) : entity_id_(entity_id) {}
     
+    // [SEQUENCE: 1825] Apply direct healing
     HealingEvent ReceiveHealing(const HealingEvent& event) {
         HealingEvent result = event;
         
@@ -242,6 +256,7 @@ public:
         return result;
     }
     
+    // [SEQUENCE: 1826] Add HoT effect
     uint64_t AddHealOverTime(const HealOverTime& hot) {
         // Check for existing HoT from same spell
         auto existing = FindHotBySpell(hot.spell_id, hot.healer_id);
@@ -255,6 +270,7 @@ public:
         return hot.hot_id;
     }
     
+    // [SEQUENCE: 1827] Add absorption shield
     uint64_t AddShield(const AbsorptionShield& shield) {
         // Check stacking rules
         // Some shields stack, some don't
@@ -274,6 +290,7 @@ public:
         return shield.shield_id;
     }
     
+    // [SEQUENCE: 1828] Process incoming damage through shields
     float ProcessDamageWithShields(float damage, DamageType type) {
         float remaining_damage = damage;
         std::vector<uint64_t> depleted_shields;
@@ -306,12 +323,14 @@ public:
         return remaining_damage;
     }
     
+    // [SEQUENCE: 1829] Update all effects
     void Update() {
         UpdateHots();
         UpdateShields();
         CleanupExpiredModifiers();
     }
     
+    // [SEQUENCE: 1830] Add healing modifier
     void AddModifier(const HealingModifier& modifier) {
         healing_modifiers_.push_back(modifier);
     }
@@ -355,6 +374,7 @@ private:
     float total_absorbed_ = 0.0f;
     float total_shield_value_ = 0.0f;
     
+    // [SEQUENCE: 1831] Update HoTs
     void UpdateHots() {
         std::vector<uint64_t> expired;
         
@@ -383,6 +403,7 @@ private:
         }
     }
     
+    // [SEQUENCE: 1832] Update shields
     void UpdateShields() {
         std::vector<uint64_t> expired;
         total_shield_value_ = 0.0f;
@@ -400,12 +421,14 @@ private:
         }
     }
     
+    // [SEQUENCE: 1833] Clean expired modifiers
     void CleanupExpiredModifiers() {
         std::erase_if(healing_modifiers_, [](const auto& mod) {
             return mod.IsExpired();
         });
     }
     
+    // [SEQUENCE: 1834] Calculate healing modifier
     float CalculateHealingModifier(HealingSchool school) const {
         float modifier = 1.0f;
         
@@ -443,6 +466,7 @@ private:
         active_shields_.erase(shield_id);
     }
     
+    // [SEQUENCE: 1835] Health access (implemented by entity system)
     float GetCurrentHealth() const;
     float GetMaxHealth() const;
     void SetCurrentHealth(float health);
@@ -452,6 +476,7 @@ private:
     }
 };
 
+// [SEQUENCE: 1836] Healing manager
 class HealingManager {
 public:
     static HealingManager& Instance() {
@@ -459,6 +484,7 @@ public:
         return instance;
     }
     
+    // [SEQUENCE: 1837] Process healing spell
     HealingEvent ProcessHeal(uint64_t healer_id, uint64_t target_id,
                             uint32_t spell_id, float base_heal,
                             HealingType type = HealingType::DIRECT) {
@@ -495,6 +521,7 @@ public:
         return result;
     }
     
+    // [SEQUENCE: 1838] Apply HoT
     uint64_t ApplyHealOverTime(uint64_t healer_id, uint64_t target_id,
                                uint32_t spell_id, float heal_per_tick,
                                std::chrono::milliseconds interval,
@@ -518,6 +545,7 @@ public:
         return target_manager->AddHealOverTime(hot);
     }
     
+    // [SEQUENCE: 1839] Apply shield
     uint64_t ApplyShield(uint64_t caster_id, uint64_t target_id,
                         uint32_t spell_id, float absorb_amount,
                         std::chrono::seconds duration) {
@@ -537,6 +565,7 @@ public:
         return target_manager->AddShield(shield);
     }
     
+    // [SEQUENCE: 1840] Update all healing effects
     void UpdateAll() {
         for (auto& [entity_id, manager] : target_managers_) {
             manager->Update();
@@ -549,6 +578,7 @@ public:
         });
     }
     
+    // [SEQUENCE: 1841] Get target manager
     std::shared_ptr<HealingTarget> GetOrCreateTarget(uint64_t entity_id) {
         auto it = target_managers_.find(entity_id);
         if (it == target_managers_.end()) {
@@ -564,6 +594,7 @@ private:
     
     std::unordered_map<uint64_t, std::shared_ptr<HealingTarget>> target_managers_;
     
+    // [SEQUENCE: 1842] Helper methods
     float GetHealerSpellPower(uint64_t healer_id) {
         // TODO: Get from stats system
         return 1000.0f;
@@ -581,6 +612,7 @@ private:
     }
 };
 
+// [SEQUENCE: 1843] Stub implementations for health access
 float HealingTarget::GetCurrentHealth() const {
     // TODO: Get from entity/stats system
     return 1000.0f;

@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.20)
+project(mmorpg-server-engine VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+
+find_package(Protobuf REQUIRED)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+
+set(PROTO_SRCS)
+set(PROTO_HDRS)
+
+foreach(PROTO_FILE ${PROTO_FILES})
+    get_filename_component(PROTO_FILENAME ${PROTO_FILE} NAME_WE)
+    set(OUT_SRC "${CMAKE_CURRENT_BINARY_DIR}/proto/${PROTO_FILENAME}.pb.cc")
+    set(OUT_HDR "${CMAKE_CURRENT_BINARY_DIR}/proto/${PROTO_FILENAME}.pb.h")
+    list(APPEND PROTO_SRCS ${OUT_SRC})
+    list(APPEND PROTO_HDRS ${OUT_HDR})
+    add_custom_command(
+        OUTPUT ${OUT_SRC} ${OUT_HDR}
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+        ARGS --cpp_out=${CMAKE_CURRENT_BINARY_DIR}/proto --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto ${PROTO_FILE}
+        DEPENDS ${PROTO_FILE}
+    )
+endforeach()
+
+add_library(mmorpg_core STATIC
+    src/network/packet_serializer.cpp
+    ${PROTO_SRCS}
+)
+
+target_link_libraries(mmorpg_core PUBLIC protobuf::libprotobuf)

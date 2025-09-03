@@ -6,10 +6,9 @@
 #include <sstream>
 #include <iomanip>
 
-// [SEQUENCE: MVP1-58] Login server authentication handler implementation.
-
 namespace mmorpg::server::login {
 
+// [SEQUENCE: 1] Constructor - create test accounts for MVP1
 AuthHandler::AuthHandler() {
     // Create some test accounts
     CreatePlayer("test1", "password1");
@@ -19,6 +18,7 @@ AuthHandler::AuthHandler() {
     spdlog::info("AuthHandler initialized with {} test accounts", players_by_username_.size());
 }
 
+// [SEQUENCE: 2] Register packet handlers
 void AuthHandler::RegisterHandlers(std::shared_ptr<mmorpg::core::network::IPacketHandler> packet_handler) {
     using namespace mmorpg::proto;
     
@@ -32,6 +32,7 @@ void AuthHandler::RegisterHandlers(std::shared_ptr<mmorpg::core::network::IPacke
         [this](auto session, auto& packet) { HandleHeartbeat(session, packet); });
 }
 
+// [SEQUENCE: 3] Handle login request
 void AuthHandler::HandleLoginRequest(mmorpg::core::network::SessionPtr session, const mmorpg::proto::Packet& packet) {
     mmorpg::proto::LoginRequest request;
     if (!mmorpg::core::network::PacketSerializer::ExtractMessage(packet, request)) {
@@ -96,6 +97,7 @@ void AuthHandler::HandleLoginRequest(mmorpg::core::network::SessionPtr session, 
     session->SendPacket(mmorpg::proto::PACKET_LOGIN_RESPONSE, response);
 }
 
+// [SEQUENCE: 4] Handle logout request
 void AuthHandler::HandleLogoutRequest(mmorpg::core::network::SessionPtr session, const mmorpg::proto::Packet& packet) {
     mmorpg::proto::LogoutRequest request;
     if (!mmorpg::core::network::PacketSerializer::ExtractMessage(packet, request)) {
@@ -129,6 +131,7 @@ void AuthHandler::HandleLogoutRequest(mmorpg::core::network::SessionPtr session,
     session->Disconnect();
 }
 
+// [SEQUENCE: 5] Handle heartbeat
 void AuthHandler::HandleHeartbeat(mmorpg::core::network::SessionPtr session, const mmorpg::proto::Packet& packet) {
     mmorpg::proto::HeartbeatRequest request;
     if (!mmorpg::core::network::PacketSerializer::ExtractMessage(packet, request)) {
@@ -146,6 +149,7 @@ void AuthHandler::HandleHeartbeat(mmorpg::core::network::SessionPtr session, con
     session->SendPacket(mmorpg::proto::PACKET_HEARTBEAT_RESPONSE, response);
 }
 
+// [SEQUENCE: 6] Create player (in-memory for MVP1)
 bool AuthHandler::CreatePlayer(const std::string& username, const std::string& password_hash) {
     std::lock_guard<std::mutex> lock(players_mutex_);
     
@@ -166,17 +170,20 @@ bool AuthHandler::CreatePlayer(const std::string& username, const std::string& p
     return true;
 }
 
+// [SEQUENCE: 7] Get player by username
 PlayerData* AuthHandler::GetPlayerByUsername(const std::string& username) {
     std::lock_guard<std::mutex> lock(players_mutex_);
     auto it = players_by_username_.find(username);
     return (it != players_by_username_.end()) ? &it->second : nullptr;
 }
 
+// [SEQUENCE: 8] Validate credentials
 bool AuthHandler::ValidateCredentials(const std::string& username, const std::string& password_hash) {
     auto* player = GetPlayerByUsername(username);
     return player && player->password_hash == password_hash;
 }
 
+// [SEQUENCE: 9] Generate random session token
 std::string AuthHandler::GenerateSessionToken() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -191,4 +198,3 @@ std::string AuthHandler::GenerateSessionToken() {
 }
 
 } // namespace mmorpg::server::login
-n

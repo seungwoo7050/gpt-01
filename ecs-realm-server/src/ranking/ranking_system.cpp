@@ -4,10 +4,10 @@
 
 namespace mmorpg::ranking {
 
-// [SEQUENCE: MVP12-86] Ranking system integration with game server
+// [SEQUENCE: 2714] Ranking system integration with game server
 class RankingIntegration {
 public:
-    // [SEQUENCE: MVP12-87] Initialize ranking system with game server
+    // [SEQUENCE: 2715] Initialize ranking system with game server
     static void InitializeWithGameServer(GameServer* server, 
                                        RankingService* ranking_service) {
         
@@ -40,7 +40,7 @@ public:
             }
         };
         
-        // [SEQUENCE: MVP12-88] Grant tier rewards
+        // [SEQUENCE: 2716] Grant tier rewards
         ranking_service->GrantTierRewards = [server, ranking_service](
             uint64_t player_id, RankingTier tier) {
             
@@ -75,7 +75,7 @@ public:
                         GetTierName(tier), player_id);
         };
         
-        // [SEQUENCE: MVP12-89] Distribute season rewards
+        // [SEQUENCE: 2717] Distribute season rewards
         ranking_service->DistributeSeasonRewards = [server, ranking_service]() {
             // 모든 카테고리에 대해 시즌 보상 지급
             std::vector<RankingCategory> pvp_categories = {
@@ -122,7 +122,7 @@ public:
             }
         };
         
-        // [SEQUENCE: MVP12-90] Hook into match results
+        // [SEQUENCE: 2718] Hook into match results
         server->RegisterMatchResultHandler([ranking_service](
             const MatchResult& result) {
             
@@ -153,7 +153,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP12-91] Calculate rating change using ELO
+    // [SEQUENCE: 2719] Calculate rating change using ELO
     static int32_t CalculateRatingChange(int32_t player_rating, 
                                         int32_t opponent_rating, 
                                         bool won) {
@@ -170,7 +170,7 @@ private:
         return static_cast<int32_t>(K * (actual - expected));
     }
     
-    // [SEQUENCE: MVP12-92] Update player statistics
+    // [SEQUENCE: 2720] Update player statistics
     static void UpdatePlayerStatistics(RankingService* ranking_service,
                                      const PlayerMatchData& player_data,
                                      const MatchResult& match_result,
@@ -183,7 +183,7 @@ private:
         // MVP 카운트 업데이트 등
     }
     
-    // [SEQUENCE: MVP12-93] Grant season tier rewards
+    // [SEQUENCE: 2721] Grant season tier rewards
     static void GrantSeasonTierRewards(GameServer* server, 
                                      uint64_t player_id,
                                      RankingTier tier) {
@@ -247,10 +247,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-94] Ranking data persistence
+// [SEQUENCE: 2722] Ranking data persistence
 class RankingPersistence {
 public:
-    // [SEQUENCE: MVP12-95] Save rankings to database
+    // [SEQUENCE: 2723] Save rankings to database
     static void SaveRankings(const RankingService& service, Database* db) {
         // 트랜잭션 시작
         db->BeginTransaction();
@@ -274,7 +274,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-96] Load rankings from database
+    // [SEQUENCE: 2724] Load rankings from database
     static void LoadRankings(RankingService& service, Database* db) {
         try {
             for (const auto& category : GetAllCategories()) {
@@ -296,7 +296,7 @@ public:
         }
     }
     
-    // [SEQUENCE: MVP12-97] Export rankings to file
+    // [SEQUENCE: 2725] Export rankings to file
     static void ExportRankingsToFile(const RankingService& service,
                                     RankingCategory category,
                                     const std::string& filename) {
@@ -371,10 +371,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-98] Ranking UI data provider
+// [SEQUENCE: 2726] Ranking UI data provider
 class RankingUIProvider {
 public:
-    // [SEQUENCE: MVP12-99] Get formatted leaderboard data
+    // [SEQUENCE: 2727] Get formatted leaderboard data
     struct LeaderboardEntry {
         uint32_t rank;
         uint32_t previous_rank;
@@ -415,7 +415,7 @@ public:
         return entries;
     }
     
-    // [SEQUENCE: MVP12-100] Get player's rank card
+    // [SEQUENCE: 2728] Get player's rank card
     struct RankCard {
         PlayerRankInfo rank_info;
         RankingTier tier;
@@ -472,7 +472,7 @@ public:
         return card;
     }
     
-    // [SEQUENCE: MVP12-101] Get tier distribution chart data
+    // [SEQUENCE: 2729] Get tier distribution chart data
     struct TierDistribution {
         struct TierData {
             RankingTier tier;
@@ -595,10 +595,10 @@ private:
     }
 };
 
-// [SEQUENCE: MVP12-102] Season management
+// [SEQUENCE: 2730] Season management
 class SeasonManager {
 public:
-    // [SEQUENCE: MVP12-103] Create new season
+    // [SEQUENCE: 2731] Create new season
     static SeasonInfo CreateSeason(uint32_t season_number,
                                   std::chrono::system_clock::time_point start_date,
                                   uint32_t duration_days) {
@@ -616,7 +616,7 @@ public:
         return season;
     }
     
-    // [SEQUENCE: MVP12-104] Schedule season transition
+    // [SEQUENCE: 2732] Schedule season transition
     static void ScheduleSeasonTransition(RankingService* service,
                                        const SeasonInfo& next_season,
                                        std::chrono::system_clock::time_point transition_time) {
@@ -633,7 +633,7 @@ public:
     }
     
 private:
-    // [SEQUENCE: MVP12-105] Define rewards for season
+    // [SEQUENCE: 2733] Define rewards for season
     static void DefineSeasonRewards(SeasonInfo& season) {
         // 티어별 보상
         season.rewards.tier_rewards[RankingTier::BRONZE] = {20001, 20002};

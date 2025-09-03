@@ -6,7 +6,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP13-43] Client prediction implementation
+// [SEQUENCE: 3738] Client prediction implementation
 ClientPrediction::ClientPrediction(uint64_t player_id)
     : player_id_(player_id) {
     
@@ -24,7 +24,7 @@ ClientPrediction::ClientPrediction(uint64_t player_id)
     spdlog::debug("[Prediction] Client prediction initialized for player {}", player_id);
 }
 
-// [SEQUENCE: MVP13-44] Process player input
+// [SEQUENCE: 3739] Process player input
 void ClientPrediction::ProcessInput(const PlayerInput& input) {
     // Store input in buffer
     input_buffer_.push_back(input);
@@ -92,7 +92,7 @@ void ClientPrediction::ApplyInput(const PlayerInput& input, PredictedState& stat
     state.tick = input.tick;
 }
 
-// [SEQUENCE: MVP13-45] Receive server state
+// [SEQUENCE: 3740] Receive server state
 void ClientPrediction::ReceiveServerState(const AuthoritativeState& server_state) {
     last_server_state_ = server_state;
     
@@ -165,7 +165,7 @@ float ClientPrediction::CalculatePredictionError(const PredictedState& predicted
     return Vector3::Distance(predicted.position, actual.position);
 }
 
-// [SEQUENCE: MVP13-46] State interpolator implementation
+// [SEQUENCE: 3741] State interpolator implementation
 void StateInterpolator::AddSnapshot(const PredictedState& state,
                                   std::chrono::steady_clock::time_point timestamp) {
     snapshots_.push_back({state, timestamp});
@@ -270,7 +270,7 @@ Vector3 StateInterpolator::InterpolatePosition(const Vector3& p0, const Vector3&
     }
 }
 
-// [SEQUENCE: MVP13-47] Prediction manager implementation
+// [SEQUENCE: 3742] Prediction manager implementation
 PredictionManager::PredictionManager() {
     last_tick_time_ = std::chrono::steady_clock::now();
     spdlog::info("[Prediction] Prediction manager initialized");
@@ -382,7 +382,7 @@ bool PredictionManager::IsInputSequenceValid(uint64_t player_id, uint32_t sequen
     return true;
 }
 
-// [SEQUENCE: MVP13-48] Client prediction handler implementation
+// [SEQUENCE: 3743] Client prediction handler implementation
 ClientPredictionHandler::ClientPredictionHandler(std::shared_ptr<Connection> connection)
     : connection_(connection) {
     
@@ -462,7 +462,7 @@ PredictedState ClientPredictionHandler::GetRenderState() {
         target_time, StateInterpolator::InterpolationMode::HERMITE);
 }
 
-// [SEQUENCE: MVP13-49] Prediction utilities implementation
+// [SEQUENCE: 3744] Prediction utilities implementation
 namespace PredictionUtils {
 
 std::vector<uint8_t> CompressInput(const PlayerInput& input) {
@@ -506,7 +506,7 @@ Vector3 PredictPosition(const Vector3& position,
 
 } // namespace PredictionUtils
 
-// [SEQUENCE: MVP13-50] Movement predictor implementation
+// [SEQUENCE: 3745] Movement predictor implementation
 Vector3 MovementPredictor::PredictMovement(
     const Vector3& position,
     const Vector3& velocity,

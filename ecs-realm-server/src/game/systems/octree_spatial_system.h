@@ -1,35 +1,29 @@
 #pragma once
 
-#include "core/ecs/system.h"
+#include "core/ecs/optimized/system.h"
 #include "core/ecs/optimized/optimized_world.h"
 #include "game/world/octree/octree_world.h"
 #include <memory>
 
 namespace mmorpg::game::systems {
 
-// [SEQUENCE: MVP3-44] octree_spatial_system.h: System that maintains octree spatial index for 3D queries
-class OctreeSpatialSystem : public core::ecs::System {
+// [SEQUENCE: MVP3-10] System that maintains octree spatial index for 3D queries
+class OctreeSpatialSystem : public core::ecs::optimized::System {
 public:
-    OctreeSpatialSystem() : System("OctreeSpatialSystem") {}
+    OctreeSpatialSystem();
     
-    // [SEQUENCE: MVP3-45] octree_spatial_system.h: System lifecycle and update logic
-    void OnSystemInit() override;
-    void OnSystemShutdown() override;
+    // [SEQUENCE: 2] Initialize with world configuration
+    void OnSystemInit();
+    void OnSystemShutdown();
     
+    // [SEQUENCE: 3] Update spatial indices
+    void PostUpdate(float delta_time);
     
-    void PostUpdate(float delta_time) override;
+    // [SEQUENCE: 5] Entity lifecycle
+    void OnEntityCreated(core::ecs::EntityId entity);
+    void OnEntityDestroyed(core::ecs::EntityId entity);
     
-    
-    core::ecs::SystemStage GetStage() const override { 
-        return core::ecs::SystemStage::POST_UPDATE; 
-    }
-    int GetPriority() const override { return 500; } // After movement
-    
-    
-    void OnEntityCreated(core::ecs::EntityId entity) override;
-    void OnEntityDestroyed(core::ecs::EntityId entity) override;
-    
-    // [SEQUENCE: MVP3-46] octree_spatial_system.h: 3D spatial query methods
+    // [SEQUENCE: 6] 3D spatial queries
     std::vector<core::ecs::EntityId> GetEntitiesInRadius(
         const core::utils::Vector3& center, float radius) const;
     
@@ -45,7 +39,7 @@ public:
     std::vector<core::ecs::EntityId> GetEntitiesBelow(
         const core::utils::Vector3& position, float depth) const;
     
-    
+    // [SEQUENCE: 7] Get octree for advanced queries
     world::octree::OctreeWorld* GetOctree() { return octree_world_.get(); }
     const world::octree::OctreeWorld* GetOctree() const { return octree_world_.get(); }
     
@@ -65,13 +59,10 @@ private:
     std::unique_ptr<world::octree::OctreeWorld> octree_world_;
     std::unordered_map<core::ecs::EntityId, EntitySpatialData> entity_spatial_data_;
     
-    
-    core::ecs::optimized::ComponentArray<components::TransformComponent>* transform_array_ = nullptr;
-    core::ecs::optimized::OptimizedWorld* optimized_world_ = nullptr;
-    
+    // [SEQUENCE: 12] Update configuration
     float position_update_threshold_ = 0.5f;  // Larger threshold for 3D
     float force_update_distance_ = 10.0f;     // Force update after this movement
     size_t batch_update_size_ = 64;           // Smaller batches for complex updates
 };
 
-} // namespace mmorpg::game::systems} // namespace mmorpg::game::systemstemss
+} // namespace mmorpg::game::systems
