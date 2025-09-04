@@ -3,6 +3,7 @@
 #include "network/udp_server.h"
 #include "network/packet_handler.h"
 #include "network/udp_packet_handler.h"
+#include "core/scripting/script_manager.h"
 #include <csignal>
 #include <iostream>
 #include <memory>
@@ -54,6 +55,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
         auto udp_packet_handler = std::make_shared<mmorpg::network::UdpPacketHandler>(*session_manager);
         g_udp_server->SetPacketHandler(udp_packet_handler);
+
+        // [SEQUENCE: MVP8-17] Initialize and run a test script
+        auto& script_manager = mmorpg::scripting::ScriptManager::Instance();
+        script_manager.Initialize();
+        script_manager.RunScriptFile("ecs-realm-server/scripts/test.lua");
 
         g_tcp_server->Start();
         g_udp_server->Start();

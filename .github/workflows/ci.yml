@@ -1,0 +1,38 @@
+# [SEQUENCE: MVP8-9] GitHub Actions CI pipeline to build and test the server.
+name: C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Set up Conan
+      uses: conan-io/cmake-conan-action@v1
+
+    - name: Install Dependencies
+      run: conan install ecs-realm-server/ --build=missing
+
+    - name: Configure CMake
+      # The include in CMakeLists.txt should handle the toolchain file
+      run: cmake -S ecs-realm-server -B ecs-realm-server/build
+
+    - name: Build Project
+      run: make -C ecs-realm-server/build -j$(nproc)
+
+    - name: Run Unit Tests
+      run: ecs-realm-server/build/unit_tests
+
+    # Optional: Build docker image to ensure Dockerfile is valid
+    - name: Build Docker Image
+      run: docker build . -f ecs-realm-server/Dockerfile -t mmorpg-server:latest

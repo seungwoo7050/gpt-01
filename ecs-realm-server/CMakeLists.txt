@@ -29,6 +29,7 @@ find_package(nlohmann_json 3.11 REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(mysql-concpp REQUIRED)
 find_package(redis++ REQUIRED)
+find_package(sol2 REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -91,6 +92,9 @@ add_library(mmorpg_core STATIC
     src/core/ecs/optimized/dense_entity_manager.cpp
     src/core/ecs/optimized/optimized_world.cpp
 
+    # Scripting
+    src/core/scripting/script_manager.cpp
+
     # Database
     src/database/cache_manager.cpp
     src/database/connection_pool.cpp
@@ -128,6 +132,7 @@ target_link_libraries(mmorpg_core PUBLIC
     OpenSSL::Crypto
     mysql::concpp
     redis++::redis++_static
+    sol2::sol2
 )
 
 # [SEQUENCE: 5] Game systems library

@@ -9,5 +9,6 @@ find_package(benchmark)
 find_package(mysql-concpp)
 find_package(protobuf)
 find_package(redis++)
+find_package(sol2)
 
-set(CONANDEPS_LEGACY  boost::boost  spdlog::spdlog  gtest::gtest  nlohmann_json::nlohmann_json  benchmark::benchmark_main  mysql::concpp  protobuf::protobuf  redis++::redis++_static )
+set(CONANDEPS_LEGACY  boost::boost  spdlog::spdlog  gtest::gtest  nlohmann_json::nlohmann_json  benchmark::benchmark_main  mysql::concpp  protobuf::protobuf  redis++::redis++_static  sol2::sol2 )

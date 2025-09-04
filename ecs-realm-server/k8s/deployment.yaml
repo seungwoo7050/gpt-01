@@ -1,0 +1,48 @@
+# [SEQUENCE: MVP8-4] Kubernetes deployment manifest for the game server.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mmorpg-server-deployment
+  labels:
+    app: mmorpg-server
+spec:
+  replicas: 2 # Start with 2 instances and allow for scaling
+  selector:
+    matchLabels:
+      app: mmorpg-server
+  template:
+    metadata:
+      labels:
+        app: mmorpg-server
+    spec:
+      containers:
+      - name: mmorpg-server
+        image: your-docker-registry/mmorpg-server:latest # Placeholder for the actual image path
+        ports:
+        - containerPort: 8080
+          name: tcp-game
+        - containerPort: 8081 # Assuming this is the health port from the Dockerfile
+          name: http-health
+        # In a real scenario, resource requests and limits should be set
+        # resources:
+        #   requests:
+        #     memory: "512Mi"
+        #     cpu: "500m"
+        #   limits:
+        #     memory: "1Gi"
+        #     cpu: "1000m"
+        envFrom:
+        - configMapRef:
+            name: mmorpg-server-config
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http-health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http-health
+          initialDelaySeconds: 30
+          periodSeconds: 20
