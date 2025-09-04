@@ -1,1 +1,0 @@
-. "/home/woopinbells/Desktop/gpt-01/ecs-realm-server/deactivate_conanrunenv-release-x86_64.sh"

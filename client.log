@@ -1,9 +1,0 @@
-[2025-09-05 02:17:16.577] [info] Starting load test with 1 clients for 5 seconds...
-[2025-09-05 02:17:16.578] [info] Load test running...
-[2025-09-05 02:17:21.578] [info] Stopping load test...
-[2025-09-05 02:17:21.578] [info] --- Load Test Results ---
-[2025-09-05 02:17:21.578] [info] Successful connections: 1
-[2025-09-05 02:17:21.578] [info] Failed connections:     0
-[2025-09-05 02:17:21.578] [info] Packets sent:           0
-[2025-09-05 02:17:21.578] [info] Packets received:       0
-[2025-09-05 02:17:21.578] [info] Average packets per second (sent): 0.00

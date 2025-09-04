@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/test_build.dir/main.cpp.o -o test_build  -lmmorpg_core 
