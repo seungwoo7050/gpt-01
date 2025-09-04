@@ -2,6 +2,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(mmorpg-server-engine VERSION 1.0.0 LANGUAGES CXX)
 
+# [SEQUENCE: MVP7-13] Force include the conan toolchain to fix build environment issues.
+include(conan_toolchain.cmake)
+
 # [SEQUENCE: 1] C++ standard and compiler settings
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,6 +27,8 @@ find_package(Protobuf REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json 3.11 REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(mysql-concpp REQUIRED)
+find_package(redis++ REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -87,12 +92,14 @@ add_library(mmorpg_core STATIC
     src/core/ecs/optimized/optimized_world.cpp
 
     # Database
-    # src/database/cache_manager.cpp
+    src/database/cache_manager.cpp
     src/database/connection_pool.cpp
     src/database/db_monitor.cpp
-    # src/database/db_partitioning.cpp
-    # src/database/query_optimizer.cpp
-    # src/database/read_replica_manager.cpp
+    src/database/db_partitioning.cpp
+    src/database/shard_manager.cpp
+    src/database/query_optimizer.cpp
+    src/database/read_replica_manager.cpp
+    src/database/distributed_lock_manager.cpp
 
     # Monitoring
     # src/monitoring/ab_testing.cpp
@@ -119,6 +126,8 @@ target_link_libraries(mmorpg_core PUBLIC
     nlohmann_json::nlohmann_json
     OpenSSL::SSL
     OpenSSL::Crypto
+    mysql::concpp
+    redis++::redis++_static
 )
 
 # [SEQUENCE: 5] Game systems library
@@ -182,6 +191,7 @@ if(GTest_FOUND AND BUILD_TESTS)
         tests/unit/test_guild_system.cpp
         tests/unit/test_pvp_system.cpp
         tests/unit/test_lock_free_queue.cpp
+        tests/unit/test_database_systems.cpp
         # tests/unit/test_networking.cpp
     )
     

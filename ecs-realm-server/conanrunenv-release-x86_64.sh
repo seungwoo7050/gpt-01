@@ -1,6 +1,6 @@
 script_folder="/home/woopinbells/Desktop/gpt-01/ecs-realm-server"
 echo "echo Restoring environment" > "$script_folder/deactivate_conanrunenv-release-x86_64.sh"
-for v in 
+for v in OPENSSL_MODULES
 do
     is_defined="true"
     value=$(printenv $v) || is_defined="" || true
@@ -12,3 +12,5 @@ do
     fi
 done
 
+
+export OPENSSL_MODULES="/home/woopinbells/.conan2/p/opens2956414605459/p/lib/ossl-modules"

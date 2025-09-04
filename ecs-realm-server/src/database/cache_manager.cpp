@@ -1,63 +1,87 @@
-#include "cache_manager.h"
+#include "database/cache_manager.h"
 #include <spdlog/spdlog.h>
 
 namespace mmorpg::database {
 
-// [SEQUENCE: 3075] Global cache manager implementation
-void GlobalCacheManager::ClearAllCaches() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    
-    spdlog::info("[CACHE_MANAGER] Clearing all {} caches", caches_.size());
-    
-    // Note: In real implementation, would need proper type handling
-    caches_.clear();
+// --- Cache Implementation ---
+
+void Cache::Put(const std::string& key, const std::string& value, std::chrono::seconds ttl) {
+    std::lock_guard lock(m_mutex);
+    m_data[key] = {value, std::chrono::system_clock::now(), ttl};
 }
 
-// [SEQUENCE: 3076] Print statistics for all caches
-void GlobalCacheManager::PrintAllStats() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    
-    spdlog::info("[CACHE_MANAGER] === Global Cache Statistics ===");
-    spdlog::info("[CACHE_MANAGER] Total caches: {}", caches_.size());
-    
-    // In real implementation, would iterate and print each cache's stats
-    // This requires storing type information with the caches
-}
-
-// [SEQUENCE: 3077] Start maintenance thread
-void GlobalCacheManager::StartMaintenanceThread(std::chrono::seconds interval) {
-    if (maintenance_running_) {
-        spdlog::warn("[CACHE_MANAGER] Maintenance thread already running");
-        return;
+std::optional<std::string> Cache::Get(const std::string& key) {
+    std::lock_guard lock(m_mutex);
+    auto it = m_data.find(key);
+    if (it != m_data.end()) {
+        it->second.last_access_time = std::chrono::system_clock::now();
+        return it->second.value;
     }
-    
-    maintenance_running_ = true;
-    maintenance_thread_ = std::thread([this, interval] {
-        while (maintenance_running_) {
-            std::this_thread::sleep_for(interval);
-            
-            if (!maintenance_running_) break;
-            
-            // Perform maintenance tasks
-            PerformMaintenance();
+    return std::nullopt;
+}
+
+void Cache::Remove(const std::string& key) {
+    std::lock_guard lock(m_mutex);
+    m_data.erase(key);
+}
+
+void Cache::EvictExpired() {
+    std::lock_guard lock(m_mutex);
+    auto now = std::chrono::system_clock::now();
+    for (auto it = m_data.begin(); it != m_data.end(); ) {
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second.last_access_time);
+        if (elapsed > it->second.ttl) {
+            it = m_data.erase(it);
+        } else {
+            ++it;
         }
-    });
-    
-    spdlog::info("[CACHE_MANAGER] Started maintenance thread with {}s interval", 
-                interval.count());
+    }
 }
 
-// [SEQUENCE: 3078] Perform cache maintenance
-void GlobalCacheManager::PerformMaintenance() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    
-    // In real implementation:
-    // - Evict expired entries
-    // - Collect statistics
-    // - Perform memory pressure checks
-    // - Trigger cache warming if needed
-    
-    spdlog::debug("[CACHE_MANAGER] Performed maintenance on {} caches", caches_.size());
+// --- CacheManager Implementation ---
+
+CacheManager& CacheManager::Instance() {
+    static CacheManager instance;
+    return instance;
 }
 
-} // namespace mmorpg::database
+CacheManager::CacheManager() {
+    m_eviction_thread = std::thread(&CacheManager::EvictionLoop, this);
+}
+
+CacheManager::~CacheManager() {
+    Shutdown();
+}
+
+void CacheManager::Shutdown() {
+    if (!m_shutting_down.exchange(true)) {
+        if (m_eviction_thread.joinable()) {
+            m_eviction_thread.join();
+        }
+    }
+}
+
+std::shared_ptr<Cache> CacheManager::GetOrCreateCache(const std::string& cache_name) {
+    std::lock_guard lock(m_mutex);
+    auto it = m_caches.find(cache_name);
+    if (it != m_caches.end()) {
+        return it->second;
+    }
+    auto new_cache = std::make_shared<Cache>();
+    m_caches[cache_name] = new_cache;
+    return new_cache;
+}
+
+void CacheManager::EvictionLoop() {
+    while (!m_shutting_down) {
+        {
+            std::lock_guard lock(m_mutex);
+            for (const auto& pair : m_caches) {
+                pair.second->EvictExpired();
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(5)); // Eviction check interval
+    }
+}
+
+}

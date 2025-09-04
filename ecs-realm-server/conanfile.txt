@@ -6,6 +6,8 @@ spdlog/1.12.0
 gtest/1.14.0
 nlohmann_json/3.11.3
 benchmark/1.8.3
+mysql-connector-cpp/9.2.0
+redis-plus-plus/1.3.13
 
 [generators]
 CMakeDeps
