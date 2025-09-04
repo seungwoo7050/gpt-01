@@ -49,8 +49,14 @@ private:
         using SslSocket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
         boost::asio::io_context& m_io_context;
         SslSocket m_tcp_socket;
+        boost::asio::ip::tcp::resolver m_resolver;
         boost::asio::ip::udp::socket m_udp_socket;
         boost::asio::steady_timer m_timer;
+
+        std::vector<std::byte> m_read_buffer;
+        std::vector<std::byte> m_write_buffer;
+        uint32_t m_packet_size = 0;
+        uint32_t m_packet_type = 0;
 
         const Config& m_config;
         Metrics& m_metrics;

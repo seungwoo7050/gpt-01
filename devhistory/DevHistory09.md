@@ -41,3 +41,24 @@ This section documents the systematic process undertaken to diagnose and resolve
     *   **Code-Level Conclusion:** The C++ server code now adheres to modern standards and is logically correct. The fact that the `async_accept` handler is not called points to a problem external to the application code.
     *   **Client-Side Bug:** A secondary issue was discovered: the `load_test_client` is a plain TCP client, not an SSL client. This will need to be fixed later but is not the cause of the primary issue.
     *   **Root Cause Hypothesis:** The problem is very likely environmental. The `io_context` is being prevented from processing the accepted socket by a factor outside the code, such as a **system firewall, an OS-level networking configuration, or a Boost.Asio library issue**.
+
+### [SEQUENCE: MVP9-14] Final Decision and Code Rollback
+
+After an exhaustive debugging process, we concluded that the root cause of the connection failure is environmental and not a logical error in our C++ code. The temporary changes made for diagnostics (switching to a synchronous server, removing the thread pool, changing ports) did not resolve the issue and only served to prove this point.
+
+Therefore, to avoid accumulating technical debt and to keep the codebase in its most correct, high-performance state, all temporary debugging changes have been reverted.
+
+*   **Action:** The `TcpServer` and `main.cpp` have been rolled back to the superior **asynchronous implementation** with a full thread pool.
+*   **Current State:** The codebase is now clean and correct, but remains blocked by the external environmental issue.
+*   **Next Step:** The immediate path forward is to 1) Resolve the environmental blocker (user action required), and 2) Modify the `load_test_client` to support SSL (Gemini action).
+
+### [SEQUENCE: MVP9-15] 주요 수정 파일 목록 (Key Modified Files)
+
+이 MVP에서 `TcpServer` 재구현 및 관련 디버깅 과정에서 주로 수정되거나 영향을 받은 파일 목록입니다.
+
+*   `ecs-realm-server/src/network/tcp_server.h`
+*   `ecs-realm-server/src/network/tcp_server.cpp`
+*   `ecs-realm-server/src/network/session.h`
+*   `ecs-realm-server/src/network/session.cpp`
+*   `ecs-realm-server/src/network/session_manager.h`
+*   `ecs-realm-server/src/server/game/main.cpp`

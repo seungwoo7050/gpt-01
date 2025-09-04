@@ -4,7 +4,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP9-1] TcpServer class implementation based on Boost.Asio SSL example
+// [SEQUENCE: MVP9-1] Asynchronous TcpServer implementation based on Boost.Asio SSL example
 TcpServer::TcpServer(boost::asio::io_context& io_context,
                    std::shared_ptr<SessionManager> session_manager,
                    std::shared_ptr<IPacketHandler> packet_handler,
@@ -31,7 +31,7 @@ TcpServer::TcpServer(boost::asio::io_context& io_context,
 }
 
 void TcpServer::run() {
-    LOG_INFO("SSL TCP server started on port {}", acceptor_.local_endpoint().port());
+    LOG_INFO("Asynchronous SSL TCP server started on port {}", acceptor_.local_endpoint().port());
     do_accept();
 }
 
@@ -39,13 +39,11 @@ void TcpServer::stop() {
     acceptor_.close();
 }
 
-// [SEQUENCE: MVP9-2] Handles accepting new connections and initiating the SSL handshake.
+// [SEQUENCE: MVP9-2] Handles accepting new connections asynchronously.
 void TcpServer::do_accept() {
     acceptor_.async_accept(
         [this](const boost::system::error_code& error, boost::asio::ip::tcp::socket socket) {
-            LOG_INFO("Accept handler invoked.");
             if (!error) {
-                // The handshake is now performed inside the Session
                 try {
                     auto session_id = session_manager_->get_next_session_id();
                     auto new_session = std::make_shared<Session>(
@@ -55,7 +53,7 @@ void TcpServer::do_accept() {
                         packet_handler_);
                     
                     session_manager_->Register(new_session);
-                    new_session->Start();
+                    new_session->Start(); // This will initiate the handshake
 
                 } catch (const std::exception& e) {
                     LOG_ERROR("Exception while creating session: {}", e.what());

@@ -1,7 +1,4 @@
-[02:52:53] MMORPG: SSL TCP server started on port 8080
-[02:52:53] MMORPG: Press Ctrl+C to stop the servers
-[02:52:53] MMORPG: Calling io_context.run()...
-[02:53:39] MMORPG: Signal 15 received.
-[02:53:39] MMORPG: Received shutdown signal, stopping servers...
-[02:53:39] MMORPG: io_context.run() returned.
-[02:53:39] MMORPG: Game server shutdown complete
+[03:30:40] MMORPG: Press Ctrl+C to stop the servers
+[03:30:40] MMORPG: Synchronous SSL TCP server started on port 9999
+[03:31:41] MMORPG: Signal 15 received.
+[03:31:41] MMORPG: Received shutdown signal, stopping servers...
