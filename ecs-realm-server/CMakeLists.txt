@@ -34,6 +34,7 @@ find_package(sol2 REQUIRED)
 # Optional packages
 find_package(GTest)
 find_package(benchmark)
+find_package(CLI11 REQUIRED)
 
 # [SEQUENCE: 3] Protocol Buffers generation
 # Find all .proto files in the proto directory
@@ -179,10 +180,11 @@ target_include_directories(mmorpg_server PUBLIC
 target_link_libraries(mmorpg_server PRIVATE mmorpg_core mmorpg_game)
 
 # [SEQUENCE: 7] Load test client
-# add_executable(load_test_client
-#     # tests/load_test/main.cpp # Restore this
-# )
-# target_link_libraries(load_test_client PRIVATE mmorpg_core)
+add_executable(load_test_client
+    tests/load_test/main.cpp
+    tests/load_test/load_test_client.cpp
+)
+target_link_libraries(load_test_client PRIVATE mmorpg_core CLI11::CLI11)
 
 # [SEQUENCE: 8] Unit tests
 option(BUILD_TESTS "Build unit tests" ON)

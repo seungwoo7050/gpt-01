@@ -18,11 +18,14 @@ void UdpPacketHandler::Handle(std::shared_ptr<Session> session, const boost::asi
     // First, try to handle it as a handshake packet, regardless of whether the session is known.
     mmorpg::proto::UdpHandshake handshake;
     if (handshake.ParseFromArray(buffer.data(), size)) {
-        // It's a handshake. Register the endpoint.
-        // This will associate the endpoint with the session_id provided in the handshake.
-        m_session_manager.RegisterUdpEndpoint(handshake.session_id(), endpoint);
-        std::cout << "[UdpPacketHandler] UDP handshake processed for session " << handshake.session_id() 
-                  << " from " << endpoint << std::endl;
+        // It's a handshake. Find the session by player_id and register the endpoint.
+        auto player_id = handshake.player_id();
+        auto session_to_register = m_session_manager.GetSessionByPlayerId(player_id);
+        if (session_to_register) {
+            m_session_manager.RegisterUdpEndpoint(session_to_register->GetSessionId(), endpoint);
+            std::cout << "[UdpPacketHandler] UDP handshake processed for player " << player_id 
+                      << " from " << endpoint << std::endl;
+        }
         return;
     }
 

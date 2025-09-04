@@ -2,7 +2,7 @@
 #include "proto/packet.pb.h"
 #include "network/packet_serializer.h"
 #include "network/packet_handler.h"
-#include "proto/packet.pb.h"
+#include "core/logger.h"
 
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
@@ -25,32 +25,35 @@ std::unique_ptr<google::protobuf::Message> createMessage(const std::string& type
     return nullptr;
 }
 
-Session::Session(std::shared_ptr<boost::asio::ssl::stream<tcp::socket>> ssl_stream, uint32_t session_id, std::shared_ptr<IPacketHandler> handler)
-    : m_ssl_stream(std::move(*ssl_stream)),
+// [SEQUENCE: MVP9-3] Modified Session constructor to take socket and context
+Session::Session(tcp::socket socket, boost::asio::ssl::context& context, uint32_t session_id, std::shared_ptr<IPacketHandler> handler)
+    : m_ssl_stream(std::move(socket), context),
       m_strand(boost::asio::make_strand(m_ssl_stream.get_executor())),
-      m_state(SessionState::Handshake),
+      m_state(SessionState::Connecting),
       m_sessionId(session_id),
       m_packetHandler(std::move(handler)),
       m_isAuthenticated(false) {}
 
-Session::~Session() {}
-
-// [SEQUENCE: MVP1-14] `Session::Start()`: 세션을 시작하고 클라이언트로부터 데이터 수신을 대기합니다.
-void Session::Start() {
-    m_state = SessionState::Connected;
-    DoReadHeader();
+Session::~Session() {
+    LOG_INFO("Session {} destroyed.", m_sessionId);
 }
 
-// [SEQUENCE: MVP1-15] `Session::Stop()`: 세션을 종료하고 소켓을 닫습니다.
+// [SEQUENCE: MVP9-4] Modified Start() to initiate the SSL handshake.
+void Session::Start() {
+    DoHandshake();
+}
+
 void Session::Disconnect() {
     if (m_state == SessionState::Disconnected) return;
     m_state = SessionState::Disconnected;
 
-    // Gracefully shut down the SSL stream.
-    m_ssl_stream.async_shutdown([self = shared_from_this()]([[maybe_unused]] const boost::system::error_code& ec) {
-        boost::system::error_code socket_ec;
-        self->GetSocket().shutdown(tcp::socket::shutdown_both, socket_ec);
-        self->GetSocket().close(socket_ec);
+    boost::asio::post(m_strand, [self = shared_from_this()]() {
+        boost::system::error_code ec;
+        self->m_ssl_stream.async_shutdown([self]([[maybe_unused]] const boost::system::error_code& shutdown_ec) {
+            boost::system::error_code close_ec;
+            self->GetSocket().shutdown(tcp::socket::shutdown_both, close_ec);
+            self->GetSocket().close(close_ec);
+        });
     });
 }
 
@@ -77,7 +80,6 @@ void Session::Authenticate() {
     SetAuthenticated(true);
 }
 
-// [SEQUENCE: MVP6-18] Methods for UDP endpoint management.
 void Session::SetUdpEndpoint(const udp::endpoint& endpoint) {
     m_udp_endpoint = endpoint;
 }
@@ -86,7 +88,27 @@ std::optional<udp::endpoint> Session::GetUdpEndpoint() const {
     return m_udp_endpoint;
 }
 
-// [SEQUENCE: MVP1-16] `Session::DoReadHeader()`: 패킷의 고정 크기 헤더를 비동기적으로 읽습니다.
+void Session::SetPlayerId(uint64_t player_id) {
+    m_player_id = player_id;
+}
+
+// [SEQUENCE: MVP9-5] Added DoHandshake() to perform the SSL handshake.
+void Session::DoHandshake() {
+    m_state = SessionState::Handshake;
+    m_ssl_stream.async_handshake(boost::asio::ssl::stream_base::server,
+        boost::asio::bind_executor(m_strand,
+            [self = shared_from_this()](const boost::system::error_code& ec) {
+                if (!ec) {
+                    self->m_state = SessionState::Connected;
+                    LOG_INFO("Session {} handshake successful. Remote: {}", self->m_sessionId, self->GetRemoteAddress());
+                    self->DoReadHeader();
+                } else {
+                    LOG_ERROR("Session {} handshake failed: {}", self->m_sessionId, ec.message());
+                    self->HandleError(ec);
+                }
+            }));
+}
+
 void Session::DoReadHeader() {
     m_readBuffer.assign(4, std::byte{0});
     boost::asio::async_read(m_ssl_stream, boost::asio::buffer(m_readBuffer),
@@ -103,7 +125,6 @@ void Session::DoReadHeader() {
             }));
 }
 
-// [SEQUENCE: MVP1-17] `Session::DoReadBody()`: 헤더에서 파악한 크기만큼 패킷의 본문을 비동기적으로 읽습니다.
 void Session::DoReadBody(uint32_t body_size) {
     if (body_size == 0 || body_size > 65536) {
         HandleError(boost::asio::error::invalid_argument);
@@ -121,6 +142,49 @@ void Session::DoReadBody(uint32_t body_size) {
                 }
             }));
 }
+
+std::string getMessageTypeName(mmorpg::proto::PacketType packet_type); // Forward declaration
+
+void Session::ProcessPacket(std::vector<std::byte>&& data) {
+    auto packet = PacketSerializer::Deserialize(data.data(), data.size());
+    if (!packet) {
+        return;
+    }
+
+    std::string type_name = getMessageTypeName(packet->header().type());
+    const auto* descriptor = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type_name);
+    if (!descriptor) return;
+
+    auto message = std::shared_ptr<google::protobuf::Message>(google::protobuf::MessageFactory::generated_factory()->GetPrototype(descriptor)->New());
+    if (!message->ParseFromString(packet->payload())) return;
+
+    if (m_packetHandler) {
+        m_packetHandler->Handle(shared_from_this(), *message);
+    }
+}
+
+void Session::DoWrite() {
+    boost::asio::async_write(m_ssl_stream, boost::asio::buffer(m_writeQueue.front()),
+        boost::asio::bind_executor(m_strand,
+            [self = shared_from_this()](const boost::system::error_code& ec, [[maybe_unused]] std::size_t length) {
+                if (!ec) {
+                    self->m_writeQueue.pop_front();
+                    if (!self->m_writeQueue.empty()) {
+                        self->DoWrite();
+                    }
+                } else {
+                    self->HandleError(ec);
+                }
+            }));
+}
+
+void Session::HandleError(const boost::system::error_code& ec) {
+    if (ec != boost::asio::error::operation_aborted) {
+        LOG_ERROR("Session [{}] error: {}", m_sessionId, ec.message());
+    }
+    Disconnect();
+}
+
 
 std::string getMessageTypeName(mmorpg::proto::PacketType packet_type) {
     switch (packet_type) {
@@ -165,47 +229,6 @@ std::string getMessageTypeName(mmorpg::proto::PacketType packet_type) {
         default:
             return "";
     }
-}
-
-void Session::ProcessPacket(std::vector<std::byte>&& data) {
-    auto packet = PacketSerializer::Deserialize(data.data(), data.size());
-    if (!packet) {
-        return;
-    }
-
-    std::string type_name = getMessageTypeName(packet->header().type());
-    const auto* descriptor = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type_name);
-    if (!descriptor) return;
-
-    auto message = std::shared_ptr<google::protobuf::Message>(google::protobuf::MessageFactory::generated_factory()->GetPrototype(descriptor)->New());
-    if (!message->ParseFromString(packet->payload())) return;
-
-    if (m_packetHandler) {
-        m_packetHandler->Handle(shared_from_this(), *message);
-    }
-}
-
-// [SEQUENCE: MVP1-18] `Session::DoWrite()`: 클라이언트에게 패킷을 비동기적으로 전송합니다.
-void Session::DoWrite() {
-    boost::asio::async_write(m_ssl_stream, boost::asio::buffer(m_writeQueue.front()),
-        boost::asio::bind_executor(m_strand,
-            [self = shared_from_this()](const boost::system::error_code& ec, [[maybe_unused]] std::size_t length) {
-                if (!ec) {
-                    self->m_writeQueue.pop_front();
-                    if (!self->m_writeQueue.empty()) {
-                        self->DoWrite();
-                    }
-                } else {
-                    self->HandleError(ec);
-                }
-            }));
-}
-
-void Session::HandleError(const boost::system::error_code& ec) {
-    if (ec != boost::asio::error::operation_aborted) {
-        // std::cerr << "Session [" << m_sessionId << "] error: " << ec.message() << std::endl;
-    }
-    Disconnect();
 }
 
 }

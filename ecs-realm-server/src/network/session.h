@@ -36,15 +36,13 @@ enum class SessionState {
 // [SEQUENCE: MVP1-18] Represents a single client connection
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    // [SEQUENCE: MVP6-25] The Session class is updated to use an SSL stream.
-    Session(std::shared_ptr<boost::asio::ssl::stream<tcp::socket>> ssl_stream, uint32_t session_id, std::shared_ptr<IPacketHandler> handler);
+    Session(tcp::socket socket, boost::asio::ssl::context& context, uint32_t session_id, std::shared_ptr<IPacketHandler> handler);
     ~Session();
 
     void Start();
     void Disconnect();
     void Send(const google::protobuf::Message& message);
 
-    boost::asio::ssl::stream<tcp::socket>& GetStream() { return m_ssl_stream; }
     tcp::socket& GetSocket() { return m_ssl_stream.next_layer(); }
     uint32_t GetSessionId() const { return m_sessionId; }
     SessionState GetState() const { return m_state; }
@@ -54,11 +52,14 @@ public:
     void SetAuthenticated(bool authenticated) { m_isAuthenticated = authenticated; }
     void Authenticate();
 
+    void SetPlayerId(uint64_t player_id);
+
     // [SEQUENCE: MVP6-18] Methods for UDP endpoint management.
     void SetUdpEndpoint(const udp::endpoint& endpoint);
     std::optional<udp::endpoint> GetUdpEndpoint() const;
 
 private:
+    void DoHandshake();
     void DoReadHeader();
     void DoReadBody(uint32_t body_size);
     void ProcessPacket(std::vector<std::byte>&& buffer);
@@ -75,6 +76,7 @@ private:
     std::deque<std::vector<std::byte>> m_writeQueue;
 
     std::atomic<bool> m_isAuthenticated;
+    uint64_t m_player_id = 0;
 
     // [SEQUENCE: MVP6-19] Stores the associated UDP endpoint for this session.
     std::optional<udp::endpoint> m_udp_endpoint;

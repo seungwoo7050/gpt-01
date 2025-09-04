@@ -47,7 +47,3 @@ message HeartbeatRequest {
     uint64 timestamp = 2;
 }
 
-message HeartbeatResponse {
-    uint64 server_timestamp = 1;
-    uint32 latency_ms = 2;
-}

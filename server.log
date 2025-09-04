@@ -1,13 +1,7 @@
-[09:40:31] MMORPG: SSL certificate or key file not found. The server will likely fail if a client connects.
-[09:40:31] MMORPG: This is expected for the MVP1 build verification. Please create dummy files if needed: 
-[09:40:31] MMORPG: openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt -days 365 -nodes
-[TcpServer] SSL Context Error: use_certificate_chain_file: No such file or directory [system:2]
-[09:40:31] MMORPG: ScriptManager initialized.
-Hello from Lua!
-[09:40:31] MMORPG: [LUA] This message is printed by a C++ function called from Lua.
-[TcpServer] Error starting server: bind: Address already in use [system:98 at /home/woopinbells/.conan2/p/b/boostb093acc7d62fb/p/include/boost/asio/detail/reactive_socket_service.hpp:161:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::bind(boost::asio::detail::reactive_socket_service<Protocol>::implementation_type&, const endpoint_type&, boost::system::error_code&)']
-[UdpServer] Error starting server: bind: Address already in use [system:98 at /home/woopinbells/.conan2/p/b/boostb093acc7d62fb/p/include/boost/asio/detail/reactive_socket_service.hpp:161:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::bind(boost::asio::detail::reactive_socket_service<Protocol>::implementation_type&, const endpoint_type&, boost::system::error_code&)']
-[09:40:31] MMORPG: TCP server started on port 8080
-[09:40:31] MMORPG: UDP server started on port 8081
-[09:40:31] MMORPG: Press Ctrl+C to stop the servers
-[09:40:31] MMORPG: Game server shutdown complete
+[02:52:53] MMORPG: SSL TCP server started on port 8080
+[02:52:53] MMORPG: Press Ctrl+C to stop the servers
+[02:52:53] MMORPG: Calling io_context.run()...
+[02:53:39] MMORPG: Signal 15 received.
+[02:53:39] MMORPG: Received shutdown signal, stopping servers...
+[02:53:39] MMORPG: io_context.run() returned.
+[02:53:39] MMORPG: Game server shutdown complete

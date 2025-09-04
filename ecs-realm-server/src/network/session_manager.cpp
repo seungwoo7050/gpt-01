@@ -82,4 +82,14 @@ std::shared_ptr<Session> SessionManager::GetSessionByUdpEndpoint(const boost::as
     return nullptr;
 }
 
+std::shared_ptr<Session> SessionManager::GetSessionByPlayerId(uint64_t player_id) const {
+    std::shared_lock lock(m_mutex);
+    for (const auto& pair : m_session_to_player_id) {
+        if (pair.second == player_id) {
+            return GetSession(pair.first);
+        }
+    }
+    return nullptr;
+}
+
 }

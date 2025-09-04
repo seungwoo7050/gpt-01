@@ -30,8 +30,12 @@ struct UdpEndpointHasher {
 // [SEQUENCE: MVP1-19] Manages all active client sessions
 class SessionManager {
 public:
-    SessionManager() = default;
+    SessionManager() : m_next_session_id(0) {}
     ~SessionManager() = default;
+
+    uint32_t get_next_session_id() {
+        return ++m_next_session_id;
+    }
 
     SessionManager(const SessionManager&) = delete;
     SessionManager& operator=(const SessionManager&) = delete;
@@ -51,8 +55,10 @@ public:
     // [SEQUENCE: MVP6-16] Methods for UDP endpoint management.
     void RegisterUdpEndpoint(uint32_t session_id, const boost::asio::ip::udp::endpoint& endpoint);
     std::shared_ptr<Session> GetSessionByUdpEndpoint(const boost::asio::ip::udp::endpoint& endpoint) const;
+    std::shared_ptr<Session> GetSessionByPlayerId(uint64_t player_id) const;
 
 private:
+    std::atomic<uint32_t> m_next_session_id;
     mutable std::shared_mutex m_mutex;
     std::unordered_map<uint32_t, std::shared_ptr<Session>> m_sessions;
     std::unordered_map<uint32_t, uint64_t> m_session_to_player_id;
