@@ -6,15 +6,20 @@
 #include <atomic>
 #include <memory>
 #include <boost/asio.hpp>
+#include <deque>
+
+#include "network/packet_serializer.h"
+#include "proto/auth.pb.h"
+#include "proto/game.pb.h"
 
 namespace mmorpg::tests {
 
+// [SEQUENCE: MVP9-6] Defines the configuration and metrics for the load test.
 class LoadTestClient {
 public:
     struct Config {
         std::string host = "127.0.0.1";
         uint16_t port = 8080;
-        uint16_t udp_port = 8081;
         uint32_t num_clients = 100;
         uint32_t test_duration_sec = 30;
         uint32_t packets_per_sec = 5;
@@ -33,30 +38,41 @@ public:
     void Run();
 
 private:
+    // [SEQUENCE: MVP9-7] Represents a single client session in the load test.
     class ClientSession : public std::enable_shared_from_this<ClientSession> {
     public:
         ClientSession(boost::asio::io_context& io_context, boost::asio::ssl::context& ssl_context, const Config& config, Metrics& metrics);
         void Start();
     private:
-        void DoReadHeader();
-        void DoReadBody(uint32_t body_size);
+        // Connection Logic
         void Connect();
+        void OnResolve(const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::results_type endpoints);
+        void OnConnect(const boost::system::error_code& ec);
         void Handshake();
+        void OnHandshake(const boost::system::error_code& ec);
         void Login();
-        void StartUdp();
+
+        // Read/Write Logic
+        void DoReadHeader();
+        void OnReadHeader(const boost::system::error_code& ec, size_t bytes);
+        void DoReadBody(uint32_t body_size);
+        void OnReadBody(const boost::system::error_code& ec, size_t bytes);
+        void ProcessPacket(std::vector<std::byte>&& buffer);
+        void DoWrite();
+        void OnWrite(const boost::system::error_code& ec, size_t bytes);
+        void Send(const google::protobuf::Message& message);
+
+        // Gameplay Loop
         void SendMovementLoop(const boost::system::error_code& ec);
 
         using SslSocket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
         boost::asio::io_context& m_io_context;
         SslSocket m_tcp_socket;
         boost::asio::ip::tcp::resolver m_resolver;
-        boost::asio::ip::udp::socket m_udp_socket;
         boost::asio::steady_timer m_timer;
 
         std::vector<std::byte> m_read_buffer;
-        std::vector<std::byte> m_write_buffer;
-        uint32_t m_packet_size = 0;
-        uint32_t m_packet_type = 0;
+        std::deque<std::vector<std::byte>> m_write_queue;
 
         const Config& m_config;
         Metrics& m_metrics;

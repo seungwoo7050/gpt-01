@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP5-9] A new component, extracted from openworld_pvp_system.h, to track an individual player's PvP state.
 #pragma once
 
 #include "core/ecs/types.h"
@@ -7,6 +6,7 @@
 
 namespace mmorpg::game::components {
 
+// [SEQUENCE: MVP5-5] Tracks an individual player's PvP state, such as whether they are flagged for PvP.
 struct PvPStateComponent {
     bool pvp_flagged = false;
     uint32_t faction_id = 0;

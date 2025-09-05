@@ -5,7 +5,7 @@
 
 namespace mmorpg::game::world::grid {
 
-// [SEQUENCE: 1] Constructor - initialize grid
+// [SEQUENCE: MVP3-10] Implements the WorldGrid constructor, initializing the grid cells.
 WorldGrid::WorldGrid(const Config& config) : config_(config) {
     // Allocate grid cells
     grid_.resize(config_.grid_width);
@@ -20,7 +20,7 @@ WorldGrid::WorldGrid(const Config& config) : config_(config) {
                  config_.grid_width, config_.grid_height, config_.cell_size);
 }
 
-// [SEQUENCE: 2] Add entity to grid
+// [SEQUENCE: MVP3-11] Implements AddEntity, adding an entity to the correct grid cell.
 void WorldGrid::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3& position) {
     auto [cell_x, cell_y] = GetCellCoordinates(position);
     
@@ -44,7 +44,7 @@ void WorldGrid::AddEntity(core::ecs::EntityId entity, const core::utils::Vector3
     spdlog::debug("Added entity {} to cell ({}, {})", entity, cell_x, cell_y);
 }
 
-// [SEQUENCE: 3] Remove entity from grid
+// [SEQUENCE: MVP3-12] Implements RemoveEntity, removing an entity from the grid.
 void WorldGrid::RemoveEntity(core::ecs::EntityId entity) {
     std::pair<int, int> cell_coords;
     
@@ -68,7 +68,7 @@ void WorldGrid::RemoveEntity(core::ecs::EntityId entity) {
     spdlog::debug("Removed entity {} from cell ({}, {})", entity, cell_coords.first, cell_coords.second);
 }
 
-// [SEQUENCE: 4] Update entity position
+// [SEQUENCE: MVP3-13] Implements UpdateEntity, moving an entity between cells if necessary.
 void WorldGrid::UpdateEntity(core::ecs::EntityId entity, 
                            const core::utils::Vector3& old_pos,
                            const core::utils::Vector3& new_pos) {
@@ -101,7 +101,7 @@ void WorldGrid::UpdateEntity(core::ecs::EntityId entity,
     }
 }
 
-// [SEQUENCE: 5] Get entities within radius
+// [SEQUENCE: MVP3-14] Implements GetEntitiesInRadius, performing a broad-phase query.
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     const core::utils::Vector3& center, float radius) const {
     
@@ -111,18 +111,15 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     // Get all cells that might contain entities within radius
     GetCellsInRadius(center, radius, cells_to_check);
     
-    // float radius_squared = radius * radius; // This is not used, but might be useful for precise filtering later
-    
     // Check each cell
     for (const auto& [cell_x, cell_y] : cells_to_check) {
         if (!IsValidCell(cell_x, cell_y)) continue;
         
         std::lock_guard<std::mutex> lock(grid_[cell_x][cell_y]->mutex);
         
-        // For each entity in cell, check actual distance
+        // For each entity in cell, add to results.
+        // Note: This is a broad-phase query. Precise filtering happens at the system level.
         for (core::ecs::EntityId entity : grid_[cell_x][cell_y]->entities) {
-            // Note: Would need entity position here for exact check
-            // For now, include all entities in relevant cells
             result.push_back(entity);
         }
     }
@@ -130,7 +127,7 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInRadius(
     return result;
 }
 
-// [SEQUENCE: 6] Get entities in box
+// [SEQUENCE: MVP3-15] Implements GetEntitiesInBox for rectangular queries.
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInBox(
     const core::utils::Vector3& min, const core::utils::Vector3& max) const {
     
@@ -159,7 +156,7 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInBox(
     return result;
 }
 
-// [SEQUENCE: 7] Get entities in specific cell
+// [SEQUENCE: MVP3-16] Implements GetEntitiesInCell for specific cell queries.
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInCell(int x, int y) const {
     if (!IsValidCell(x, y)) {
         return {};
@@ -172,7 +169,7 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInCell(int x, int y) cons
     );
 }
 
-// [SEQUENCE: 8] Get entities in adjacent cells
+// [SEQUENCE: MVP3-17] Implements GetEntitiesInAdjacentCells for neighbor queries.
 std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInAdjacentCells(
     const core::utils::Vector3& position, int range) const {
     
@@ -203,25 +200,25 @@ std::vector<core::ecs::EntityId> WorldGrid::GetEntitiesInAdjacentCells(
     return result;
 }
 
-// [SEQUENCE: 9] Convert world position to cell coordinates
+// [SEQUENCE: MVP3-18] Implements GetCellCoordinates to convert world position to cell indices.
 std::pair<int, int> WorldGrid::GetCellCoordinates(const core::utils::Vector3& position) const {
     int x = GetCellIndex(position.x, config_.world_min_x, config_.grid_width, config_.cell_size);
     int y = GetCellIndex(position.y, config_.world_min_y, config_.grid_height, config_.cell_size);
     return {x, y};
 }
 
-// [SEQUENCE: 10] Check if cell coordinates are valid
+// [SEQUENCE: MVP3-19] Implements IsValidCell to check if cell coordinates are within grid bounds.
 bool WorldGrid::IsValidCell(int x, int y) const {
     return x >= 0 && x < config_.grid_width && y >= 0 && y < config_.grid_height;
 }
 
-// [SEQUENCE: 11] Get total entity count
+// [SEQUENCE: MVP3-20] Implements GetEntityCount to get the total number of entities in the grid.
 size_t WorldGrid::GetEntityCount() const {
     std::lock_guard<std::mutex> lock(entity_map_mutex_);
     return entity_cells_.size();
 }
 
-// [SEQUENCE: 12] Get occupied cell count
+// [SEQUENCE: MVP3-21] Implements GetOccupiedCellCount to count cells that are not empty.
 size_t WorldGrid::GetOccupiedCellCount() const {
     size_t count = 0;
     for (const auto& column : grid_) {
@@ -235,7 +232,7 @@ size_t WorldGrid::GetOccupiedCellCount() const {
     return count;
 }
 
-// [SEQUENCE: 13] Get cell bounds for visualization
+// [SEQUENCE: MVP3-22] Implements GetCellBounds for debugging and visualization.
 void WorldGrid::GetCellBounds(int x, int y, core::utils::Vector3& min, core::utils::Vector3& max) const {
     min.x = config_.world_min_x + x * config_.cell_size;
     min.y = config_.world_min_y + y * config_.cell_size;
@@ -246,7 +243,7 @@ void WorldGrid::GetCellBounds(int x, int y, core::utils::Vector3& min, core::uti
     max.z = 0;
 }
 
-// [SEQUENCE: 14] Get all occupied cells
+// [SEQUENCE: MVP3-23] Implements GetOccupiedCells to retrieve all non-empty cells.
 std::vector<std::pair<int, int>> WorldGrid::GetOccupiedCells() const {
     std::vector<std::pair<int, int>> occupied;
     
@@ -262,12 +259,12 @@ std::vector<std::pair<int, int>> WorldGrid::GetOccupiedCells() const {
     return occupied;
 }
 
-// [SEQUENCE: 15] Helper: Convert world coordinate to cell index
+// [SEQUENCE: MVP3-24] Helper implementation to convert a world coordinate to a cell index.
 int WorldGrid::GetCellIndex(float world_coord, float world_min, [[maybe_unused]] int grid_size, float cell_size) const {
     return static_cast<int>((world_coord - world_min) / cell_size);
 }
 
-// [SEQUENCE: 16] Helper: Get cells potentially containing entities within radius
+// [SEQUENCE: MVP3-25] Helper implementation to find all cells that intersect a given radius.
 void WorldGrid::GetCellsInRadius(const core::utils::Vector3& center, float radius,
                                std::vector<std::pair<int, int>>& cells) const {
     // Calculate cell range
@@ -282,10 +279,9 @@ void WorldGrid::GetCellsInRadius(const core::utils::Vector3& center, float radiu
     min_y = std::max(0, min_y);
     max_y = std::min(config_.grid_height - 1, max_y);
     
-    // Add all cells in range
+    // Add all cells in range that intersect the circle
     for (int x = min_x; x <= max_x; ++x) {
         for (int y = min_y; y <= max_y; ++y) {
-            // Optional: Check if cell actually intersects circle
             if (DistanceSquaredToCell(center, x, y) <= radius * radius) {
                 cells.emplace_back(x, y);
             }
@@ -293,7 +289,7 @@ void WorldGrid::GetCellsInRadius(const core::utils::Vector3& center, float radiu
     }
 }
 
-// [SEQUENCE: 17] Helper: Calculate minimum distance squared from point to cell
+// [SEQUENCE: MVP3-26] Helper implementation to calculate the minimum distance from a point to a cell.
 float WorldGrid::DistanceSquaredToCell(const core::utils::Vector3& point, int cell_x, int cell_y) const {
     core::utils::Vector3 cell_min, cell_max;
     GetCellBounds(cell_x, cell_y, cell_min, cell_max);

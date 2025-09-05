@@ -14,14 +14,14 @@
 
 namespace mmorpg::game::systems::combat {
 
-// [SEQUENCE: MVP4-13] Action-oriented combat without target locking
+// [SEQUENCE: MVP4-30] Defines the system for handling action-oriented, non-target-based combat.
 class ActionCombatSystem : public core::ecs::optimized::System {
 public:
     ActionCombatSystem();
     ~ActionCombatSystem() override;
     
-        void Update(float delta_time) override;
-
+    // [SEQUENCE: MVP4-31] Public API for managing action combat, skills, and movement.
+    void Update(float delta_time) override;
     void SetSpatialSystem(mmorpg::game::systems::GridSpatialSystem* system) { spatial_system_ = system; }
     
     bool UseSkillshot(core::ecs::EntityId caster, uint32_t skill_id,
@@ -53,6 +53,7 @@ public:
     bool IsInvulnerable(core::ecs::EntityId entity);
     
 private:
+    // [SEQUENCE: MVP4-32] Private helper methods for internal action combat logic.
     float CalculateDamage(const components::CombatStatsComponent& attacker_stats,
                          const components::CombatStatsComponent& defender_stats,
                          float base_damage, bool is_physical);
@@ -76,6 +77,11 @@ private:
     void OnDodge(core::ecs::EntityId entity);
     void OnDeath(core::ecs::EntityId entity);
     
+    bool IsValidTarget(core::ecs::EntityId attacker, core::ecs::EntityId target);
+    float GetAngleBetween(const core::utils::Vector3& v1, const core::utils::Vector3& v2);
+    core::utils::Vector3 RotateVector(const core::utils::Vector3& vec, float angle);
+
+    // [SEQUENCE: MVP4-33] Private member variables for system state and configuration.
     class GridSpatialSystem* spatial_system_ = nullptr;
     
     struct ActionCombatConfig {
@@ -92,10 +98,6 @@ private:
         std::chrono::steady_clock::time_point expire_time;
     };
     std::unordered_map<uint64_t, HitRecord> hit_records_;
-    
-    bool IsValidTarget(core::ecs::EntityId attacker, core::ecs::EntityId target);
-    float GetAngleBetween(const core::utils::Vector3& v1, const core::utils::Vector3& v2);
-    core::utils::Vector3 RotateVector(const core::utils::Vector3& vec, float angle);
 };
 
 } // namespace mmorpg::game::systems::combat

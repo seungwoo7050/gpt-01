@@ -1,0 +1,41 @@
+# Load the debug and release variables
+file(GLOB DATA_FILES "${CMAKE_CURRENT_LIST_DIR}/mysql-concpp-*-data.cmake")
+
+foreach(f ${DATA_FILES})
+    include(${f})
+endforeach()
+
+# Create the targets for all the components
+foreach(_COMPONENT ${mysql-connector-cpp_COMPONENT_NAMES} )
+    if(NOT TARGET ${_COMPONENT})
+        add_library(${_COMPONENT} INTERFACE IMPORTED)
+        message(${mysql-concpp_MESSAGE_MODE} "Conan: Component target declared '${_COMPONENT}'")
+    endif()
+endforeach()
+
+if(NOT TARGET mysql::concpp)
+    add_library(mysql::concpp INTERFACE IMPORTED)
+    message(${mysql-concpp_MESSAGE_MODE} "Conan: Target declared 'mysql::concpp'")
+endif()
+if(NOT TARGET mysql::concpp-xdevapi)
+    add_library(mysql::concpp-xdevapi INTERFACE IMPORTED)
+    set_property(TARGET mysql::concpp-xdevapi PROPERTY INTERFACE_LINK_LIBRARIES mysql::concpp)
+endif()
+if(NOT TARGET mysql::concpp-static)
+    add_library(mysql::concpp-static INTERFACE IMPORTED)
+    set_property(TARGET mysql::concpp-static PROPERTY INTERFACE_LINK_LIBRARIES mysql::concpp)
+endif()
+if(NOT TARGET mysql::concpp-xdevapi-static)
+    add_library(mysql::concpp-xdevapi-static INTERFACE IMPORTED)
+    set_property(TARGET mysql::concpp-xdevapi-static PROPERTY INTERFACE_LINK_LIBRARIES mysql::concpp)
+endif()
+if(NOT TARGET mysql::openssl)
+    add_library(mysql::openssl INTERFACE IMPORTED)
+    set_property(TARGET mysql::openssl PROPERTY INTERFACE_LINK_LIBRARIES mysql::concpp)
+endif()
+# Load the debug and release library finders
+file(GLOB CONFIG_FILES "${CMAKE_CURRENT_LIST_DIR}/mysql-concpp-Target-*.cmake")
+
+foreach(f ${CONFIG_FILES})
+    include(${f})
+endforeach()

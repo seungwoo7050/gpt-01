@@ -1,0 +1,1 @@
+. "/home/woopinbells/Desktop/gpt-01/ecs-realm-server/conanbuildenv-release-x86_64.sh"

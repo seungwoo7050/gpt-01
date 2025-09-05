@@ -5,6 +5,7 @@
 
 namespace mmorpg::game::systems {
 
+// [SEQUENCE: MVP3-75] Implements the constructor, initializing the underlying WorldGrid.
 GridSpatialSystem::GridSpatialSystem() {
     world::grid::WorldGrid::Config config;
     config.cell_size = 100.0f;
@@ -17,16 +18,18 @@ GridSpatialSystem::GridSpatialSystem() {
     world_grid_ = std::make_unique<world::grid::WorldGrid>(config);
 }
 
+// [SEQUENCE: MVP3-76] Implements the system lifecycle methods (currently empty).
 void GridSpatialSystem::OnSystemInit() {}
 void GridSpatialSystem::OnSystemShutdown() {}
 
+// [SEQUENCE: MVP3-77] Implements PostUpdate to process entity movements and update the grid.
 void GridSpatialSystem::PostUpdate([[maybe_unused]] float delta_time) {
-    if (!world_) return;
+    if (!m_world) return;
     
     size_t updates_processed = 0;
     
-    for (const auto& entity : entities_) {
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    for (const auto& entity : m_entities) {
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
         
         const core::utils::Vector3& current_pos = transform.position;
         
@@ -51,11 +54,12 @@ void GridSpatialSystem::PostUpdate([[maybe_unused]] float delta_time) {
     }
 }
 
+// [SEQUENCE: MVP3-78] Implements OnEntityCreated to add new entities to the grid.
 void GridSpatialSystem::OnEntityCreated(core::ecs::EntityId entity) {
-    if (!world_) return;
+    if (!m_world) return;
 
-    if (world_->HasComponent<components::TransformComponent>(entity)){
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    if (m_world->HasComponent<components::TransformComponent>(entity)){
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
         world_grid_->AddEntity(entity, transform.position);
         EntitySpatialData data;
         data.last_position = transform.position;
@@ -64,11 +68,13 @@ void GridSpatialSystem::OnEntityCreated(core::ecs::EntityId entity) {
     }
 }
 
+// [SEQUENCE: MVP3-79] Implements OnEntityDestroyed to remove entities from the grid.
 void GridSpatialSystem::OnEntityDestroyed(core::ecs::EntityId entity) {
     world_grid_->RemoveEntity(entity);
     entity_spatial_data_.erase(entity);
 }
 
+// [SEQUENCE: MVP3-80] Implements GetEntitiesInRadius with precise, narrow-phase filtering.
 std::vector<core::ecs::EntityId> GridSpatialSystem::GetEntitiesInRadius(
     const core::utils::Vector3& center, float radius) const {
     
@@ -79,10 +85,10 @@ std::vector<core::ecs::EntityId> GridSpatialSystem::GetEntitiesInRadius(
     auto candidates = world_grid_->GetEntitiesInRadius(center, radius);
 
     std::vector<core::ecs::EntityId> result;
-    if (!world_) return result;
+    if (!m_world) return result;
 
     for (auto entity : candidates) {
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
         float dx = center.x - transform.position.x;
         float dy = center.y - transform.position.y;
         float dz = center.z - transform.position.z;
@@ -94,13 +100,13 @@ std::vector<core::ecs::EntityId> GridSpatialSystem::GetEntitiesInRadius(
     return result;
 }
 
-
+// [SEQUENCE: MVP3-81] Implements GetEntitiesInView for observer-based queries.
 std::vector<core::ecs::EntityId> GridSpatialSystem::GetEntitiesInView(
     core::ecs::EntityId observer, float view_distance) const {
     
-    if (!world_) return {};
+    if (!m_world) return {};
     
-    auto& observer_transform = world_->GetComponent<components::TransformComponent>(observer);
+    auto& observer_transform = m_world->GetComponent<components::TransformComponent>(observer);
     
     auto visible = GetEntitiesInRadius(observer_transform.position, view_distance);
     
@@ -112,12 +118,13 @@ std::vector<core::ecs::EntityId> GridSpatialSystem::GetEntitiesInView(
     return visible;
 }
 
+// [SEQUENCE: MVP3-82] Implements GetNearbyEntities for proximity queries.
 std::vector<core::ecs::EntityId> GridSpatialSystem::GetNearbyEntities(
     core::ecs::EntityId entity, float distance) const {
     
-    if (!world_) return {};
+    if (!m_world) return {};
     
-    auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
     
     auto nearby = GetEntitiesInRadius(transform.position, distance);
     

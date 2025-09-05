@@ -9,7 +9,7 @@ class SessionManager;
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP6-32] Concrete implementation of the UDP packet handler.
+// [SEQUENCE: MVP6-34] The concrete implementation of the UDP packet handler.
 class UdpPacketHandler : public IUdpPacketHandler {
 public:
     explicit UdpPacketHandler(SessionManager& session_manager);

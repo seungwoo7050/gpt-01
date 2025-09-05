@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP1-29] game.proto: 핵심 게임플레이 관련 메시지를 정의합니다.
+// [SEQUENCE: MVP1-8] Defines core gameplay messages like player movement and combat.
 syntax = "proto3";
 
 package mmorpg.proto;

@@ -7,7 +7,6 @@
 
 namespace mmorpg::game::components {
 
-// [SEQUENCE: 1] Match types for different PvP modes
 enum class MatchType {
     ARENA_1V1,
     ARENA_2V2,
@@ -20,7 +19,6 @@ enum class MatchType {
     TOURNAMENT
 };
 
-// [SEQUENCE: 2] Match states
 enum class MatchState {
     WAITING_FOR_PLAYERS,
     STARTING,          // Countdown phase
@@ -30,7 +28,6 @@ enum class MatchState {
     COMPLETED
 };
 
-// [SEQUENCE: 3] Team information
 struct TeamInfo {
     uint32_t team_id;
     std::vector<core::ecs::EntityId> members;
@@ -40,7 +37,6 @@ struct TeamInfo {
     bool ready = false;
 };
 
-// [SEQUENCE: 4] Individual player match data
 struct PlayerMatchData {
     core::ecs::EntityId player_id;
     uint32_t team_id;
@@ -54,45 +50,43 @@ struct PlayerMatchData {
     bool is_disconnected = false;
 };
 
-// [SEQUENCE: 5] Match component for tracking PvP matches
+// [SEQUENCE: MVP5-3] Defines the data for a PvP match instance.
 struct MatchComponent {
-    // [SEQUENCE: 6] Match identification
+    // Match identification
     uint64_t match_id = 0;
     MatchType match_type = MatchType::ARENA_1V1;
     MatchState state = MatchState::WAITING_FOR_PLAYERS;
     
-    // [SEQUENCE: 7] Teams
+    // Teams
     std::vector<TeamInfo> teams;
     std::unordered_map<core::ecs::EntityId, PlayerMatchData> player_data;
     
-    // [SEQUENCE: 8] Match timing
+    // Match timing
     std::chrono::steady_clock::time_point match_start_time;
     std::chrono::steady_clock::time_point match_end_time;
     float match_duration = 300.0f;      // 5 minutes default
     float overtime_duration = 60.0f;    // 1 minute overtime
     float countdown_remaining = 10.0f;  // Pre-match countdown
     
-    // [SEQUENCE: 9] Victory conditions
+    // Victory conditions
     uint32_t score_limit = 0;           // 0 = no limit
     uint32_t kill_limit = 0;            // 0 = no limit
     bool sudden_death = false;          // First kill wins
     
-    // [SEQUENCE: 10] Arena-specific settings
+    // Arena-specific settings
     bool gear_normalized = true;        // Equalize gear
     bool consumables_allowed = false;   // Potions, etc.
     uint32_t arena_map_id = 1;         // Which arena
     
-    // [SEQUENCE: 11] Match results
+    // Match results
     uint32_t winning_team_id = 0;
     std::vector<core::ecs::EntityId> mvp_players;
     std::unordered_map<core::ecs::EntityId, int32_t> rating_changes;
     
-    // [SEQUENCE: 12] Spectator support
+    // Spectator support
     std::vector<core::ecs::EntityId> spectators;
     bool allow_spectators = true;
     float spectator_delay = 2.0f;       // Seconds
 };
-
-
 
 } // namespace mmorpg::game::components

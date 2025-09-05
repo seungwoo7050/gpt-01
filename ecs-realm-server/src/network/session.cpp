@@ -13,19 +13,9 @@
 
 namespace mmorpg::network {
 
-// Factory to create message instances from a type name string.
-std::unique_ptr<google::protobuf::Message> createMessage(const std::string& type_name) {
-    const google::protobuf::Descriptor* descriptor = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type_name);
-    if (descriptor) {
-        const google::protobuf::Message* prototype = google::protobuf::MessageFactory::generated_factory()->GetPrototype(descriptor);
-        if (prototype) {
-            return std::unique_ptr<google::protobuf::Message>(prototype->New());
-        }
-    }
-    return nullptr;
-}
+// Helper function to get a message type name from our custom enum.
+std::string getMessageTypeName(mmorpg::proto::PacketType packet_type);
 
-// [SEQUENCE: MVP9-3] Modified Session constructor to take socket and context
 Session::Session(tcp::socket socket, boost::asio::ssl::context& context, uint32_t session_id, std::shared_ptr<IPacketHandler> handler)
     : m_ssl_stream(std::move(socket), context),
       m_strand(boost::asio::make_strand(m_ssl_stream.get_executor())),
@@ -38,7 +28,6 @@ Session::~Session() {
     LOG_INFO("Session {} destroyed.", m_sessionId);
 }
 
-// [SEQUENCE: MVP9-4] Modified Start() to initiate the SSL handshake.
 void Session::Start() {
     DoHandshake();
 }
@@ -80,6 +69,7 @@ void Session::Authenticate() {
     SetAuthenticated(true);
 }
 
+// [SEQUENCE: MVP6-27] Implementation of the UDP endpoint getters and setters.
 void Session::SetUdpEndpoint(const udp::endpoint& endpoint) {
     m_udp_endpoint = endpoint;
 }
@@ -92,7 +82,6 @@ void Session::SetPlayerId(uint64_t player_id) {
     m_player_id = player_id;
 }
 
-// [SEQUENCE: MVP9-5] Added DoHandshake() to perform the SSL handshake.
 void Session::DoHandshake() {
     m_state = SessionState::Handshake;
     m_ssl_stream.async_handshake(boost::asio::ssl::stream_base::server,
@@ -126,7 +115,7 @@ void Session::DoReadHeader() {
 }
 
 void Session::DoReadBody(uint32_t body_size) {
-    if (body_size == 0 || body_size > 65536) {
+    if (body_size == 0 || body_size > 65536) { // Basic sanity check
         HandleError(boost::asio::error::invalid_argument);
         return;
     }
@@ -136,20 +125,16 @@ void Session::DoReadBody(uint32_t body_size) {
             [self = shared_from_this()](const boost::system::error_code& ec, [[maybe_unused]] std::size_t length) {
                 if (!ec) {
                     self->ProcessPacket(std::move(self->m_readBuffer));
-                    self->DoReadHeader();
+                    self->DoReadHeader(); // Listen for the next packet
                 } else {
                     self->HandleError(ec);
                 }
             }));
 }
 
-std::string getMessageTypeName(mmorpg::proto::PacketType packet_type); // Forward declaration
-
 void Session::ProcessPacket(std::vector<std::byte>&& data) {
     auto packet = PacketSerializer::Deserialize(data.data(), data.size());
-    if (!packet) {
-        return;
-    }
+    if (!packet) return;
 
     std::string type_name = getMessageTypeName(packet->header().type());
     const auto* descriptor = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type_name);
@@ -185,7 +170,7 @@ void Session::HandleError(const boost::system::error_code& ec) {
     Disconnect();
 }
 
-
+// ... (getMessageTypeName implementation remains the same)
 std::string getMessageTypeName(mmorpg::proto::PacketType packet_type) {
     switch (packet_type) {
         case mmorpg::proto::PACKET_LOGIN_REQUEST:

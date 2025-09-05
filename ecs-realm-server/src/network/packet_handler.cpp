@@ -6,7 +6,7 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP1-35] `PacketHandler::HandlePacket()`: 수신된 패킷을 처리하기 위해 등록된 핸들러를 호출합니다.
+// [SEQUENCE: MVP1-16] Dispatches a received message to the appropriate registered handler.
 void PacketHandler::Handle(std::shared_ptr<Session> session, const google::protobuf::Message& message) {
     const auto* descriptor = message.GetDescriptor();
     auto it = m_handlers.find(descriptor);
@@ -18,7 +18,7 @@ void PacketHandler::Handle(std::shared_ptr<Session> session, const google::proto
     }
 }
 
-// [SEQUENCE: MVP1-34] `PacketHandler::RegisterHandler()`: 패킷 타입에 대한 핸들러 함수를 등록합니다.
+// [SEQUENCE: MVP1-15] Registers a callback for a specific Protobuf message type.
 void PacketHandler::RegisterHandler(const google::protobuf::Descriptor* descriptor, PacketHandlerCallback handler) {
 
     if (!m_handlers.try_emplace(descriptor, handler).second) {

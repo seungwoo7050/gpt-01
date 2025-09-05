@@ -9,11 +9,13 @@
 
 namespace mmorpg::game::systems::combat {
 
+// [SEQUENCE: MVP4-34] Implements the constructor and destructor.
 ActionCombatSystem::ActionCombatSystem() = default;
 ActionCombatSystem::~ActionCombatSystem() = default;
 
+// [SEQUENCE: MVP4-35] Implements the main update loop for the action combat system.
 void ActionCombatSystem::Update(float delta_time) {
-    if (!world_) return;
+    if (!m_world) return;
 
     UpdateProjectiles(delta_time);
     ProcessSkillCasts(delta_time);
@@ -31,14 +33,15 @@ void ActionCombatSystem::Update(float delta_time) {
     }
 }
 
+// [SEQUENCE: MVP4-36] Updates the position of all projectiles and removes them if they expire.
 void ActionCombatSystem::UpdateProjectiles(float delta_time) {
-    if (!world_) return;
+    if (!m_world) return;
 
     std::vector<core::ecs::EntityId> to_remove;
 
-    for (auto entity : world_->GetEntitiesWith<components::ProjectileComponent, components::TransformComponent>()) {
-        auto& proj = world_->GetComponent<components::ProjectileComponent>(entity);
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    for (auto entity : m_world->GetEntitiesWith<components::ProjectileComponent, components::TransformComponent>()) {
+        auto& proj = m_world->GetComponent<components::ProjectileComponent>(entity);
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
 
         transform.position.x += proj.velocity.x * delta_time;
         transform.position.y += proj.velocity.y * delta_time;
@@ -56,16 +59,17 @@ void ActionCombatSystem::UpdateProjectiles(float delta_time) {
     }
 
     for (auto id : to_remove) {
-        world_->DestroyEntity(id);
+        m_world->DestroyEntity(id);
     }
 }
 
+// [SEQUENCE: MVP4-37] Checks for collisions between a projectile and other entities.
 void ActionCombatSystem::CheckProjectileCollisions(core::ecs::EntityId projectile,
                                                   const components::ProjectileComponent& proj,
                                                   const core::utils::Vector3& position) {
     if (!spatial_system_) return;
 
-    if (!world_) return;
+    if (!m_world) return;
 
     uint64_t hit_key = (static_cast<uint64_t>(projectile) << 32) | proj.skill_id;
     auto hit_it = hit_records_.find(hit_key);
@@ -73,7 +77,7 @@ void ActionCombatSystem::CheckProjectileCollisions(core::ecs::EntityId projectil
 
     auto nearby = spatial_system_->GetEntitiesInRadius(position, proj.radius + config_.hitbox_padding);
 
-    auto& owner_stats = world_->GetComponent<components::CombatStatsComponent>(proj.owner);
+    auto& owner_stats = m_world->GetComponent<components::CombatStatsComponent>(proj.owner);
 
     for (auto entity : nearby) {
         if (entity == proj.owner) continue;
@@ -83,20 +87,21 @@ void ActionCombatSystem::CheckProjectileCollisions(core::ecs::EntityId projectil
             continue;
         }
 
-        auto& target_stats = world_->GetComponent<components::CombatStatsComponent>(entity);
+        auto& target_stats = m_world->GetComponent<components::CombatStatsComponent>(entity);
         float damage = CalculateDamage(owner_stats, target_stats, proj.damage, proj.is_physical);
 
         if (ApplyDamage(entity, damage, proj.owner)) {
             hit_it->second.hit_entities.insert(entity);
 
             if (!proj.piercing) {
-                world_->DestroyEntity(projectile);
+                m_world->DestroyEntity(projectile);
                 return;
             }
         }
     }
 }
 
+// [SEQUENCE: MVP4-38] Calculates damage for action combat, similar to targeted combat.
 float ActionCombatSystem::CalculateDamage(const components::CombatStatsComponent& attacker_stats,
                                          const components::CombatStatsComponent& defender_stats,
                                          float base_damage, bool is_physical) {
@@ -116,10 +121,6 @@ float ActionCombatSystem::CalculateDamage(const components::CombatStatsComponent
         damage *= (1.0f - resist_reduction);
     }
 
-    if (IsInvulnerable(defender_stats.level)) { 
-        return 0.0f;
-    }
-
     float crit_roll = static_cast<float>(rand()) / RAND_MAX;
     if (crit_roll < attacker_stats.critical_chance) {
         damage *= attacker_stats.critical_damage;
@@ -131,15 +132,16 @@ float ActionCombatSystem::CalculateDamage(const components::CombatStatsComponent
     return damage;
 }
 
+// [SEQUENCE: MVP4-39] Applies damage to a target, checking for invulnerability.
 bool ActionCombatSystem::ApplyDamage(core::ecs::EntityId target, float damage,
                                     core::ecs::EntityId source) {
     if (IsInvulnerable(target)) {
         return false;
     }
 
-    if (!world_) return false;
+    if (!m_world) return false;
 
-    auto& health = world_->GetComponent<components::HealthComponent>(target);
+    auto& health = m_world->GetComponent<components::HealthComponent>(target);
     if (health.is_dead) {
         return false;
     }
@@ -158,14 +160,15 @@ bool ActionCombatSystem::ApplyDamage(core::ecs::EntityId target, float damage,
     return true;
 }
 
+// [SEQUENCE: MVP4-40] Validates if a target is valid for action combat.
 bool ActionCombatSystem::IsValidTarget([[maybe_unused]] core::ecs::EntityId attacker, core::ecs::EntityId target) {
-    if (!world_) return false;
+    if (!m_world) return false;
 
-    if (!world_->IsValid(target)) {
+    if (!m_world->IsValid(target)) {
         return false;
     }
 
-    auto& health = world_->GetComponent<components::HealthComponent>(target);
+    auto& health = m_world->GetComponent<components::HealthComponent>(target);
     if (health.is_dead) {
         return false;
     }
@@ -173,42 +176,52 @@ bool ActionCombatSystem::IsValidTarget([[maybe_unused]] core::ecs::EntityId atta
     return true;
 }
 
+// [SEQUENCE: MVP4-41] Handles the event of a successful hit.
 void ActionCombatSystem::OnHit(core::ecs::EntityId attacker, core::ecs::EntityId target,
                               float damage, bool is_critical) {
     spdlog::debug("Entity {} hit {} for {} damage{}", 
                  attacker, target, damage, is_critical ? " (CRIT)" : "");
 }
 
+// [SEQUENCE: MVP4-42] Handles the event of a successful dodge.
 void ActionCombatSystem::OnDodge(core::ecs::EntityId entity) {
     spdlog::debug("Entity {} performed dodge roll", entity);
 }
 
+// [SEQUENCE: MVP4-43] Handles the death of an entity in action combat.
 void ActionCombatSystem::OnDeath(core::ecs::EntityId entity) {
     spdlog::info("Entity {} died in action combat", entity);
 }
 
+// [SEQUENCE: MVP4-44] Checks if an entity is invulnerable (e.g., during a dodge).
 bool ActionCombatSystem::IsInvulnerable(core::ecs::EntityId) { return false; }
+
+// [SEQUENCE: MVP4-45] Placeholder for processing skill casts.
 void ActionCombatSystem::ProcessSkillCasts(float) {}
+
+// [SEQUENCE: MVP4-46] Placeholder for processing skill cooldowns.
 void ActionCombatSystem::ProcessSkillCooldowns(float) {}
 
+// [SEQUENCE: MVP4-47] Updates the state of dodging entities.
 void ActionCombatSystem::UpdateDodgeStates(float) {
-    if (!world_) return;
+    if (!m_world) return;
 
     auto now = std::chrono::steady_clock::now();
-    for (auto entity : world_->GetEntitiesWith<components::DodgeComponent>()) {
-        auto& dodge = world_->GetComponent<components::DodgeComponent>(entity);
+    for (auto entity : m_world->GetEntitiesWith<components::DodgeComponent>()) {
+        auto& dodge = m_world->GetComponent<components::DodgeComponent>(entity);
         if (dodge.is_dodging && now >= dodge.dodge_end_time) {
             dodge.is_dodging = false;
         }
     }
 }
 
+// [SEQUENCE: MVP4-48] Recharges dodge charges over time.
 void ActionCombatSystem::RechargeDodges(float) {
-    if (!world_) return;
+    if (!m_world) return;
 
     auto now = std::chrono::steady_clock::now();
-    for (auto entity : world_->GetEntitiesWith<components::DodgeComponent>()) {
-        auto& dodge = world_->GetComponent<components::DodgeComponent>(entity);
+    for (auto entity : m_world->GetEntitiesWith<components::DodgeComponent>()) {
+        auto& dodge = m_world->GetComponent<components::DodgeComponent>(entity);
         if (dodge.dodge_charges < 2 && now >= dodge.next_dodge_time) {
             dodge.dodge_charges++;
             dodge.next_dodge_time = now + std::chrono::seconds(static_cast<long>(dodge.dodge_recharge_time));
@@ -216,17 +229,18 @@ void ActionCombatSystem::RechargeDodges(float) {
     }
 }
 
+// [SEQUENCE: MVP4-49] Implements the logic for an area-of-effect skill.
 bool ActionCombatSystem::UseAreaSkill(core::ecs::EntityId caster, uint32_t, const core::utils::Vector3& target_position) {
-    if (!world_ || !spatial_system_) return false;
+    if (!m_world || !spatial_system_) return false;
 
     auto nearby = spatial_system_->GetEntitiesInRadius(target_position, 5.0f); // 5.0f is skill radius
-    auto& caster_stats = world_->GetComponent<components::CombatStatsComponent>(caster);
+    auto& caster_stats = m_world->GetComponent<components::CombatStatsComponent>(caster);
 
     for (auto entity : nearby) {
         if (entity == caster) continue;
         if (!IsValidTarget(caster, entity)) continue;
 
-        auto& target_stats = world_->GetComponent<components::CombatStatsComponent>(entity);
+        auto& target_stats = m_world->GetComponent<components::CombatStatsComponent>(entity);
         float damage = CalculateDamage(caster_stats, target_stats, 20.0f, true); // 20.0f is base damage
         ApplyDamage(entity, damage, caster);
     }
@@ -234,18 +248,19 @@ bool ActionCombatSystem::UseAreaSkill(core::ecs::EntityId caster, uint32_t, cons
     return true;
 }
 
+// [SEQUENCE: MVP4-50] Implements the logic for a melee swing.
 bool ActionCombatSystem::UseMeleeSwing(core::ecs::EntityId attacker, const core::utils::Vector3&, float) {
-    if (!world_ || !spatial_system_) return false;
+    if (!m_world || !spatial_system_) return false;
 
-    auto& attacker_transform = world_->GetComponent<components::TransformComponent>(attacker);
+    auto& attacker_transform = m_world->GetComponent<components::TransformComponent>(attacker);
     auto nearby = spatial_system_->GetEntitiesInRadius(attacker_transform.position, 5.0f); // 5.0f is melee range
-    auto& attacker_stats = world_->GetComponent<components::CombatStatsComponent>(attacker);
+    auto& attacker_stats = m_world->GetComponent<components::CombatStatsComponent>(attacker);
 
     for (auto entity : nearby) {
         if (entity == attacker) continue;
         if (!IsValidTarget(attacker, entity)) continue;
 
-        auto& target_stats = world_->GetComponent<components::CombatStatsComponent>(entity);
+        auto& target_stats = m_world->GetComponent<components::CombatStatsComponent>(entity);
         float damage = CalculateDamage(attacker_stats, target_stats, 15.0f, true); // 15.0f is base damage
         ApplyDamage(entity, damage, attacker);
     }

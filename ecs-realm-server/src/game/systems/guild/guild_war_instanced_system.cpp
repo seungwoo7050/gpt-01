@@ -11,7 +11,7 @@ namespace mmorpg::game::systems::guild {
 
 using namespace mmorpg::game::components;
 
-// [SEQUENCE: 3] Main update loop
+// [SEQUENCE: MVP5-11] Implements the main update loop for the system.
 void GuildWarInstancedSystem::Update(float delta_time) {
     // Update active war instances
     UpdateWarInstances(delta_time);
@@ -31,15 +31,13 @@ void GuildWarInstancedSystem::Update(float delta_time) {
     }
 }
 
-// [SEQUENCE: 4] Declare war between guilds
+// [SEQUENCE: MVP5-12] Implements the logic for one guild to declare war on another.
 bool GuildWarInstancedSystem::DeclareWar(uint32_t attacker_guild_id, uint32_t defender_guild_id) {
-    // Check if already at war
     if (IsGuildAtWar(attacker_guild_id) || IsGuildAtWar(defender_guild_id)) {
         spdlog::warn("Guild {} or {} already at war", attacker_guild_id, defender_guild_id);
         return false;
     }
     
-    // Check for existing declaration
     auto& declarations = pending_declarations_[defender_guild_id];
     auto it = std::find_if(declarations.begin(), declarations.end(),
         [attacker_guild_id](const GuildWarDeclaration& decl) {
@@ -51,7 +49,6 @@ bool GuildWarInstancedSystem::DeclareWar(uint32_t attacker_guild_id, uint32_t de
         return false;
     }
     
-    // Create declaration
     GuildWarDeclaration declaration;
     declaration.attacker_guild_id = attacker_guild_id;
     declaration.defender_guild_id = defender_guild_id;
@@ -64,27 +61,24 @@ bool GuildWarInstancedSystem::DeclareWar(uint32_t attacker_guild_id, uint32_t de
     return true;
 }
 
-// [SEQUENCE: 5] Accept war declaration
+// [SEQUENCE: MVP5-13] Implements the logic for a guild to accept a war declaration.
 bool GuildWarInstancedSystem::AcceptWarDeclaration(uint32_t guild_id) {
     auto it = pending_declarations_.find(guild_id);
     if (it == pending_declarations_.end() || it->second.empty()) {
         return false;
     }
     
-    // Accept the first declaration (could add UI selection)
     auto& declaration = it->second.front();
     declaration.accepted = true;
     
-    // Create war instance
     auto instance_id = CreateWarInstance(declaration.attacker_guild_id, declaration.defender_guild_id);
     
-    // Remove declaration
     it->second.erase(it->second.begin());
     
     return instance_id != 0;
 }
 
-// [SEQUENCE: 6] Create war instance
+// [SEQUENCE: MVP5-14] Creates a new instanced version of a guild war.
 uint64_t GuildWarInstancedSystem::CreateWarInstance(uint32_t attacker_guild_id, uint32_t defender_guild_id) {
     auto instance = std::make_unique<GuildWarInstance>();
     instance->instance_id = next_instance_id_++;
@@ -93,7 +87,6 @@ uint64_t GuildWarInstancedSystem::CreateWarInstance(uint32_t attacker_guild_id, 
     instance->start_time = std::chrono::steady_clock::now();
     instance->state = GuildWarInstance::InstanceState::PREPARING;
     
-    // [SEQUENCE: 7] Create objectives
     instance->objectives.push_back({
         1, "Central Keep", {0, 0, 0}, 0, 0.0f, 200
     });
@@ -110,11 +103,9 @@ uint64_t GuildWarInstancedSystem::CreateWarInstance(uint32_t attacker_guild_id, 
         5, "Armory", {200, 0, 0}, 0, 0.0f, 50
     });
     
-    // Map guilds to instance
     guild_to_instance_[attacker_guild_id] = instance->instance_id;
     guild_to_instance_[defender_guild_id] = instance->instance_id;
     
-    // Store instance
     uint64_t instance_id = instance->instance_id;
     active_instances_[instance_id] = std::move(instance);
     
@@ -127,7 +118,7 @@ uint64_t GuildWarInstancedSystem::CreateWarInstance(uint32_t attacker_guild_id, 
     return instance_id;
 }
 
-// [SEQUENCE: 8] Join war instance
+// [SEQUENCE: MVP5-15] Implements the logic for a player to join a war instance.
 bool GuildWarInstancedSystem::JoinWarInstance(core::ecs::EntityId player, uint64_t instance_id) {
     auto it = active_instances_.find(instance_id);
     if (it == active_instances_.end()) {
@@ -136,18 +127,15 @@ bool GuildWarInstancedSystem::JoinWarInstance(core::ecs::EntityId player, uint64
     
     auto& instance = *it->second;
     
-    // Check instance state
     if (instance.state != GuildWarInstance::InstanceState::PREPARING &&
         instance.state != GuildWarInstance::InstanceState::ACTIVE) {
         return false;
     }
     
-    // Get player's guild
-    if (!world_) return false;
+    if (!m_world) return false;
     
-    auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+    auto& guild_comp = m_world->GetComponent<GuildComponent>(player);
     
-    // Check if player's guild is in this war
     bool is_attacker = (guild_comp.guild_id == instance.attacker_guild_id);
     bool is_defender = (guild_comp.guild_id == instance.defender_guild_id);
     
@@ -155,7 +143,6 @@ bool GuildWarInstancedSystem::JoinWarInstance(core::ecs::EntityId player, uint64
         return false;
     }
     
-    // Check participant limits
     if (is_attacker && instance.attacker_participants.size() >= config_.max_participants) {
         return false;
     }
@@ -163,26 +150,21 @@ bool GuildWarInstancedSystem::JoinWarInstance(core::ecs::EntityId player, uint64
         return false;
     }
     
-    // Add to participants
     if (is_attacker) {
         instance.attacker_participants.push_back(player);
     } else {
         instance.defender_participants.push_back(player);
     }
     
-    // Map player to instance
     player_to_instance_[player] = instance_id;
     
-    // Teleport player
     TeleportPlayerToInstance(player, instance);
     
-    // Update guild component
     guild_comp.in_guild_war = true;
     guild_comp.war_contribution = 0;
     
     spdlog::debug("Player {} joined guild war instance {}", player, instance_id);
     
-    // Check if ready to start
     if (instance.state == GuildWarInstance::InstanceState::PREPARING) {
         if (instance.attacker_participants.size() >= config_.min_participants &&
             instance.defender_participants.size() >= config_.min_participants) {
@@ -194,29 +176,26 @@ bool GuildWarInstancedSystem::JoinWarInstance(core::ecs::EntityId player, uint64
     return true;
 }
 
-// [SEQUENCE: 9] Teleport player to instance
+// [SEQUENCE: MVP5-16] Teleports a player to their spawn point within the war instance.
 void GuildWarInstancedSystem::TeleportPlayerToInstance(core::ecs::EntityId player, GuildWarInstance& instance) {
-    if (!world_) return;
+    if (!m_world) return;
     
-    auto& transform = world_->GetComponent<TransformComponent>(player);
+    auto& transform = m_world->GetComponent<TransformComponent>(player);
     
-    // Save original position
     instance.original_positions[player] = transform.position;
     
-    // Teleport to spawn point
-    auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+    auto& guild_comp = m_world->GetComponent<GuildComponent>(player);
     if (guild_comp.guild_id == instance.attacker_guild_id) {
         transform.position = instance.attacker_spawn;
     } else {
         transform.position = instance.defender_spawn;
     }
     
-    // Add random spawn offset
     transform.position.x += (rand() % 20 - 10);
     transform.position.y += (rand() % 20 - 10);
 }
 
-// [SEQUENCE: 10] Update war instances
+// [SEQUENCE: MVP5-17] Updates all active war instances.
 void GuildWarInstancedSystem::UpdateWarInstances(float delta_time) {
     std::vector<uint64_t> instances_to_remove;
     
@@ -228,13 +207,11 @@ void GuildWarInstancedSystem::UpdateWarInstances(float delta_time) {
         }
     }
     
-    // Remove completed instances
     for (auto instance_id : instances_to_remove) {
         auto it = active_instances_.find(instance_id);
         if (it != active_instances_.end()) {
             auto& instance = *it->second;
             
-            // Clear mappings
             guild_to_instance_.erase(instance.attacker_guild_id);
             guild_to_instance_.erase(instance.defender_guild_id);
             
@@ -251,21 +228,18 @@ void GuildWarInstancedSystem::UpdateWarInstances(float delta_time) {
     }
 }
 
-// [SEQUENCE: 11] Update instance state
+// [SEQUENCE: MVP5-18] Updates the state of a single war instance (e.g., timers, victory checks).
 void GuildWarInstancedSystem::UpdateInstanceState(GuildWarInstance& instance, float delta_time) {
     switch (instance.state) {
         case GuildWarInstance::InstanceState::PREPARING: {
-            // Waiting for minimum participants
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::steady_clock::now() - instance.start_time).count();
             
             if (elapsed > config_.preparation_time) {
-                // Force start or cancel
                 if (instance.attacker_participants.size() >= config_.min_participants &&
                     instance.defender_participants.size() >= config_.min_participants) {
                     instance.state = GuildWarInstance::InstanceState::ACTIVE;
                 } else {
-                    // Not enough participants, cancel war
                     EndWarInstance(instance, 0);  // Draw
                 }
             }
@@ -273,15 +247,11 @@ void GuildWarInstancedSystem::UpdateInstanceState(GuildWarInstance& instance, fl
         }
         
         case GuildWarInstance::InstanceState::ACTIVE: {
-            // Update war timer
             instance.remaining_time -= delta_time;
             
-            // Update objective capture
             UpdateObjectiveCapture(instance, delta_time);
             
-            // Check victory conditions
             if (CheckVictoryConditions(instance) || instance.remaining_time <= 0) {
-                // Determine winner
                 uint32_t winner = 0;
                 if (instance.attacker_score > instance.defender_score) {
                     winner = instance.attacker_guild_id;
@@ -294,12 +264,10 @@ void GuildWarInstancedSystem::UpdateInstanceState(GuildWarInstance& instance, fl
         }
         
         case GuildWarInstance::InstanceState::ENDING: {
-            // Give players time to see results
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::steady_clock::now() - instance.end_time).count();
             
             if (elapsed > 30) {  // 30 seconds to view results
-                // Return all players
                 for (auto player : instance.attacker_participants) {
                     ReturnPlayerFromInstance(player, instance);
                 }
@@ -317,7 +285,7 @@ void GuildWarInstancedSystem::UpdateInstanceState(GuildWarInstance& instance, fl
     }
 }
 
-// [SEQUENCE: 12] Update objective capture
+// [SEQUENCE: MVP5-19] Updates the capture progress of all objectives in a war.
 void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance, float delta_time) {
     static float tick_timer = 0.0f;
     tick_timer += delta_time;
@@ -327,16 +295,14 @@ void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance,
     }
     tick_timer = 0.0f;
     
-    if (!world_) return;
+    if (!m_world) return;
     
-    // Update each objective
     for (auto& objective : instance.objectives) {
-        // Count players near objective
         uint32_t attacker_count = 0;
         uint32_t defender_count = 0;
         
         for (auto player : instance.attacker_participants) {
-            auto& transform = world_->GetComponent<TransformComponent>(player);
+            auto& transform = m_world->GetComponent<TransformComponent>(player);
             float dx = transform.position.x - objective.position.x;
             float dy = transform.position.y - objective.position.y;
             float dz = transform.position.z - objective.position.z;
@@ -347,7 +313,7 @@ void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance,
         }
         
         for (auto player : instance.defender_participants) {
-            auto& transform = world_->GetComponent<TransformComponent>(player);
+            auto& transform = m_world->GetComponent<TransformComponent>(player);
             float dx = transform.position.x - objective.position.x;
             float dy = transform.position.y - objective.position.y;
             float dz = transform.position.z - objective.position.z;
@@ -357,7 +323,6 @@ void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance,
             }
         }
         
-        // Update capture progress
         if (attacker_count > defender_count) {
             objective.capture_progress += (attacker_count - defender_count) * delta_time * 10.0f;
             if (objective.capture_progress >= 100.0f) {
@@ -376,7 +341,6 @@ void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance,
             }
         }
         
-        // Grant points for controlled objectives
         if (objective.controlling_guild == instance.attacker_guild_id) {
             instance.attacker_score += config_.points_per_objective_tick;
         } else if (objective.controlling_guild == instance.defender_guild_id) {
@@ -385,7 +349,7 @@ void GuildWarInstancedSystem::UpdateObjectiveCapture(GuildWarInstance& instance,
     }
 }
 
-// [SEQUENCE: 13] Handle objective capture
+// [SEQUENCE: MVP5-20] Handles the event of an objective being captured.
 void GuildWarInstancedSystem::OnObjectiveCaptured(uint64_t instance_id, uint32_t objective_id, uint32_t guild_id) {
     auto it = active_instances_.find(instance_id);
     if (it == active_instances_.end()) return;
@@ -396,7 +360,6 @@ void GuildWarInstancedSystem::OnObjectiveCaptured(uint64_t instance_id, uint32_t
         if (objective.objective_id == objective_id) {
             objective.controlling_guild = guild_id;
             
-            // Grant bonus points for capture
             if (guild_id == instance.attacker_guild_id) {
                 instance.attacker_score += objective.point_value;
             } else {
@@ -410,9 +373,8 @@ void GuildWarInstancedSystem::OnObjectiveCaptured(uint64_t instance_id, uint32_t
     }
 }
 
-// [SEQUENCE: 14] Handle player kill in war
+// [SEQUENCE: MVP5-21] Handles a player being killed during a war.
 void GuildWarInstancedSystem::OnPlayerKilledInWar(core::ecs::EntityId killer, core::ecs::EntityId victim) {
-    // Find which instance they're in
     auto killer_it = player_to_instance_.find(killer);
     auto victim_it = player_to_instance_.find(victim);
     
@@ -428,10 +390,9 @@ void GuildWarInstancedSystem::OnPlayerKilledInWar(core::ecs::EntityId killer, co
     if (instance_it == active_instances_.end()) return;
     
     auto& instance = *instance_it->second;
-    if (!world_) return;
+    if (!m_world) return;
     
-    // Update kill counts and scores
-    auto& killer_guild = world_->GetComponent<GuildComponent>(killer);
+    auto& killer_guild = m_world->GetComponent<GuildComponent>(killer);
     
     if (killer_guild.guild_id == instance.attacker_guild_id) {
         instance.attacker_kills++;
@@ -441,19 +402,16 @@ void GuildWarInstancedSystem::OnPlayerKilledInWar(core::ecs::EntityId killer, co
         instance.defender_score += config_.points_per_kill;
     }
     
-    // Update player contribution
     killer_guild.war_contribution += config_.points_per_kill;
 }
 
-// [SEQUENCE: 15] Check victory conditions
+// [SEQUENCE: MVP5-22] Checks if the victory conditions for a war have been met.
 bool GuildWarInstancedSystem::CheckVictoryConditions(GuildWarInstance& instance) {
-    // Score limit victory
     if (instance.attacker_score >= config_.score_limit ||
         instance.defender_score >= config_.score_limit) {
         return true;
     }
     
-    // Total domination (all objectives controlled)
     bool all_attacker = true;
     bool all_defender = true;
     
@@ -469,15 +427,13 @@ bool GuildWarInstancedSystem::CheckVictoryConditions(GuildWarInstance& instance)
     return all_attacker || all_defender;
 }
 
-// [SEQUENCE: 16] End war instance
+// [SEQUENCE: MVP5-23] Ends a war instance and determines the winner.
 void GuildWarInstancedSystem::EndWarInstance(GuildWarInstance& instance, uint32_t winner_guild_id) {
     instance.state = GuildWarInstance::InstanceState::ENDING;
     instance.end_time = std::chrono::steady_clock::now();
     
-    // Grant rewards
     GrantWarRewards(instance);
     
-    // Update statistics
     if (winner_guild_id == instance.attacker_guild_id) {
         stats_.guild_victories[instance.attacker_guild_id]++;
     } else if (winner_guild_id == instance.defender_guild_id) {
@@ -489,28 +445,24 @@ void GuildWarInstancedSystem::EndWarInstance(GuildWarInstance& instance, uint32_
                 instance.attacker_score, instance.defender_score);
 }
 
-// [SEQUENCE: 17] Grant war rewards
+// [SEQUENCE: MVP5-24] Grants rewards to all participants of a war.
 void GuildWarInstancedSystem::GrantWarRewards(const GuildWarInstance& instance) {
-    if (!world_) return;
+    if (!m_world) return;
     
-    // Determine winner
     bool attacker_won = instance.attacker_score > instance.defender_score;
     
-    // Reward all participants based on contribution
     for (auto player : instance.attacker_participants) {
-        auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+        auto& guild_comp = m_world->GetComponent<GuildComponent>(player);
         guild_comp.total_war_participation++;
         
-        // Base reward + contribution bonus
         uint32_t reward = attacker_won ? 1000 : 500;
         reward += guild_comp.war_contribution * 2;
         
-        // TODO: Grant actual rewards (gold, honor, items)
         spdlog::debug("Player {} earned {} war points", player, reward);
     }
     
     for (auto player : instance.defender_participants) {
-        auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+        auto& guild_comp = m_world->GetComponent<GuildComponent>(player);
         guild_comp.total_war_participation++;
         
         uint32_t reward = !attacker_won ? 1000 : 500;
@@ -520,33 +472,32 @@ void GuildWarInstancedSystem::GrantWarRewards(const GuildWarInstance& instance) 
     }
 }
 
-// [SEQUENCE: 18] Return player from instance
+// [SEQUENCE: MVP5-25] Returns a player from a war instance to their original position.
 void GuildWarInstancedSystem::ReturnPlayerFromInstance(core::ecs::EntityId player, GuildWarInstance& instance) {
-    if (!world_) return;
+    if (!m_world) return;
     
-    // Restore original position
     auto pos_it = instance.original_positions.find(player);
     if (pos_it != instance.original_positions.end()) {
-        auto& transform = world_->GetComponent<TransformComponent>(player);
+        auto& transform = m_world->GetComponent<TransformComponent>(player);
         transform.position = pos_it->second;
     }
     
-    // Update guild component
-    auto& guild_comp = world_->GetComponent<GuildComponent>(player);
+    auto& guild_comp = m_world->GetComponent<GuildComponent>(player);
     guild_comp.in_guild_war = false;
 }
 
-// [SEQUENCE: 19] Query functions
+// [SEQUENCE: MVP5-26] Checks if a guild is currently at war.
 bool GuildWarInstancedSystem::IsGuildAtWar(uint32_t guild_id) const {
     return guild_to_instance_.find(guild_id) != guild_to_instance_.end();
 }
 
+// [SEQUENCE: MVP5-27] Gets the active war instance for a guild.
 uint64_t GuildWarInstancedSystem::GetActiveWarInstance(uint32_t guild_id) const {
     auto it = guild_to_instance_.find(guild_id);
     return (it != guild_to_instance_.end()) ? it->second : 0;
 }
 
-// [SEQUENCE: 20] Leave war instance
+// [SEQUENCE: MVP5-28] Implements the logic for a player to leave a war instance.
 bool GuildWarInstancedSystem::LeaveWarInstance(core::ecs::EntityId player) {
     auto it = player_to_instance_.find(player);
     if (it == player_to_instance_.end()) {
@@ -560,7 +511,6 @@ bool GuildWarInstancedSystem::LeaveWarInstance(core::ecs::EntityId player) {
     
     auto& instance = *instance_it->second;
     
-    // Remove from participants
     instance.attacker_participants.erase(
         std::remove(instance.attacker_participants.begin(),
                    instance.attacker_participants.end(), player),
@@ -573,10 +523,8 @@ bool GuildWarInstancedSystem::LeaveWarInstance(core::ecs::EntityId player) {
         instance.defender_participants.end()
     );
     
-    // Return player
     ReturnPlayerFromInstance(player, instance);
     
-    // Remove mapping
     player_to_instance_.erase(player);
     
     return true;

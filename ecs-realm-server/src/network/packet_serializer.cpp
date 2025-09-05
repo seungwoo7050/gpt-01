@@ -31,7 +31,7 @@ std::map<std::string, mmorpg::proto::PacketType> type_name_to_packet_type_map = 
     {"mmorpg.proto.GuildWarResponse", mmorpg::proto::PACKET_GUILD_WAR_RESPONSE},
 };
 
-// [SEQUENCE: MVP1-31] `PacketSerializer::Serialize()`: 메시지를 직렬화하여 버퍼에 씁니다.
+// [SEQUENCE: MVP1-11] Serializes a message into a byte vector with a 4-byte size header.
 std::vector<std::byte> Serialize(const google::protobuf::Message& message) {
     proto::Packet packet;
     auto* header = packet.mutable_header();
@@ -60,6 +60,7 @@ std::vector<std::byte> Serialize(const google::protobuf::Message& message) {
 }
 
 
+// [SEQUENCE: MVP1-12] Deserializes a raw byte array back into a Packet message.
 std::unique_ptr<proto::Packet> Deserialize(const std::byte* data, size_t size) {
     auto packet = std::make_unique<proto::Packet>();
     if (packet->ParseFromArray(data, size)) {

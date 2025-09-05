@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/asio/ip/udp.hpp> // [SEQUENCE: MVP6-38] Include full header for udp::endpoint
+#include <boost/asio/ip/udp.hpp>
 #include <memory>
 #include <vector>
 #include <cstddef>
@@ -12,7 +12,8 @@ class Session;
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP6-31] Interface for handling UDP packets.
+// [SEQUENCE: MVP6-28] Defines an interface for handling raw UDP packets.
+// This decouples the UdpServer from the specific logic of how packets are processed.
 class IUdpPacketHandler {
 public:
     virtual ~IUdpPacketHandler() = default;

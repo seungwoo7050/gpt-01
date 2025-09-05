@@ -4,15 +4,13 @@
 
 namespace mmorpg::game::components {
 
-// [SEQUENCE: MVP2-15] Game Components (`src/game/components/`)
-// [SEQUENCE: MVP2-16] Stores an entity's position, rotation, and scale.
-// [SEQUENCE: 1] Transform component for entity position and orientation
+// [SEQUENCE: MVP2-4] Defines TransformComponent and VelocityComponent for spatial state.
+
 struct TransformComponent {
     core::utils::Vector3 position{0.0f, 0.0f, 0.0f};
     core::utils::Vector3 rotation{0.0f, 0.0f, 0.0f}; // Euler angles in radians
     core::utils::Vector3 scale{1.0f, 1.0f, 1.0f};
     
-    // [SEQUENCE: 2] Helper methods
     void SetPosition(float x, float y, float z) {
         position.x = x;
         position.y = y;
@@ -30,8 +28,6 @@ struct TransformComponent {
     }
 };
 
-// [SEQUENCE: MVP2-17] Stores an entity's linear and angular velocity for movement calculations.
-// [SEQUENCE: 3] Velocity component for movement
 struct VelocityComponent {
     core::utils::Vector3 linear{0.0f, 0.0f, 0.0f};
     core::utils::Vector3 angular{0.0f, 0.0f, 0.0f};
@@ -39,4 +35,4 @@ struct VelocityComponent {
     float acceleration = 20.0f; // Units per second squared
 };
 
-} // namespace mmorpg::game::components
+}

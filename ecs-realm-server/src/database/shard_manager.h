@@ -9,7 +9,7 @@ namespace mmorpg::database {
 
 class ConnectionPool;
 
-// [SEQUENCE: MVP7-27] Manages database sharding logic.
+// [SEQUENCE: MVP7-42] Manages database sharding logic, routing keys to the correct database server.
 class ShardManager {
 public:
     static ShardManager& Instance();

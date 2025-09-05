@@ -1,49 +1,169 @@
-# [SEQUENCE: MVP3-1] MVP 3: Spatial Partitioning
+# MVP 3: Spatial Partitioning
 
-## [SEQUENCE: MVP3-2] Introduction
-MVP 3 implements spatial partitioning techniques to efficiently manage and query objects in a large game world. This is crucial for performance, as it allows systems to interact only with objects in their immediate vicinity, avoiding costly iterations over every object in the world. This MVP provides two distinct spatial partitioning data structures: a 2D-focused Grid and a 3D-focused Octree. It also includes the ECS systems that integrate these structures into the game engine.
+## Introduction
 
-## [SEQUENCE: MVP3-3] Refactoring and Cleanup
-A significant part of this MVP involved refactoring the existing spatial partitioning systems to be compatible with the ECS framework established in MVP 2. This included:
-*   Renaming `SpatialIndexingSystem` to `GridSpatialSystem` for clarity.
-*   Updating the `System` base class with new lifecycle methods (`OnEntityCreated`, `OnEntityDestroyed`, `PostUpdate`).
-*   Modifying the `OptimizedWorld` to correctly call these new system methods.
-*   Refactoring the spatial systems to use the `entities_` set for iteration instead of non-existent `World` methods.
-*   Fixing various syntax errors and inconsistencies in the original files.
+MVP 3 implements fundamental spatial partitioning techniques to efficiently manage and query objects within a large game world. This is a critical performance optimization, allowing systems to interact only with objects in their immediate vicinity, thus avoiding costly iterations over every object in the world. This MVP provides two distinct spatial partitioning data structures: a 2D-focused Grid and a 3D-focused Octree. It also includes the ECS systems that integrate these structures into the game engine, and the unit tests to validate their correctness.
 
-## [SEQUENCE: MVP3-4] World Grid (`src/game/world/grid/`)
-A spatial partitioning structure that divides the world into a uniform 2D grid. It's simple, fast for uniform distributions, and ideal for 2D or pseudo-2D worlds.
+This document outlines the implementation in a logical order, starting with the core data structures, followed by the ECS systems that manage them, the build system integration, and finally, the unit tests.
 
-*   `[SEQUENCE: MVP3-5] world_grid.h` & `.cpp`: Implements the `WorldGrid` class. It can add, remove, and update entity positions and perform spatial queries.
-    *   **Note on Accuracy:** The `GetEntitiesInRadius` method in this implementation is a broad-phase query. It returns all entities in the cells that overlap the query radius, not just the entities strictly within the radius. The final, precise filtering is handled by the `GridSpatialSystem`.
+---
 
-## [SEQUENCE: MVP3-6] Octree (`src/game/world/octree/`)
-A tree-based spatial partitioning structure that recursively subdivides 3D space into eight octants. It's highly efficient for non-uniform object distributions and complex 3D environments.
+## World Grid Data Structure (`ecs-realm-server/src/game/world/grid/`)
 
-*   `[SEQUENCE: MVP3-7] octree_world.h` & `.cpp`: Implements the `OctreeWorld` class. It features dynamic node splitting and merging based on object density and provides accurate, 3D-aware spatial queries.
+The foundation of the 2D spatial partitioning system.
 
-## [SEQUENCE: MVP3-8] Spatial Systems (`src/game/systems/`)
-These ECS systems bridge the gap between the ECS world and the spatial partitioning data structures. They listen for entity creation, destruction, and movement, and keep the spatial indexes up-to-date.
+### `world_grid.h`
+*   `[SEQUENCE: MVP3-1]` Defines the WorldGrid class, a spatial partitioning structure using a uniform 2D grid.
+*   `[SEQUENCE: MVP3-2]` Configuration struct for WorldGrid initialization.
+*   `[SEQUENCE: MVP3-3]` Constructor and destructor.
+*   `[SEQUENCE: MVP3-4]` Public API for entity management in the grid.
+*   `[SEQUENCE: MVP3-5]` Public API for performing spatial queries.
+*   `[SEQUENCE: MVP3-6]` Public API for utility and debugging functions.
+*   `[SEQUENCE: MVP3-7]` Internal GridCell struct to hold entities within a cell.
+*   `[SEQUENCE: MVP3-8]` Private member variables for grid storage and configuration.
+*   `[SEQUENCE: MVP3-9]` Private helper methods for internal grid calculations.
 
-*   `[SEQUENCE: MVP3-9] grid_spatial_system.h` & `.cpp`: Manages the `WorldGrid`. It updates the grid based on entity movements and provides a high-level API for spatial queries to other game systems.
-*   `[SEQUENCE: MVP3-10] octree_spatial_system.h` & `.cpp`: Manages the `OctreeWorld`. It performs the same role as the `GridSpatialSystem` but for the 3D octree structure.
+### `world_grid.cpp`
+*   `[SEQUENCE: MVP3-10]` Implements the WorldGrid constructor, initializing the grid cells.
+*   `[SEQUENCE: MVP3-11]` Implements AddEntity, adding an entity to the correct grid cell.
+*   `[SEQUENCE: MVP3-12]` Implements RemoveEntity, removing an entity from the grid.
+*   `[SEQUENCE: MVP3-13]` Implements UpdateEntity, moving an entity between cells if necessary.
+*   `[SEQUENCE: MVP3-14]` Implements GetEntitiesInRadius, performing a broad-phase query.
+*   `[SEQUENCE: MVP3-15]` Implements GetEntitiesInBox for rectangular queries.
+*   `[SEQUENCE: MVP3-16]` Implements GetEntitiesInCell for specific cell queries.
+*   `[SEQUENCE: MVP3-17]` Implements GetEntitiesInAdjacentCells for neighbor queries.
+*   `[SEQUENCE: MVP3-18]` Implements GetCellCoordinates to convert world position to cell indices.
+*   `[SEQUENCE: MVP3-19]` Implements IsValidCell to check if cell coordinates are within grid bounds.
+*   `[SEQUENCE: MVP3-20]` Implements GetEntityCount to get the total number of entities in the grid.
+*   `[SEQUENCE: MVP3-21]` Implements GetOccupiedCellCount to count cells that are not empty.
+*   `[SEQUENCE: MVP3-22]` Implements GetCellBounds for debugging and visualization.
+*   `[SEQUENCE: MVP3-23]` Implements GetOccupiedCells to retrieve all non-empty cells.
+*   `[SEQUENCE: MVP3-24]` Helper implementation to convert a world coordinate to a cell index.
+*   `[SEQUENCE: MVP3-25]` Helper implementation to find all cells that intersect a given radius.
+*   `[SEQUENCE: MVP3-26]` Helper implementation to calculate the minimum distance from a point to a cell.
 
-## [SEQUENCE: MVP3-11] Build System (`CMakeLists.txt`)
-*   `[SEQUENCE: MVP3-12]` Updated to include the source files for `WorldGrid`, `OctreeWorld`, `GridSpatialSystem`, and `OctreeSpatialSystem`.
+---
 
-## [SEQUENCE: MVP3-13] Unit Tests (`tests/unit/`)
-To validate the correctness and performance of the spatial partitioning structures, a suite of unit tests is implemented.
+## Octree Data Structure (`ecs-realm-server/src/game/world/octree/`)
 
-*   `[SEQUENCE: MVP3-13]` `test_spatial_indexing.cpp`: Test fixture setup for Grid and Octree.
-*   `[SEQUENCE: MVP3-14]` `test_spatial_indexing.cpp`: Grid insertion and query tests.
-*   `[SEQUENCE: MVP3-15]` `test_spatial_indexing.cpp`: Grid movement update tests.
-*   `[SEQUENCE: MVP3-16]` `test_spatial_indexing.cpp`: Grid boundary tests.
-*   `[SEQUENCE: MVP3-17]` `test_spatial_indexing.cpp`: Octree insertion and query tests.
-*   `[SEQUENCE: MVP3-18]` `test_spatial_indexing.cpp`: Octree subdivision tests.
-*   `[SEQUENCE: MVP3-19]` `test_spatial_indexing.cpp`: Performance comparison test between Grid and Octree.
-*   `[SEQUENCE: MVP3-20]` `test_spatial_indexing.cpp`: Spatial query accuracy test.
-*   `[SEQUENCE: MVP3-21]` `test_spatial_indexing.cpp`: Dynamic entity movement stress test.
-*   `[SEQUENCE: MVP3-22]` `test_spatial_indexing.cpp`: Region query tests.
+The foundation of the 3D spatial partitioning system.
+
+### `octree_world.h`
+*   `[SEQUENCE: MVP3-27]` Defines the OctreeWorld class, a recursive spatial partitioning structure for 3D space.
+*   `[SEQUENCE: MVP3-28]` Configuration struct for OctreeWorld initialization.
+*   `[SEQUENCE: MVP3-29]` Debug struct to hold information about a single octree node.
+*   `[SEQUENCE: MVP3-30]` Constructor and destructor.
+*   `[SEQUENCE: MVP3-31]` Public API for entity management in the octree.
+*   `[SEQUENCE: MVP3-32]` Public API for performing spatial queries.
+*   `[SEQUENCE: MVP3-33]` Public API for utility and statistical functions.
+*   `[SEQUENCE: MVP3-34]` Defines the internal OctreeNode struct.
+*   `[SEQUENCE: MVP3-35]` Member variables for node boundaries, entities, and children.
+*   `[SEQUENCE: MVP3-36]` Method declarations for the OctreeNode.
+*   `[SEQUENCE: MVP3-37]` Internal struct to track entity positions and their containing node.
+*   `[SEQUENCE: MVP3-38]` Private member variables for the OctreeWorld.
+*   `[SEQUENCE: MVP3-39]` Private helper methods for tree manipulation and queries.
+
+### `octree_world.cpp`
+*   `[SEQUENCE: MVP3-40]` Implements the OctreeNode constructor.
+*   `[SEQUENCE: MVP3-41]` Implements GetChildIndex to determine which octant a position belongs to.
+*   `[SEQUENCE: MVP3-42]` Implements Contains to check if a point is within the node's bounds.
+*   `[SEQUENCE: MVP3-43]` Implements IntersectsSphere for sphere-box intersection tests.
+*   `[SEQUENCE: MVP3-44]` Implements IntersectsBox for box-box intersection tests.
+*   `[SEQUENCE: MVP3-45]` Implements the OctreeWorld constructor, creating the root node.
+*   `[SEQUENCE: MVP3-46]` Implements the OctreeWorld destructor.
+*   `[SEQUENCE: MVP3-47]` Implements AddEntity, the public method to add an entity to the octree.
+*   `[SEQUENCE: MVP3-48]` Implements RemoveEntity, the public method to remove an entity.
+*   `[SEQUENCE: MVP3-49]` Implements UpdateEntity to handle entity movement.
+*   `[SEQUENCE: MVP3-50]` Implements GetEntitiesInRadius, initiating a recursive radius query.
+*   `[SEQUENCE: MVP3-51]` Implements GetEntitiesInBox, initiating a recursive box query.
+*   `[SEQUENCE: MVP3-52]` Placeholder implementation for frustum-based queries.
+*   `[SEQUENCE: MVP3-53]` Placeholder implementation for ray-based queries.
+*   `[SEQUENCE: MVP3-54]` Implements GetTreeStats to initiate recursive statistics collection.
+*   `[SEQUENCE: MVP3-55]` Implements GetEntityCount for a quick entity count.
+*   `[SEQUENCE: MVP3-56]` Implements GetNodeCount to get the total number of nodes in the tree.
+*   `[SEQUENCE: MVP3-57]` Implements GetDepth to calculate the maximum depth of the tree.
+*   `[SEQUENCE: MVP3-58]` Implements GetNodeInfos to collect debug information for all nodes.
+*   `[SEQUENCE: MVP3-59]` Private helper to recursively insert an entity into a node.
+*   `[SEQUENCE: MVP3-60]` Private helper to remove an entity from a specific node.
+*   `[SEQUENCE: MVP3-61]` Private helper to split a node into eight children.
+*   `[SEQUENCE: MVP3-62]` Private helper to merge child nodes back into the parent.
+*   `[SEQUENCE: MVP3-63]` Private helper to recursively query for entities within a radius.
+*   `[SEQUENCE: MVP3-64]` Private helper to recursively query for entities within a box.
+*   `[SEQUENCE: MVP3-65]` Private helper to recursively collect tree statistics.
+*   `[SEQUENCE: MVP3-66]` Private helper to recursively collect node debug information.
+
+---
+
+## ECS Spatial Systems (`ecs-realm-server/src/game/systems/`)
+
+These systems integrate the spatial partitioning data structures into the main ECS world.
+
+### `grid_spatial_system.h`
+*   `[SEQUENCE: MVP3-67]` Defines the GridSpatialSystem, an ECS system to manage the WorldGrid.
+*   `[SEQUENCE: MVP3-68]` Constructor.
+*   `[SEQUENCE: MVP3-69]` System lifecycle methods.
+*   `[SEQUENCE: MVP3-70]` Entity lifecycle methods to keep the grid synchronized.
+*   `[SEQUENCE: MVP3-71]` Public API for spatial queries, with precise, narrow-phase filtering.
+*   `[SEQUENCE: MVP3-72]` Getter for direct access to the underlying WorldGrid.
+*   `[SEQUENCE: MVP3-73]` Internal struct to track an entity's spatial state.
+*   `[SEQUENCE: MVP3-74]` Private member variables for the system.
+
+### `grid_spatial_system.cpp`
+*   `[SEQUENCE: MVP3-75]` Implements the constructor, initializing the underlying WorldGrid.
+*   `[SEQUENCE: MVP3-76]` Implements the system lifecycle methods (currently empty).
+*   `[SEQUENCE: MVP3-77]` Implements PostUpdate to process entity movements and update the grid.
+*   `[SEQUENCE: MVP3-78]` Implements OnEntityCreated to add new entities to the grid.
+*   `[SEQUENCE: MVP3-79]` Implements OnEntityDestroyed to remove entities from the grid.
+*   `[SEQUENCE: MVP3-80]` Implements GetEntitiesInRadius with precise, narrow-phase filtering.
+*   `[SEQUENCE: MVP3-81]` Implements GetEntitiesInView for observer-based queries.
+*   `[SEQUENCE: MVP3-82]` Implements GetNearbyEntities for proximity queries.
+
+### `octree_spatial_system.h`
+*   `[SEQUENCE: MVP3-83]` Defines the OctreeSpatialSystem, an ECS system to manage the OctreeWorld.
+*   `[SEQUENCE: MVP3-84]` Constructor.
+*   `[SEQUENCE: MVP3-85]` System lifecycle methods.
+*   `[SEQUENCE: MVP3-86]` Entity lifecycle methods to keep the octree synchronized.
+*   `[SEQUENCE: MVP3-87]` Public API for 3D spatial queries.
+*   `[SEQUENCE: MVP3-88]` Getter for direct access to the underlying OctreeWorld.
+*   `[SEQUENCE: MVP3-89]` Public method to retrieve statistics about the octree.
+*   `[SEQUENCE: MVP3-90]` Internal struct to track an entity's spatial state.
+*   `[SEQUENCE: MVP3-91]` Private member variables for the system.
+
+### `octree_spatial_system.cpp`
+*   `[SEQUENCE: MVP3-92]` Implements the constructor, initializing the underlying OctreeWorld.
+*   `[SEQUENCE: MVP3-93]` Implements the system lifecycle methods (currently empty).
+*   `[SEQUENCE: MVP3-94]` Implements PostUpdate to process entity movements and update the octree.
+*   `[SEQUENCE: MVP3-95]` Implements OnEntityCreated to add new entities to the octree.
+*   `[SEQUENCE: MVP3-96]` Implements OnEntityDestroyed to remove entities from the octree.
+*   `[SEQUENCE: MVP3-97]` Implements GetEntitiesInRadius, delegating the query to the OctreeWorld.
+*   `[SEQUENCE: MVP3-98]` Implements GetEntitiesInBox, delegating the query to the OctreeWorld.
+*   `[SEQUENCE: MVP3-99]` Implements GetEntitiesInView for observer-based queries.
+*   `[SEQUENCE: MVP3-100]` Implements GetEntitiesAbove for vertical queries.
+*   `[SEQUENCE: MVP3-101]` Implements GetEntitiesBelow for vertical queries.
+*   `[SEQUENCE: MVP3-102]` Implements GetOctreeStats to retrieve statistics from the OctreeWorld.
+
+---
+
+## Build System (`ecs-realm-server/CMakeLists.txt`)
+
+*   `[SEQUENCE: MVP3-103]` Adds the spatial partitioning source files to the mmorpg_game library.
+
+---
+
+## Unit Tests (`ecs-realm-server/tests/unit/test_spatial_indexing.cpp`)
+
+*   `[SEQUENCE: MVP3-104]` Defines the test fixture for all spatial indexing tests.
+*   `[SEQUENCE: MVP3-105]` Tests basic insertion and radius queries in the WorldGrid.
+*   `[SEQUENCE: MVP3-106]` Tests the update mechanism when an entity moves between cells in the WorldGrid.
+*   `[SEQUENCE: MVP3-107]` Tests how the WorldGrid handles entities at its boundaries.
+*   `[SEQUENCE: MVP3-108]` Tests basic insertion and radius queries in the OctreeWorld.
+*   `[SEQUENCE: MVP3-109]` Tests the dynamic subdivision of nodes in the OctreeWorld.
+*   `[SEQUENCE: MVP3-110]` Compares the performance of radius queries between the Grid and Octree.
+*   `[SEQUENCE: MVP3-111]` Verifies the accuracy of spatial queries.
+*   `[SEQUENCE: MVP3-112]` A stress test involving a large number of dynamic entities.
+*   `[SEQUENCE: MVP3-113]` Tests region queries using bounding boxes.
+
+---
 
 ## Build Verification
 
@@ -67,28 +187,30 @@ The features for MVP 3 were implemented and verified using a Test-Driven Develop
 
 The successful build and test run confirms that the goals of MVP 3 have been met. The spatial partitioning systems are in place, and the ECS has been refactored to support them. The project is now ready to move on to the next MVP.
 
-### [SEQUENCE: MVP3-23] 기술 면접 대비 심층 분석 (In-depth Analysis for Technical Interviews)
+---
 
-#### 1. 핵심 문제: 왜 공간 분할이 필요한가? (Why Spatial Partitioning?)
-*   **문제 정의:** MMORPG 월드에 수천 개의 객체(플레이어, 몬스터 등)가 존재할 때, 특정 객체의 주변에 있는 다른 객체를 찾는 작업은 매우 빈번하게 일어납니다 (e.g., 광역 스킬 범위 내의 모든 적 찾기, 내 화면에 보여줄 다른 플레이어 찾기). 가장 단순한 방법은 월드 내의 모든 N개 객체와 거리를 비교하는 것이며, 이는 O(N)의 시간 복잡도를 가집니다. 모든 객체 간의 충돌을 검사한다면 O(N^2)까지 증가하여, 동시 접속자 수가 많은 서버에서는 절대로 사용 불가능한 방식입니다.
-*   **해결 방안:** 공간 분할은 월드를 여러 개의 작은 구역(Cell, Node)으로 미리 나누어, 검색 범위를 전체 월드가 아닌 현재 내가 속한 구역과 그 주변 구역으로 한정시키는 기법입니다. 이를 통해 검색 대상의 수를 N에서 월등히 작은 K로 줄여, O(N)을 O(log N) 또는 O(1)에 가깝게 최적화할 수 있습니다.
+## In-depth Analysis for Technical Interviews
 
-#### 2. 기술 선택과 트레이드오프: Grid vs. Octree
-이 프로젝트에서 Grid와 Octree를 모두 구현한 것은, **"하나의 완벽한 해결책은 없으며, 상황에 맞는 최적의 도구를 선택해야 한다"**는 점을 이해하고 있음을 보여주기 위함입니다.
+#### 1. Core Problem: Why is Spatial Partitioning Necessary?
+*   **Problem Definition:** In an MMORPG world with thousands of objects (players, monsters, etc.), finding objects within a certain proximity is a very frequent operation (e.g., finding all enemies within the area of effect of a skill, finding other players to display on screen). The simplest approach is to compare distances with all N objects in the world, which has a time complexity of O(N). If checking for collisions between all objects, this can increase to O(N^2), which is completely infeasible on a server with many concurrent users.
+*   **Solution:** Spatial partitioning is a technique that pre-divides the world into several smaller regions (Cells, Nodes), limiting the search scope to the current region and its neighbors instead of the entire world. This reduces the number of objects to check from N to a much smaller K, optimizing the search from O(N) to something closer to O(log N) or O(1).
 
-*   **Grid (그리드):**
-    *   **장점:** 구현이 매우 간단하고, 객체의 밀도가 균일한(uniformly distributed) 환경에서 O(1)의 매우 빠른 검색 속도를 보장합니다. 객체의 좌표를 셀 크기로 나누는 단순한 해시 계산으로 자신이 속한 셀을 즉시 찾을 수 있습니다.
-    *   **단점:** 객체 분포가 불균일할 때 심각한 비효율을 초래합니다. 예를 들어, 수많은 플레이어가 특정 마을에 모여있고 나머지 광활한 필드는 비어있다면, 대부분의 그리드 셀은 비어있는 채로 메모리만 낭비하게 됩니다. 또한, 플레이어가 밀집된 셀은 여전히 너무 많은 객체를 포함하여 성능 저하의 원인이 됩니다.
-    *   **적합한 환경:** 평평하고 넓은 전장, 바둑판 형태의 맵 등.
+#### 2. Technology Choices and Trade-offs: Grid vs. Octree
+Implementing both a Grid and an Octree in this project demonstrates the understanding that **"there is no one-size-fits-all solution, and the optimal tool must be chosen for the situation."**
 
-*   **Octree (옥트리):**
-    *   **장점:** 객체의 밀도에 따라 공간을 동적으로 분할(recursive subdivision)하므로, 메모리 효율이 매우 높습니다. 객체가 없는 공간은 분할하지 않고, 객체가 밀집된 공간은 더 잘게 쪼개어 검색 효율을 유지합니다. 복잡한 3D 지형(e.g., 여러 층으로 이루어진 건물)에 특히 강합니다.
-    *   **단점:** 구현이 그리드보다 복잡합니다. 객체가 이동할 때마다 트리 구조를 거슬러 올라가며 노드를 갱신해야 하므로, 업데이트 비용이 더 높을 수 있습니다. 객체가 균일하게 분포된 환경에서는 트리 탐색 오버헤드로 인해 그리드보다 느릴 수도 있습니다.
-    *   **적합한 환경:** 플레이어가 특정 지역에 몰리는 대도시, 수직적으로 복잡한 던전 등.
+*   **Grid:**
+    *   **Advantages:** Very simple to implement and guarantees very fast O(1) search speeds in environments where object density is uniform. An object can instantly find its cell with a simple hash calculation by dividing its coordinates by the cell size.
+    *   **Disadvantages:** Leads to significant inefficiency when object distribution is non-uniform. For example, if numerous players are gathered in a specific town while the rest of the vast fields are empty, most grid cells will remain empty, wasting memory. Furthermore, cells crowded with players will still contain too many objects, causing performance degradation.
+    *   **Suitable Environments:** Flat, wide battlefields, checkerboard-style maps, etc.
 
-*   **구현 시 어려웠던 점:**
-    *   **동적 객체 관리:** 가장 큰 어려움은 끊임없이 움직이는 객체를 효율적으로 갱신하는 것입니다. 객체가 현재 셀/노드를 벗어났는지 매 프레임 확인하고, 벗어났다면 이전 노드에서 제거한 뒤 새로운 노드를 찾아 추가하는 과정에서 버그가 발생하기 쉽습니다.
-    *   **경계 처리:** 여러 셀이나 노드의 경계에 걸쳐 있는 객체를 정확하고 중복 없이 처리하는 것이 중요합니다. 범위 검색 시, 경계에 걸친 객체가 누락되거나 중복으로 포함되지 않도록 쿼리 로직을 신중하게 설계해야 했습니다.
+*   **Octree:**
+    *   **Advantages:** Highly memory-efficient as it dynamically subdivides space based on object density (recursive subdivision). It does not divide empty space and splits densely populated areas into smaller pieces to maintain search efficiency. It is particularly strong in complex 3D terrain (e.g., multi-story buildings).
+    *   **Disadvantages:** More complex to implement than a grid. The update cost can be higher, as objects moving require traversing the tree structure to update nodes. In uniformly distributed environments, it can be slower than a grid due to the overhead of tree traversal.
+    *   **Suitable Environments:** Large cities where players congregate, vertically complex dungeons, etc.
 
-*   **만약 다시 만든다면:**
-    *   `ISpatialPartition`이라는 공통 인터페이스를 설계하고, `Grid`와 `Octree`가 이를 상속받아 구현하도록 리팩토링할 것입니다. 이렇게 하면 `SpatialSystem`은 구체적인 자료구조에 의존하지 않고 인터페이스에만 의존하게 되어, 향후 새로운 공간 분할 기법(e.g., k-d tree, BSP tree)을 추가하거나, 맵의 특성에 따라 동적으로 공간 분할 기법을 교체하는 유연한 구조를 만들 수 있습니다.
+*   **Implementation Challenges:**
+    *   **Dynamic Object Management:** The biggest challenge is efficiently updating constantly moving objects. Checking every frame whether an object has left its current cell/node and, if so, removing it from the old node and adding it to a new one is prone to bugs.
+    *   **Boundary Handling:** It is crucial to handle objects that span multiple cells or nodes accurately and without duplication. The query logic had to be carefully designed to ensure that objects on boundaries are not missed or double-counted during range searches.
+
+*   **If I Were to Rebuild It:**
+    *   I would design a common `ISpatialPartition` interface and refactor `Grid` and `Octree` to inherit from it. This would allow the `SpatialSystem` to depend only on the interface, not the concrete data structure, creating a flexible architecture for adding new spatial partitioning techniques (e.g., k-d tree, BSP tree) or dynamically switching them based on map characteristics in the future.

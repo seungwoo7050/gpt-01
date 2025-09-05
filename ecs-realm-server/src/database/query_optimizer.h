@@ -6,7 +6,8 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP7-30] A simple query optimizer that stores and retrieves pre-written queries.
+// [SEQUENCE: MVP7-34] A singleton manager to store and retrieve pre-written, optimized SQL queries.
+// This avoids dynamic SQL string generation and allows for easier management of queries.
 class QueryOptimizer {
 public:
     static QueryOptimizer& Instance();

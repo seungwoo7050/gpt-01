@@ -8,7 +8,7 @@
 using namespace mmorpg::game;
 using namespace mmorpg::core;
 
-// [SEQUENCE: MVP3-13] Spatial indexing system tests
+// [SEQUENCE: MVP3-104] Defines the test fixture for all spatial indexing tests.
 class SpatialIndexingTest : public ::testing::Test {
 protected:
     std::unique_ptr<world::grid::WorldGrid> grid;
@@ -35,7 +35,7 @@ protected:
     }
 };
 
-// [SEQUENCE: MVP3-14] Grid insertion and query tests
+// [SEQUENCE: MVP3-105] Tests basic insertion and radius queries in the WorldGrid.
 TEST_F(SpatialIndexingTest, GridBasicOperations) {
     ecs::EntityId e1 = CreateEntity(10, 0, 10);
     ecs::EntityId e2 = CreateEntity(15, 0, 15);
@@ -47,7 +47,7 @@ TEST_F(SpatialIndexingTest, GridBasicOperations) {
     EXPECT_EQ(nearby.size(), 2);
 }
 
-// [SEQUENCE: MVP3-15] Grid movement update tests
+// [SEQUENCE: MVP3-106] Tests the update mechanism when an entity moves between cells in the WorldGrid.
 TEST_F(SpatialIndexingTest, GridMovementUpdate) {
     ecs::EntityId entity = CreateEntity(0, 0, 0);
     grid->AddEntity(entity, {0, 0, 0});
@@ -58,7 +58,7 @@ TEST_F(SpatialIndexingTest, GridMovementUpdate) {
     EXPECT_FALSE(new_nearby.empty());
 }
 
-// [SEQUENCE: MVP3-16] Grid boundary tests
+// [SEQUENCE: MVP3-107] Tests how the WorldGrid handles entities at its boundaries.
 TEST_F(SpatialIndexingTest, GridBoundaryHandling) {
     std::vector<utils::Vector3> boundary_positions = {{0, 0, 0}, {999, 0, 999}};
     for (size_t i = 0; i < boundary_positions.size(); ++i) {
@@ -69,7 +69,7 @@ TEST_F(SpatialIndexingTest, GridBoundaryHandling) {
     }
 }
 
-// [SEQUENCE: MVP3-17] Octree insertion and query tests
+// [SEQUENCE: MVP3-108] Tests basic insertion and radius queries in the OctreeWorld.
 TEST_F(SpatialIndexingTest, OctreeBasicOperations) {
     ecs::EntityId e1 = CreateEntity(0, 10, 0);
     ecs::EntityId e2 = CreateEntity(0, 50, 0);
@@ -80,7 +80,7 @@ TEST_F(SpatialIndexingTest, OctreeBasicOperations) {
     EXPECT_EQ(low_query[0], e1);
 }
 
-// [SEQUENCE: MVP3-18] Octree subdivision tests
+// [SEQUENCE: MVP3-109] Tests the dynamic subdivision of nodes in the OctreeWorld.
 TEST_F(SpatialIndexingTest, OctreeSubdivision) {
     for (int i = 0; i < 100; ++i) {
         ecs::EntityId e = CreateEntity(0, 0, 0);
@@ -91,7 +91,7 @@ TEST_F(SpatialIndexingTest, OctreeSubdivision) {
     EXPECT_GT(results.size(), 50);
 }
 
-// [SEQUENCE: MVP3-19] Performance comparison test
+// [SEQUENCE: MVP3-110] Compares the performance of radius queries between the Grid and Octree.
 TEST_F(SpatialIndexingTest, PerformanceComparison) {
     const int ENTITY_COUNT = 1000;
     std::mt19937 gen(std::random_device{}());
@@ -109,7 +109,7 @@ TEST_F(SpatialIndexingTest, PerformanceComparison) {
     EXPECT_LT(grid_time.count(), 10000);
 }
 
-// [SEQUENCE: MVP3-20] Spatial query accuracy test
+// [SEQUENCE: MVP3-111] Verifies the accuracy of spatial queries.
 TEST_F(SpatialIndexingTest, QueryAccuracy) {
     std::vector<std::pair<ecs::EntityId, utils::Vector3>> test_entities;
     for (int x = 0; x <= 100; x += 10) {
@@ -138,7 +138,7 @@ TEST_F(SpatialIndexingTest, QueryAccuracy) {
     }
 }
 
-// [SEQUENCE: MVP3-21] Dynamic entity movement stress test
+// [SEQUENCE: MVP3-112] A stress test involving a large number of dynamic entities.
 TEST_F(SpatialIndexingTest, DynamicMovementStress) {
     const int ENTITY_COUNT = 500;
     std::vector<ecs::EntityId> entities;
@@ -163,7 +163,7 @@ TEST_F(SpatialIndexingTest, DynamicMovementStress) {
     }
 }
 
-// [SEQUENCE: MVP3-22] Region query tests
+// [SEQUENCE: MVP3-113] Tests region queries using bounding boxes.
 TEST_F(SpatialIndexingTest, DISABLED_RegionQueries) {
     for (int x = 0; x <= 200; x += 20) {
         for (int z = 0; z <= 200; z += 20) {

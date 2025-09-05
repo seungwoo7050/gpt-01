@@ -16,7 +16,7 @@ using namespace mmorpg::game::components;
 using namespace mmorpg::core::ecs::optimized;
 using namespace mmorpg::core::ecs;
 
-// [SEQUENCE: MVP4-16]
+// [SEQUENCE: MVP4-53] Defines the test fixture for all combat system tests.
 class CombatSystemTest : public ::testing::Test {
 protected:
     std::unique_ptr<OptimizedWorld> world;
@@ -70,7 +70,7 @@ protected:
     }
 };
 
-// [SEQUENCE: MVP4-17]
+// [SEQUENCE: MVP4-54] Tests basic damage calculation.
 TEST_F(CombatSystemTest, BasicDamage) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);
@@ -85,7 +85,7 @@ TEST_F(CombatSystemTest, BasicDamage) {
     EXPECT_LT(defender_health.current_hp, defender_health.max_hp);
 }
 
-// [SEQUENCE: MVP4-18]
+// [SEQUENCE: MVP4-55] Tests critical hit damage calculation.
 TEST_F(CombatSystemTest, CriticalHitDamage) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);
@@ -104,7 +104,7 @@ TEST_F(CombatSystemTest, CriticalHitDamage) {
     EXPECT_LT(defender_health.current_hp, 85);
 }
 
-// [SEQUENCE: MVP4-19]
+// [SEQUENCE: MVP4-56] Tests that combat proceeds over multiple updates.
 TEST_F(CombatSystemTest, CombatExecution) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);
@@ -121,7 +121,7 @@ TEST_F(CombatSystemTest, CombatExecution) {
     EXPECT_LT(defender_health.current_hp, defender_health.max_hp);
 }
 
-// [SEQUENCE: MVP4-20]
+// [SEQUENCE: MVP4-57] Tests that entities are correctly marked as dead.
 TEST_F(CombatSystemTest, DeathHandling) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(10, 30, 30);
@@ -138,7 +138,7 @@ TEST_F(CombatSystemTest, DeathHandling) {
     EXPECT_TRUE(defender_health.is_dead);
 }
 
-// [SEQUENCE: MVP4-21]
+// [SEQUENCE: MVP4-58] Tests skill cooldown mechanics.
 TEST_F(CombatSystemTest, SkillCooldown) {
     EntityId entity = CreateCombatEntity(100, 50, 20);
     auto& skill_comp = world->GetComponent<SkillComponent>(entity);
@@ -159,7 +159,7 @@ TEST_F(CombatSystemTest, SkillCooldown) {
     EXPECT_FALSE(skill_comp.skills[test_skill.id].on_cooldown);
 }
 
-// [SEQUENCE: MVP4-22]
+// [SEQUENCE: MVP4-59] Tests entering and exiting the combat state.
 TEST_F(CombatSystemTest, CombatStateManagement) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);
@@ -183,7 +183,7 @@ TEST_F(CombatSystemTest, CombatStateManagement) {
     EXPECT_FALSE(targeted_combat_system->IsInCombat(defender));
 }
 
-// [SEQUENCE: MVP4-23]
+// [SEQUENCE: MVP4-60] Tests damage mitigation from armor.
 TEST_F(CombatSystemTest, DamageMitigation) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 100); // High armor
@@ -199,7 +199,7 @@ TEST_F(CombatSystemTest, DamageMitigation) {
     EXPECT_GT(defender_health.current_hp, 95);
 }
 
-// [SEQUENCE: MVP4-24]
+// [SEQUENCE: MVP4-61] Tests area-of-effect damage.
 TEST_F(CombatSystemTest, AreaOfEffectDamage) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender1 = CreateCombatEntity(100, 30, 30);
@@ -226,7 +226,7 @@ TEST_F(CombatSystemTest, AreaOfEffectDamage) {
     EXPECT_EQ(health3.current_hp, 100.0f);
 }
 
-// [SEQUENCE: MVP4-25]
+// [SEQUENCE: MVP4-62] Tests healing functionality.
 TEST_F(CombatSystemTest, Healing) {
     EntityId target = CreateCombatEntity(100, 30, 30);
 
@@ -240,7 +240,7 @@ TEST_F(CombatSystemTest, Healing) {
     EXPECT_EQ(target_health.current_hp, 70);
 }
 
-// [SEQUENCE: MVP4-26]
+// [SEQUENCE: MVP4-63] Tests combat immunity via damage reduction.
 TEST_F(CombatSystemTest, CombatImmunity) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);
@@ -259,7 +259,7 @@ TEST_F(CombatSystemTest, CombatImmunity) {
     EXPECT_EQ(defender_health.current_hp, 100.0f);
 }
 
-// [SEQUENCE: MVP4-27]
+// [SEQUENCE: MVP4-64] Tests a simulated combo system.
 TEST_F(CombatSystemTest, ComboSystem) {
     EntityId attacker = CreateCombatEntity(100, 50, 20);
     EntityId defender = CreateCombatEntity(100, 30, 30);

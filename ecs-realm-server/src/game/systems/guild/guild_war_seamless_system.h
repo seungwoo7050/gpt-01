@@ -11,21 +11,19 @@
 
 namespace mmorpg::game::systems::guild {
 
-// [SEQUENCE: 1] Seamless guild war system - wars happen in main world
-// [SEQUENCE: MVP5-12]
+// [SEQUENCE: MVP5-29] Defines the system for managing seamless guild wars that occur in the main game world.
 class GuildWarSeamlessSystem : public core::ecs::optimized::System {
 public:
     GuildWarSeamlessSystem() = default;
     
     void Update(float delta_time) override;
     
-    // [SEQUENCE: 4] War declaration data
+    // [SEQUENCE: MVP5-30] Public API for managing seamless guild wars, territories, and combat.
     struct SeamlessWar {
         uint32_t war_id;
         uint32_t guild_a_id;
         uint32_t guild_b_id;
         
-        // [SEQUENCE: 5] War state
         enum class WarPhase {
             DECLARATION,    // 24 hour warning
             PREPARATION,    // 1 hour before start
@@ -38,7 +36,6 @@ public:
         std::chrono::steady_clock::time_point war_start_time;
         std::chrono::steady_clock::time_point war_end_time;
         
-        // [SEQUENCE: 6] Territory control
         struct Territory {
             uint32_t territory_id;
             std::string name;
@@ -50,45 +47,37 @@ public:
         };
         std::vector<Territory> contested_territories;
         
-        // [SEQUENCE: 7] War statistics
         uint32_t guild_a_kills = 0;
         uint32_t guild_b_kills = 0;
         uint32_t guild_a_deaths = 0;
         uint32_t guild_b_deaths = 0;
         std::unordered_map<uint32_t, float> territory_control_time;
         
-        // [SEQUENCE: 8] Participants tracking
         std::unordered_set<core::ecs::EntityId> guild_a_participants;
         std::unordered_set<core::ecs::EntityId> guild_b_participants;
         std::unordered_map<core::ecs::EntityId, uint32_t> player_war_score;
     };
     
-    // [SEQUENCE: 9] Public API
     bool DeclareSeamlessWar(uint32_t guild_a, uint32_t guild_b, 
                            const std::vector<uint32_t>& contested_territory_ids);
     bool RespondToWarDeclaration(uint32_t guild_id, uint32_t war_id, bool accept);
     
-    // [SEQUENCE: 10] Territory management
     void RegisterTerritory(uint32_t territory_id, const std::string& name,
                           const core::utils::Vector3& center, float radius);
     bool ClaimTerritory(uint32_t guild_id, uint32_t territory_id);
     uint32_t GetTerritoryController(uint32_t territory_id) const;
     
-    // [SEQUENCE: 11] War queries
     bool IsGuildInWar(uint32_t guild_id) const;
     std::vector<uint32_t> GetActiveWars(uint32_t guild_id) const;
     const SeamlessWar* GetWarInfo(uint32_t war_id) const;
     
-    // [SEQUENCE: 12] Combat in war zones
     bool IsInWarZone(core::ecs::EntityId player) const;
     bool CanAttackInWar(core::ecs::EntityId attacker, core::ecs::EntityId target) const;
     void OnWarKill(core::ecs::EntityId killer, core::ecs::EntityId victim);
     
-    // [SEQUENCE: 13] Territory battles
     void UpdateTerritoryControl(uint32_t war_id, uint32_t territory_id);
     float GetTerritoryControlPercentage(uint32_t war_id, uint32_t territory_id) const;
     
-    // [SEQUENCE: 14] Resource management
     struct TerritoryResources {
         uint32_t gold_per_hour = 1000;
         uint32_t materials_per_hour = 500;
@@ -97,12 +86,24 @@ public:
     void DistributeTerritoryResources();
     
 private:
-    // [SEQUENCE: 15] War storage
+    // [SEQUENCE: MVP5-31] Private helper methods for internal war management.
+    void UpdateWars(float delta_time);
+    void UpdateWarPhases();
+    void UpdateTerritoryBattles(float delta_time);
+    void UpdatePlayerTerritories();
+    void StartWar(SeamlessWar& war);
+    void EndWar(SeamlessWar& war);
+    void DetermineWarVictor(const SeamlessWar& war);
+    void DistributeWarRewards(const SeamlessWar& war);
+    bool IsPlayerInTerritory(core::ecs::EntityId player, uint32_t territory_id) const;
+    void UpdatePlayerWarParticipation(core::ecs::EntityId player, uint32_t war_id);
+    void NotifyGuildMembers(uint32_t guild_id, const std::string& message);
+
+    // [SEQUENCE: MVP5-32] Private member variables for system state and configuration.
     uint32_t next_war_id_ = 1;
     std::unordered_map<uint32_t, std::unique_ptr<SeamlessWar>> active_wars_;
     std::unordered_map<uint32_t, std::vector<uint32_t>> guild_wars_;  // guild_id -> war_ids
     
-    // [SEQUENCE: 16] Territory registry
     struct TerritoryInfo {
         uint32_t territory_id;
         std::string name;
@@ -114,23 +115,9 @@ private:
     };
     std::unordered_map<uint32_t, TerritoryInfo> territories_;
     
-    // [SEQUENCE: 17] War zone management
     std::unordered_map<core::ecs::EntityId, uint32_t> player_in_territory_;
     std::unordered_map<uint32_t, std::unordered_set<core::ecs::EntityId>> territory_players_;
     
-    // [SEQUENCE: 18] Update functions
-    void UpdateWars(float delta_time);
-    void UpdateWarPhases();
-    void UpdateTerritoryBattles(float delta_time);
-    void UpdatePlayerTerritories();
-    
-    // [SEQUENCE: 19] War resolution
-    void StartWar(SeamlessWar& war);
-    void EndWar(SeamlessWar& war);
-    void DetermineWarVictor(const SeamlessWar& war);
-    void DistributeWarRewards(const SeamlessWar& war);
-    
-    // [SEQUENCE: 20] Configuration
     struct SeamlessWarConfig {
         // Timing
         float declaration_duration = 86400.0f;  // 24 hours
@@ -153,7 +140,6 @@ private:
         uint32_t max_territories_per_war = 5;   // Limit scope
     } config_;
     
-    // [SEQUENCE: 21] Statistics
     struct WarStatistics {
         uint32_t total_wars_declared = 0;
         uint32_t wars_completed = 0;
@@ -161,11 +147,6 @@ private:
         std::unordered_map<uint32_t, uint32_t> guild_war_victories;
         std::unordered_map<uint32_t, uint32_t> guild_territories_owned;
     } stats_;
-    
-    // [SEQUENCE: 22] Helper functions
-    bool IsPlayerInTerritory(core::ecs::EntityId player, uint32_t territory_id) const;
-    void UpdatePlayerWarParticipation(core::ecs::EntityId player, uint32_t war_id);
-    void NotifyGuildMembers(uint32_t guild_id, const std::string& message);
 };
 
 } // namespace mmorpg::game::systems::guild

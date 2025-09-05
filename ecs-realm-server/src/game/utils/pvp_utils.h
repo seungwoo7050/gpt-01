@@ -1,11 +1,9 @@
-// [SEQUENCE: MVP5-17] A new utility file created to house the GetRankFromRating function.
 #pragma once
 
 #include <cstdint>
 
 namespace mmorpg::game::utils {
 
-// [SEQUENCE: 10] PvP rank tiers
 enum class PvPRank {
     BRONZE_I,
     BRONZE_II,
@@ -26,6 +24,7 @@ enum class PvPRank {
     GRANDMASTER
 };
 
+// [SEQUENCE: MVP5-6] A utility function to convert a numerical rating into a displayable rank.
 inline PvPRank GetRankFromRating(int32_t rating) {
     if (rating < 1200) return PvPRank::BRONZE_I;
     if (rating < 1300) return PvPRank::BRONZE_II;

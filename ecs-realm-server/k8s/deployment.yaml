@@ -1,4 +1,5 @@
-# [SEQUENCE: MVP8-4] Kubernetes deployment manifest for the game server.
+# [SEQUENCE: MVP8-12] Kubernetes deployment manifest for the game server.
+# This defines the desired state for our application, including the number of replicas and container details.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,16 +22,8 @@ spec:
         ports:
         - containerPort: 8080
           name: tcp-game
-        - containerPort: 8081 # Assuming this is the health port from the Dockerfile
+        - containerPort: 8081
           name: http-health
-        # In a real scenario, resource requests and limits should be set
-        # resources:
-        #   requests:
-        #     memory: "512Mi"
-        #     cpu: "500m"
-        #   limits:
-        #     memory: "1Gi"
-        #     cpu: "1000m"
         envFrom:
         - configMapRef:
             name: mmorpg-server-config

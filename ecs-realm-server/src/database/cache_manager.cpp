@@ -1,10 +1,11 @@
 #include "database/cache_manager.h"
-#include <spdlog/spdlog.h>
+#include "core/logger.h"
 
 namespace mmorpg::database {
 
 // --- Cache Implementation ---
 
+// [SEQUENCE: MVP7-28] Puts a value into the cache with a specific key and Time-To-Live (TTL).
 void Cache::Put(const std::string& key, const std::string& value, std::chrono::seconds ttl) {
     std::lock_guard lock(m_mutex);
     m_data[key] = {value, std::chrono::system_clock::now(), ttl};
@@ -25,6 +26,7 @@ void Cache::Remove(const std::string& key) {
     m_data.erase(key);
 }
 
+// [SEQUENCE: MVP7-29] Iterates through the cache and removes entries that have expired.
 void Cache::EvictExpired() {
     std::lock_guard lock(m_mutex);
     auto now = std::chrono::system_clock::now();
@@ -40,6 +42,7 @@ void Cache::EvictExpired() {
 
 // --- CacheManager Implementation ---
 
+// [SEQUENCE: MVP7-31] Manages the lifecycle of the background eviction thread.
 CacheManager& CacheManager::Instance() {
     static CacheManager instance;
     return instance;
@@ -55,23 +58,14 @@ CacheManager::~CacheManager() {
 
 void CacheManager::Shutdown() {
     if (!m_shutting_down.exchange(true)) {
+        core::Logger::GetLogger()->info("[CacheManager] Shutting down eviction thread...");
         if (m_eviction_thread.joinable()) {
             m_eviction_thread.join();
         }
     }
 }
 
-std::shared_ptr<Cache> CacheManager::GetOrCreateCache(const std::string& cache_name) {
-    std::lock_guard lock(m_mutex);
-    auto it = m_caches.find(cache_name);
-    if (it != m_caches.end()) {
-        return it->second;
-    }
-    auto new_cache = std::make_shared<Cache>();
-    m_caches[cache_name] = new_cache;
-    return new_cache;
-}
-
+// [SEQUENCE: MVP7-32] The core loop for the background thread that periodically evicts expired cache entries.
 void CacheManager::EvictionLoop() {
     while (!m_shutting_down) {
         {
@@ -82,6 +76,19 @@ void CacheManager::EvictionLoop() {
         }
         std::this_thread::sleep_for(std::chrono::seconds(5)); // Eviction check interval
     }
+}
+
+// [SEQUENCE: MVP7-33] Retrieves a named cache, creating it if it doesn't exist.
+std::shared_ptr<Cache> CacheManager::GetOrCreateCache(const std::string& cache_name) {
+    std::lock_guard lock(m_mutex);
+    auto it = m_caches.find(cache_name);
+    if (it != m_caches.end()) {
+        return it->second;
+    }
+    auto new_cache = std::make_shared<Cache>();
+    m_caches[cache_name] = new_cache;
+    core::Logger::GetLogger()->info("[CacheManager] Created new cache: {}", cache_name);
+    return new_cache;
 }
 
 }

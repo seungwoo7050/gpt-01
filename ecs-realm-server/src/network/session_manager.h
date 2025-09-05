@@ -17,7 +17,7 @@ class Session;
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP6-15] Custom hasher for udp::endpoint to use it in unordered_map.
+// [SEQUENCE: MVP6-19] A custom hasher is required to use boost::asio::ip::udp::endpoint as a key in an unordered_map.
 struct UdpEndpointHasher {
     std::size_t operator()(const boost::asio::ip::udp::endpoint& endpoint) const {
         std::size_t seed = 0;
@@ -27,7 +27,6 @@ struct UdpEndpointHasher {
     }
 };
 
-// [SEQUENCE: MVP1-19] Manages all active client sessions
 class SessionManager {
 public:
     SessionManager() : m_next_session_id(0) {}
@@ -51,11 +50,11 @@ public:
 
     void SetPlayerIdForSession(uint32_t session_id, uint64_t player_id);
     uint64_t GetPlayerIdForSession(uint32_t session_id) const;
+    std::shared_ptr<Session> GetSessionByPlayerId(uint64_t player_id) const;
 
-    // [SEQUENCE: MVP6-16] Methods for UDP endpoint management.
+    // [SEQUENCE: MVP6-21] Methods for UDP endpoint management.
     void RegisterUdpEndpoint(uint32_t session_id, const boost::asio::ip::udp::endpoint& endpoint);
     std::shared_ptr<Session> GetSessionByUdpEndpoint(const boost::asio::ip::udp::endpoint& endpoint) const;
-    std::shared_ptr<Session> GetSessionByPlayerId(uint64_t player_id) const;
 
 private:
     std::atomic<uint32_t> m_next_session_id;
@@ -63,7 +62,7 @@ private:
     std::unordered_map<uint32_t, std::shared_ptr<Session>> m_sessions;
     std::unordered_map<uint32_t, uint64_t> m_session_to_player_id;
 
-    // [SEQUENCE: MVP6-17] Map from UDP endpoint to session ID for fast lookups.
+    // [SEQUENCE: MVP6-20] A map from a UDP endpoint to a session ID enables quick O(1) lookup of the session associated with an incoming UDP packet.
     std::unordered_map<boost::asio::ip::udp::endpoint, uint32_t, UdpEndpointHasher> m_udp_endpoint_to_session_id;
 };
 

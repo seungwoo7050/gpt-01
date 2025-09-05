@@ -1,4 +1,5 @@
-# [SEQUENCE: MVP8-9] GitHub Actions CI pipeline to build and test the server.
+# [SEQUENCE: MVP8-14] A GitHub Actions CI pipeline to automatically build and test the server on every push and pull request.
+# This ensures code quality and stability by catching errors early.
 name: C++ CI
 
 on:
@@ -21,10 +22,9 @@ jobs:
       uses: conan-io/cmake-conan-action@v1
 
     - name: Install Dependencies
-      run: conan install ecs-realm-server/ --build=missing
+      run: conan install ecs-realm-server/ --output-folder=ecs-realm-server/build --build=missing
 
     - name: Configure CMake
-      # The include in CMakeLists.txt should handle the toolchain file
       run: cmake -S ecs-realm-server -B ecs-realm-server/build
 
     - name: Build Project
@@ -33,6 +33,5 @@ jobs:
     - name: Run Unit Tests
       run: ecs-realm-server/build/unit_tests
 
-    # Optional: Build docker image to ensure Dockerfile is valid
     - name: Build Docker Image
       run: docker build . -f ecs-realm-server/Dockerfile -t mmorpg-server:latest

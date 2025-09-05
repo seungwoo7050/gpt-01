@@ -12,17 +12,15 @@ namespace mmorpg::database {
 
 class ConnectionPool;
 
-// [SEQUENCE: MVP7-7] Defines the health status of the database.
+// [SEQUENCE: MVP7-19] Defines the health status of the database.
 struct DBHealthStatus {
     bool is_connected = false;
     long long ping_latency_ms = -1;
     size_t active_connections = 0;
     size_t pool_size = 0;
-    double queries_per_second = 0.0;
-    double avg_query_time_ms = 0.0;
 };
 
-// [SEQUENCE: MVP7-8] Holds metrics for a specific type of query.
+// [SEQUENCE: MVP7-20] Holds metrics for a specific type of query.
 struct QueryMetrics {
     std::string query_digest;
     long long count = 0;
@@ -30,7 +28,7 @@ struct QueryMetrics {
     long long avg_time_ms = 0;
 };
 
-// [SEQUENCE: MVP7-15] Defines an alert for critical database events.
+// [SEQUENCE: MVP7-21] Defines an alert for critical database events (future use).
 struct Alert {
     enum class Severity { WARNING, ERROR, CRITICAL };
     Severity severity;
@@ -40,7 +38,7 @@ struct Alert {
     std::map<std::string, std::string> tags;
 };
 
-// [SEQUENCE: MVP7-9] Monitors database health and query performance.
+// [SEQUENCE: MVP7-22] Monitors database health and query performance in a background thread.
 class DatabaseMonitor {
 public:
     explicit DatabaseMonitor(ConnectionPool& pool);
@@ -54,7 +52,6 @@ public:
     void RecordQuery(const std::string& query, std::chrono::milliseconds duration);
     DBHealthStatus GetHealthStatus() const;
     std::vector<QueryMetrics> GetSlowQueries(uint32_t limit) const;
-    std::vector<QueryMetrics> GetTopQueries(uint32_t limit) const;
 
 private:
     void MonitoringLoop();

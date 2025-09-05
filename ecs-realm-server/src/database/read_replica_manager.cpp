@@ -3,6 +3,7 @@
 
 namespace mmorpg::database {
 
+// [SEQUENCE: MVP7-37] Implements the singleton and connection pool retrieval logic.
 ReadReplicaManager& ReadReplicaManager::Instance() {
     static ReadReplicaManager instance;
     return instance;
@@ -18,13 +19,13 @@ std::shared_ptr<ConnectionPool> ReadReplicaManager::GetWritePool() {
     return ConnectionPoolManager::Instance().GetPool(m_primary_pool_name);
 }
 
+// GetReadPool uses a simple atomic round-robin to distribute read queries among replica pools.
 std::shared_ptr<ConnectionPool> ReadReplicaManager::GetReadPool() {
     if (m_replica_pool_names.empty()) {
         // Fallback to primary if no replicas are configured
         return GetWritePool();
     }
 
-    // Round-robin load balancing
     size_t index = m_next_replica_index.fetch_add(1, std::memory_order_relaxed) % m_replica_pool_names.size();
     return ConnectionPoolManager::Instance().GetPool(m_replica_pool_names[index]);
 }

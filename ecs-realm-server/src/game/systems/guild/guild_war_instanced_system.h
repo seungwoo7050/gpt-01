@@ -10,15 +10,14 @@
 
 namespace mmorpg::game::systems::guild {
 
-// [SEQUENCE: 1] Instanced guild war system - separate battle instances
-// [SEQUENCE: MVP5-11]
+// [SEQUENCE: MVP5-7] Defines the system for managing instanced guild-vs-guild warfare.
 class GuildWarInstancedSystem : public core::ecs::optimized::System {
 public:
     GuildWarInstancedSystem() = default;
     
     void Update(float delta_time) override;
     
-    // [SEQUENCE: 4] Guild war management
+    // [SEQUENCE: MVP5-8] Public API for managing guild wars and player participation.
     struct GuildWarDeclaration {
         uint32_t attacker_guild_id;
         uint32_t defender_guild_id;
@@ -27,18 +26,15 @@ public:
         bool accepted = false;
     };
     
-    // [SEQUENCE: 5] War instance data
     struct GuildWarInstance {
         uint64_t instance_id;
         uint32_t attacker_guild_id;
         uint32_t defender_guild_id;
         
-        // [SEQUENCE: 6] Participants
         std::vector<core::ecs::EntityId> attacker_participants;
         std::vector<core::ecs::EntityId> defender_participants;
         std::unordered_map<core::ecs::EntityId, core::utils::Vector3> original_positions;
         
-        // [SEQUENCE: 7] War objectives
         struct Objective {
             uint32_t objective_id;
             std::string name;
@@ -49,13 +45,11 @@ public:
         };
         std::vector<Objective> objectives;
         
-        // [SEQUENCE: 8] Scoring
         uint32_t attacker_score = 0;
         uint32_t defender_score = 0;
         uint32_t attacker_kills = 0;
         uint32_t defender_kills = 0;
         
-        // [SEQUENCE: 9] Instance state
         enum class InstanceState {
             PREPARING,      // Waiting for players
             ACTIVE,         // War in progress
@@ -68,13 +62,11 @@ public:
         std::chrono::steady_clock::time_point end_time;
         float remaining_time = 3600.0f; // 1 hour default
         
-        // [SEQUENCE: 10] Instance map
         std::string map_name = "guild_war_fortress";
         core::utils::Vector3 attacker_spawn{-500, 0, 0};
         core::utils::Vector3 defender_spawn{500, 0, 0};
     };
     
-    // [SEQUENCE: 11] Public API
     bool DeclareWar(uint32_t attacker_guild_id, uint32_t defender_guild_id);
     bool AcceptWarDeclaration(uint32_t guild_id);
     bool DeclineWarDeclaration(uint32_t guild_id);
@@ -83,42 +75,35 @@ public:
     bool JoinWarInstance(core::ecs::EntityId player, uint64_t instance_id);
     bool LeaveWarInstance(core::ecs::EntityId player);
     
-    // [SEQUENCE: 12] War queries
     bool IsGuildAtWar(uint32_t guild_id) const;
     uint64_t GetActiveWarInstance(uint32_t guild_id) const;
     std::vector<GuildWarDeclaration> GetPendingDeclarations(uint32_t guild_id) const;
     
-    // [SEQUENCE: 13] Objective control
     bool CaptureObjective(core::ecs::EntityId player, uint32_t objective_id);
     float GetObjectiveCaptureProgress(uint64_t instance_id, uint32_t objective_id) const;
     
-    // [SEQUENCE: 14] Combat events
     void OnPlayerKilledInWar(core::ecs::EntityId killer, core::ecs::EntityId victim);
     void OnObjectiveCaptured(uint64_t instance_id, uint32_t objective_id, uint32_t guild_id);
     
 private:
-    // [SEQUENCE: 15] War management
+    // [SEQUENCE: MVP5-9] Private helper methods for internal war management.
+    void UpdateWarInstances(float delta_time);
+    void UpdateInstanceState(GuildWarInstance& instance, float delta_time);
+    void UpdateObjectiveCapture(GuildWarInstance& instance, float delta_time);
+    void TeleportPlayerToInstance(core::ecs::EntityId player, GuildWarInstance& instance);
+    void ReturnPlayerFromInstance(core::ecs::EntityId player, GuildWarInstance& instance);
+    void GrantWarRewards(const GuildWarInstance& instance);
+    bool CheckVictoryConditions(GuildWarInstance& instance);
+    void EndWarInstance(GuildWarInstance& instance, uint32_t winner_guild_id);
+
+    // [SEQUENCE: MVP5-10] Private member variables for system state and configuration.
     std::unordered_map<uint32_t, std::vector<GuildWarDeclaration>> pending_declarations_;
     std::unordered_map<uint64_t, std::unique_ptr<GuildWarInstance>> active_instances_;
     std::unordered_map<uint32_t, uint64_t> guild_to_instance_;
     std::unordered_map<core::ecs::EntityId, uint64_t> player_to_instance_;
     
-    // [SEQUENCE: 16] Instance management
     uint64_t next_instance_id_ = 1;
-    void UpdateWarInstances(float delta_time);
-    void UpdateInstanceState(GuildWarInstance& instance, float delta_time);
-    void UpdateObjectiveCapture(GuildWarInstance& instance, float delta_time);
-    
-    // [SEQUENCE: 17] Player management
-    void TeleportPlayerToInstance(core::ecs::EntityId player, GuildWarInstance& instance);
-    void ReturnPlayerFromInstance(core::ecs::EntityId player, GuildWarInstance& instance);
-    void GrantWarRewards(const GuildWarInstance& instance);
-    
-    // [SEQUENCE: 18] Victory conditions
-    bool CheckVictoryConditions(GuildWarInstance& instance);
-    void EndWarInstance(GuildWarInstance& instance, uint32_t winner_guild_id);
-    
-    // [SEQUENCE: 19] Configuration
+
     struct InstancedWarConfig {
         uint32_t min_participants = 20;        // Minimum per side
         uint32_t max_participants = 100;       // Maximum per side
@@ -133,7 +118,6 @@ private:
         float objective_tick_rate = 1.0f;
     } config_;
     
-    // [SEQUENCE: 20] Statistics
     struct WarStatistics {
         uint32_t total_wars = 0;
         uint32_t active_wars = 0;

@@ -5,7 +5,7 @@
 #include <numeric>
 #include <algorithm>
 
-// [SEQUENCE: MVP6-45] Unit tests for the LockFreeQueue.
+// [SEQUENCE: MVP6-7] Tests basic enqueue and dequeue functionality in a single-threaded context.
 TEST(LockFreeQueueTest, SingleThreadedEnqueueDequeue) {
     mmorpg::concurrent::LockFreeQueue<int> q;
     int val;
@@ -26,6 +26,7 @@ TEST(LockFreeQueueTest, SingleThreadedEnqueueDequeue) {
     EXPECT_FALSE(q.Dequeue(val));
 }
 
+// [SEQUENCE: MVP6-8] Tests the queue in a multi-producer, single-consumer (MPSC) scenario.
 TEST(LockFreeQueueTest, MultiProducerSingleConsumer) {
     mmorpg::concurrent::LockFreeQueue<int> q;
     std::vector<std::thread> producers;

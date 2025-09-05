@@ -2,6 +2,7 @@
 
 namespace mmorpg::database {
 
+// [SEQUENCE: MVP7-35] Implements the singleton and query registration/retrieval methods.
 QueryOptimizer& QueryOptimizer::Instance() {
     static QueryOptimizer instance;
     return instance;

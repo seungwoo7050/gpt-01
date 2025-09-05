@@ -11,14 +11,14 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP7-19] Represents a single entry in the cache.
+// [SEQUENCE: MVP7-26] Represents a single entry in the cache, storing the value and metadata like TTL.
 struct CacheEntry {
     std::string value; // Storing serialized data as a string for simplicity
     std::chrono::system_clock::time_point last_access_time;
     std::chrono::seconds ttl;
 };
 
-// [SEQUENCE: MVP7-20] A thread-safe cache implementation.
+// [SEQUENCE: MVP7-27] A thread-safe, in-memory key-value cache.
 class Cache {
 public:
     void Put(const std::string& key, const std::string& value, std::chrono::seconds ttl);
@@ -31,7 +31,7 @@ private:
     std::unordered_map<std::string, CacheEntry> m_data;
 };
 
-// [SEQUENCE: MVP7-21] A singleton manager for all caches in the system.
+// [SEQUENCE: MVP7-30] A singleton manager for all named caches in the system.
 class CacheManager {
 public:
     static CacheManager& Instance();

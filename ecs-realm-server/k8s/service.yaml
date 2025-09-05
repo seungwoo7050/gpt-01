@@ -1,4 +1,5 @@
-# [SEQUENCE: MVP8-5] Kubernetes service manifest to expose the game server.
+# [SEQUENCE: MVP8-13] Kubernetes service manifest to expose the game server.
+# This creates a stable network endpoint (a load balancer) to route external traffic to the running pods.
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,8 +13,3 @@ spec:
       port: 8080 # The port to expose on the load balancer
       targetPort: tcp-game # The named port on the container
       name: tcp-game
-    # If you had a separate UDP port for the game, you would add it here.
-    # - protocol: UDP
-    #   port: 7777
-    #   targetPort: udp-game
-    #   name: udp-game

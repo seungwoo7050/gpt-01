@@ -10,17 +10,9 @@
 #include <optional>
 #include <map>
 
-#include <mysqlx/xdevapi.h> // [SEQUENCE: MVP7-14] Include full definition for mysqlx::Session
+#include <mysqlx/xdevapi.h>
 
 namespace mmorpg::database {
-
-// [SEQUENCE: MVP7-10] Defines the state of a connection in the pool.
-enum class ConnectionState {
-    IDLE,
-    IN_USE,
-    BROKEN,
-    CONNECTING
-};
 
 // [SEQUENCE: MVP7-4] Defines the configuration for a database connection pool.
 struct ConnectionPoolConfig {
@@ -37,7 +29,15 @@ struct ConnectionPoolConfig {
     bool test_on_borrow = true;
 };
 
-// [SEQUENCE: MVP7-5] Holds statistics about the connection pool's performance.
+// [SEQUENCE: MVP7-5] Defines the state of a connection in the pool.
+enum class ConnectionState {
+    IDLE,
+    IN_USE,
+    BROKEN,
+    CONNECTING
+};
+
+// [SEQUENCE: MVP7-6] Holds statistics about the connection pool's performance.
 struct ConnectionPoolStats {
     size_t pool_size = 0;
     size_t active_connections = 0;
@@ -46,7 +46,7 @@ struct ConnectionPoolStats {
     uint64_t total_released = 0;
 };
 
-// [SEQUENCE: MVP7-11] Represents a single pooled connection, wrapping the actual DB session.
+// [SEQUENCE: MVP7-7] Represents a single pooled connection, wrapping the actual DB session and its metadata.
 class PooledConnection {
 public:
     PooledConnection(uint64_t id, const ConnectionPoolConfig& config);
@@ -55,16 +55,14 @@ public:
     bool Connect();
     bool Validate();
     bool IsExpired() const;
-    bool IsIdle(std::chrono::milliseconds threshold) const;
 
     std::shared_ptr<mysqlx::Session> GetSession() { return m_session; }
     ConnectionState GetState() const { return m_state; }
-    void SetState(ConnectionState state) { m_state = state; }
+    void SetState(ConnectionState state);
     uint64_t GetId() const { return m_id; }
+    void UpdateLastUsedTime() { m_last_used_time = std::chrono::system_clock::now(); }
 
 private:
-    void UpdateLastUsed() { m_last_used_time = std::chrono::system_clock::now(); }
-
     uint64_t m_id;
     const ConnectionPoolConfig& m_config;
     std::shared_ptr<mysqlx::Session> m_session;
@@ -74,7 +72,7 @@ private:
     std::mutex m_mutex;
 };
 
-// [SEQUENCE: MVP7-6] Manages a pool of database connections.
+// [SEQUENCE: MVP7-11] Manages a pool of database connections, handling acquisition, release, and lifecycle.
 class ConnectionPool {
 public:
     explicit ConnectionPool(const ConnectionPoolConfig& config);
@@ -92,9 +90,6 @@ public:
 
 private:
     std::shared_ptr<PooledConnection> CreateConnection();
-    void DestroyConnection(std::shared_ptr<PooledConnection> conn);
-    void ValidateConnections();
-    void EvictExpiredConnections();
 
     ConnectionPoolConfig m_config;
     std::vector<std::shared_ptr<PooledConnection>> m_pool;
@@ -108,7 +103,7 @@ private:
     ConnectionPoolStats m_stats;
 };
 
-// [SEQUENCE: MVP7-12] Manages multiple named connection pools.
+// [SEQUENCE: MVP7-16] Manages multiple named connection pools, providing a single point of access.
 class ConnectionPoolManager {
 public:
     static ConnectionPoolManager& Instance();

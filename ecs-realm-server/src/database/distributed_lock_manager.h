@@ -7,7 +7,7 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP7-34] Manages distributed locks using Redis.
+// [SEQUENCE: MVP7-45] Manages distributed locks using Redis to ensure data consistency in a multi-server environment.
 class DistributedLockManager {
 public:
     static DistributedLockManager& Instance();

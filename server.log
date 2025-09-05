@@ -1,0 +1,55 @@
+[08:42:37] MMORPG: Initializing backend services...
+[08:42:37] MMORPG: [DB] Connection 0 failed: CDK Error: Connection refused (generic:111)
+[08:42:37] MMORPG: [DB] Failed to create initial connection.
+[08:42:37] MMORPG: [DB] Connection 1 failed: CDK Error: Connection refused (generic:111)
+[08:42:37] MMORPG: [DB] Failed to create initial connection.
+[08:42:37] MMORPG: [DB] Connection 2 failed: CDK Error: Connection refused (generic:111)
+[08:42:37] MMORPG: [DB] Failed to create initial connection.
+[08:42:37] MMORPG: [DB] Connection 3 failed: CDK Error: Connection refused (generic:111)
+[08:42:37] MMORPG: [DB] Failed to create initial connection.
+[08:42:37] MMORPG: [DB] Connection 4 failed: CDK Error: Connection refused (generic:111)
+[08:42:37] MMORPG: [DB] Failed to create initial connection.
+[08:42:37] MMORPG: [DB] Pool initialized with 0 connections, less than required 5.
+[08:42:37] MMORPG: [DistributedLock] Connected to Redis at tcp://127.0.0.1:6379
+[08:42:37] MMORPG: [CacheManager] Created new cache: player_data
+[08:42:37] MMORPG: ScriptManager initialized.
+Hello from Lua!
+[08:42:37] MMORPG: [LUA] This message is printed by a C++ function called from Lua.
+[08:42:37] MMORPG: Backend services initialized.
+[08:42:37] MMORPG: Asynchronous SSL TCP server started on port 8080
+[08:42:37] MMORPG: [UdpServer] Started on port 8081
+[08:42:37] MMORPG: Press Ctrl+C to stop the servers
+[08:43:24] MMORPG: Session 4 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Session 3 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Session 8 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 2
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 3
+[08:43:24] MMORPG: Session 1 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Session 5 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 4
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 5
+[08:43:24] MMORPG: Session 6 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 6
+[08:43:24] MMORPG: Session 2 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Session 9 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 7
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 8
+[08:43:24] MMORPG: Session 10 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 9
+[08:43:24] MMORPG: Session 7 handshake successful. Remote: 127.0.0.1
+[08:43:24] MMORPG: Processed login for user 'test_user', assigned player_id 10
+[08:43:29] MMORPG: Session [6] error: stream truncated
+[08:43:29] MMORPG: Session [7] error: stream truncated
+[08:43:29] MMORPG: Session [5] error: stream truncated
+[08:43:29] MMORPG: Session [1] error: stream truncated
+[08:43:29] MMORPG: Session [8] error: stream truncated
+[08:43:29] MMORPG: Session [2] error: stream truncated
+[08:43:29] MMORPG: Session [4] error: stream truncated
+[08:43:29] MMORPG: Session [3] error: stream truncated
+[08:43:29] MMORPG: Session [10] error: stream truncated
+[08:43:29] MMORPG: Session [9] error: stream truncated
+[08:44:05] MMORPG: Received shutdown signal, stopping servers...
+[08:44:05] MMORPG: [CacheManager] Shutting down eviction thread...
+[08:44:07] MMORPG: Accept error: Operation canceled
+[08:44:07] MMORPG: Game server shutdown complete

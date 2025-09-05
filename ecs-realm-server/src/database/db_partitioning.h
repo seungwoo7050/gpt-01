@@ -7,7 +7,8 @@
 
 namespace mmorpg::database {
 
-// [SEQUENCE: MVP7-24] Defines the partitioning strategy for a table.
+// [SEQUENCE: MVP7-38] Defines the partitioning strategy for a table (e.g., by range or hash).
+// This helps in managing large tables by splitting them into smaller, more manageable pieces.
 enum class PartitionStrategy {
     NONE,
     BY_RANGE,
@@ -15,7 +16,7 @@ enum class PartitionStrategy {
     BY_LIST
 };
 
-// [SEQUENCE: MVP7-25] Holds metadata about a partitioned table.
+// [SEQUENCE: MVP7-39] Holds metadata about a partitioned table, such as its name and key column.
 class PartitionedTable {
 public:
     PartitionedTable(std::string name, PartitionStrategy strategy, std::string key_column)
@@ -28,10 +29,9 @@ private:
     std::string m_table_name;
     PartitionStrategy m_strategy;
     std::string m_key_column;
-    // In a real implementation, this would hold range boundaries, hash info, etc.
 };
 
-// [SEQUENCE: MVP7-26] Manages all partitioned tables.
+// [SEQUENCE: MVP7-40] A singleton manager for all partitioned tables in the database.
 class PartitionManager {
 public:
     static PartitionManager& Instance();

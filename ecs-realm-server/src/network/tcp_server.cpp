@@ -4,7 +4,8 @@
 
 namespace mmorpg::network {
 
-// [SEQUENCE: MVP9-1] Asynchronous TcpServer implementation based on Boost.Asio SSL example
+// [SEQUENCE: MVP6-10] Constructor: Initializes the SSL context and the acceptor.
+// It loads the server's certificate and private key, which are required for TLS.
 TcpServer::TcpServer(boost::asio::io_context& io_context,
                    std::shared_ptr<SessionManager> session_manager,
                    std::shared_ptr<IPacketHandler> packet_handler,
@@ -39,7 +40,8 @@ void TcpServer::stop() {
     acceptor_.close();
 }
 
-// [SEQUENCE: MVP9-2] Handles accepting new connections asynchronously.
+// [SEQUENCE: MVP6-11] The core accept loop. When a new connection is accepted, it creates a Session,
+// passes the SSL context to it, and calls Start() on the new session to initiate the handshake.
 void TcpServer::do_accept() {
     acceptor_.async_accept(
         [this](const boost::system::error_code& error, boost::asio::ip::tcp::socket socket) {
@@ -53,7 +55,7 @@ void TcpServer::do_accept() {
                         packet_handler_);
                     
                     session_manager_->Register(new_session);
-                    new_session->Start(); // This will initiate the handshake
+                    new_session->Start(); // The session itself will initiate the handshake
 
                 } catch (const std::exception& e) {
                     LOG_ERROR("Exception while creating session: {}", e.what());

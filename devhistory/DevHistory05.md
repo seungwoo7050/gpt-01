@@ -1,51 +1,171 @@
-# [SEQUENCE: MVP5-1] MVP 5: Guild & PvP Systems
+# MVP 5: Guild & PvP Systems
 
-## [SEQUENCE: MVP5-2] Introduction
-MVP 5 introduces large-scale social and competitive gameplay systems. This includes the framework for guilds, guild wars, and various Player-vs-Player (PvP) modes. The focus of this MVP was to refactor the existing, complex systems to be compatible with the established ECS architecture, while acknowledging their manager-style design.
+## Introduction
 
-## [SEQUENCE: MVP5-3] Architectural Approach: Manager Systems
-The guild and PvP systems were found to be architecturally different from the pure ECS systems developed in earlier MVPs. They were designed as high-level managers with significant internal state, rather than systems that operate on component data in a tight loop. A pragmatic decision was made to treat them as "manager systems." This involved making the minimal changes necessary for them to compile and run within the ECS framework, without undertaking a full architectural rewrite. This approach allows for their functionality to be preserved while maintaining overall system stability.
+MVP 5 introduces large-scale social and competitive gameplay systems. This includes the framework for guilds, guild wars, and various Player-vs-Player (PvP) modes. A key challenge in this MVP was the discovery of missing source files (`GuildManager`, `GuildHandler`, `PvpHandler`) and legacy code that was incompatible with the established ECS architecture. 
 
-## [SEQUENCE: MVP5-4] Guild & PvP Components (`src/game/components/`)
-The data for guild and PvP functionality was refactored into a set of pure-data components.
+This MVP documents the process of refactoring the existing systems, creating the missing files from scratch based on context from tests and other documents, and integrating the manager-style classes into the ECS framework in a pragmatic, hybrid approach.
 
-*   `[SEQUENCE: MVP5-5] guild_component.h`: Stores an entity's guild information, such as guild ID, rank, and war status. Logic was removed from the component.
-*   `[SEQUENCE: MVP5-6] pvp_stats_component.h`: A data-only component for tracking a player's PvP statistics, including kills, deaths, rating, and seasonal data. A helper function was moved to a new utility file.
-*   `[SEQUENCE: MVP5-7] match_component.h`: Defines the data for a PvP match instance. Duplicated enums were removed.
-*   `[SEQUENCE: MVP5-8] pvp_zone_component.h`: A new component, extracted from `match_component.h`, to define a PvP-enabled zone in the world.
-*   `[SEQUENCE: MVP5-9] pvp_state_component.h`: A new component, extracted from `openworld_pvp_system.h`, to track an individual player's PvP state, such as whether they are flagged for PvP.
+---
 
-## [SEQUENCE: MVP5-10] Guild Systems (`src/game/systems/guild/`)
-These systems manage the logic for guild wars. They were refactored to be compatible with the ECS framework.
+## Component Refactoring (`ecs-realm-server/src/game/components/`)
 
-*   `[SEQUENCE: MVP5-11] guild_war_instanced_system.h` & `.cpp`: Manages instanced guild wars. Refactored to remove incompatible methods and to use the `world_` member variable instead of `GetWorld()`.
-*   `[SEQUENCE: MVP5-12] guild_war_seamless_system.h` & `.cpp`: Manages guild wars that occur in the main game world. Also refactored for ECS compatibility.
+The first step was to define and refactor the data components for all Guild and PvP-related state.
 
-## [SEQUENCE: MVP5-13] PvP Systems (`src/game/systems/pvp/`)
-These systems manage the logic for various PvP modes.
+*   `[SEQUENCE: MVP5-1]` `guild_component.h`: Stores an entity's guild information, such as guild ID, rank, and war status.
+*   `[SEQUENCE: MVP5-2]` `pvp_stats_component.h`: A data-only component for tracking a player's PvP statistics, including kills, deaths, rating, and seasonal data.
+*   `[SEQUENCE: MVP5-3]` `match_component.h`: Defines the data for a PvP match instance.
+*   `[SEQUENCE: MVP5-4]` `pvp_zone_component.h`: Defines a PvP-enabled zone in the world, including its rules and objectives.
+*   `[SEQUENCE: MVP5-5]` `pvp_state_component.h`: Tracks an individual player's PvP state, such as whether they are flagged for PvP.
 
-*   `[SEQUENCE: MVP5-14] openworld_pvp_system.h` & `.cpp`: Manages open-world PvP, including flagging and factional warfare. It was refactored to use the new `PvPStateComponent` and to be compatible with the ECS framework.
-*   `[SEQUENCE: MVP5-15] arena_system.h` & `.cpp`: Placeholder files were created for a future arena system, as it was referenced in the project but the files were missing.
+---
 
-## [SEQUENCE: MVP5-16] New Utilities (`src/game/utils/`)
-*   `[SEQUENCE: MVP5-17] pvp_utils.h`: A new utility file created to house the `GetRankFromRating` function, separating it from component data.
+## Utilities (`ecs-realm-server/src/game/utils/`)
 
-## [SEQUENCE: MVP5-18] Build System (`CMakeLists.txt`)
-*   `[SEQUENCE: MVP5-19]` Updated to include the source files for the guild and PvP systems in the `mmorpg_game` library.
+A helper utility was created for PvP-related functions.
 
-## [SEQUENCE: MVP5-20] Integration of Legacy Manager Systems
-To bring the full suite of guild and PvP features online, the legacy, non-ECS manager systems (`GuildManager` and `PvPManager`) were integrated into the application.
+*   `[SEQUENCE: MVP5-6]` `pvp_utils.h`: A utility function to convert a numerical rating into a displayable rank.
 
-*   **`[SEQUENCE: MVP5-21]` `game_server.cpp`:** The `PvPManager` is updated in the main game loop to handle matchmaking and other time-based PvP activities.
-*   **`[SEQUENCE: MVP5-22]` `guild_handler.h` & `.cpp`:** A new packet handler was created to process guild-related packets and call the appropriate methods on the `GuildManager` singleton.
-*   **`[SEQUENCE: MVP5-23]` `pvp_handler.h` & `.cpp`:** A new packet handler was created to process PvP-related packets and call the appropriate methods on the `PvPManager` singleton.
-*   **`[SEQUENCE: MVP5-24]` `session_manager.h` & `.cpp`:** The `SessionManager` was updated to track the mapping between session IDs and player IDs, enabling handlers to identify the player associated with a session.
+---
 
-## [SEQUENCE: MVP5-25] Unit Tests (`tests/unit/`)
-*   `[SEQUENCE: MVP5-26]` `test_guild_system.cpp`: Unit tests were added to verify the functionality of the `GuildManager`, including creating guilds, inviting and accepting invites, and leaving guilds.
-*   `[SEQUENCE: MVP5-27]` `test_pvp_system.cpp`: Unit tests were added to verify the functionality of the `PvPManager`, including sending, accepting, and declining duel requests.
+## ECS Systems (`ecs-realm-server/src/game/systems/`)
 
-## [SEQUENCE: MVP5-30] Build Verification
+The ECS systems for managing guild wars and open-world PvP were refactored for compatibility.
+
+### Guild Systems (`guild/`)
+*   `[SEQUENCE: MVP5-7]` `guild_war_instanced_system.h`: Defines the system for managing instanced guild-vs-guild warfare.
+*   `[SEQUENCE: MVP5-8]` `guild_war_instanced_system.h`: Public API for managing guild wars and player participation.
+*   `[SEQUENCE: MVP5-9]` `guild_war_instanced_system.h`: Private helper methods for internal war management.
+*   `[SEQUENCE: MVP5-10]` `guild_war_instanced_system.h`: Private member variables for system state and configuration.
+*   `[SEQUENCE: MVP5-11]` `guild_war_instanced_system.cpp`: Implements the main update loop for the system.
+*   `[SEQUENCE: MVP5-12]` `guild_war_instanced_system.cpp`: Implements the logic for one guild to declare war on another.
+*   `[SEQUENCE: MVP5-13]` `guild_war_instanced_system.cpp`: Implements the logic for a guild to accept a war declaration.
+*   `[SEQUENCE: MVP5-14]` `guild_war_instanced_system.cpp`: Creates a new instanced version of a guild war.
+*   `[SEQUENCE: MVP5-15]` `guild_war_instanced_system.cpp`: Implements the logic for a player to join a war instance.
+*   `[SEQUENCE: MVP5-16]` `guild_war_instanced_system.cpp`: Teleports a player to their spawn point within the war instance.
+*   `[SEQUENCE: MVP5-17]` `guild_war_instanced_system.cpp`: Updates all active war instances.
+*   `[SEQUENCE: MVP5-18]` `guild_war_instanced_system.cpp`: Updates the state of a single war instance (e.g., timers, victory checks).
+*   `[SEQUENCE: MVP5-19]` `guild_war_instanced_system.cpp`: Updates the capture progress of all objectives in a war.
+*   `[SEQUENCE: MVP5-20]` `guild_war_instanced_system.cpp`: Handles the event of an objective being captured.
+*   `[SEQUENCE: MVP5-21]` `guild_war_instanced_system.cpp`: Handles a player being killed during a war.
+*   `[SEQUENCE: MVP5-22]` `guild_war_instanced_system.cpp`: Checks if the victory conditions for a war have been met.
+*   `[SEQUENCE: MVP5-23]` `guild_war_instanced_system.cpp`: Ends a war instance and determines the winner.
+*   `[SEQUENCE: MVP5-24]` `guild_war_instanced_system.cpp`: Grants rewards to all participants of a war.
+*   `[SEQUENCE: MVP5-25]` `guild_war_instanced_system.cpp`: Returns a player from a war instance to their original position.
+*   `[SEQUENCE: MVP5-26]` `guild_war_instanced_system.cpp`: Checks if a guild is currently at war.
+*   `[SEQUENCE: MVP5-27]` `guild_war_instanced_system.cpp`: Gets the active war instance for a guild.
+*   `[SEQUENCE: MVP5-28]` `guild_war_instanced_system.cpp`: Implements the logic for a player to leave a war instance.
+*   `[SEQUENCE: MVP5-29]` `guild_war_seamless_system.h`: Defines the system for managing seamless guild wars that occur in the main game world.
+*   `[SEQUENCE: MVP5-30]` `guild_war_seamless_system.h`: Public API for managing seamless guild wars, territories, and combat.
+*   `[SEQUENCE: MVP5-31]` `guild_war_seamless_system.h`: Private helper methods for internal war management.
+*   `[SEQUENCE: MVP5-32]` `guild_war_seamless_system.h`: Private member variables for system state and configuration.
+*   `[SEQUENCE: MVP5-33]` `guild_war_seamless_system.cpp`: Implements the main update loop for the seamless war system.
+*   `[SEQUENCE: MVP5-34]` `guild_war_seamless_system.cpp`: Registers a new territory in the world.
+*   `[SEQUENCE: MVP5-35]` `guild_war_seamless_system.cpp`: Declares a seamless war between two guilds over specified territories.
+*   `[SEQUENCE: MVP5-36]` `guild_war_seamless_system.cpp`: Updates which players are in which territories.
+*   `[SEQUENCE: MVP5-37]` `guild_war_seamless_system.cpp`: Transitions wars between phases (e.g., declaration to active).
+*   `[SEQUENCE: MVP5-38]` `guild_war_seamless_system.cpp`: Starts a war, transitioning it to the ACTIVE phase.
+*   `[SEQUENCE: MVP5-39]` `guild_war_seamless_system.cpp`: Updates ongoing wars.
+*   `[SEQUENCE: MVP5-40]` `guild_war_seamless_system.cpp`: Updates territory control based on player presence.
+*   `[SEQUENCE: MVP5-41]` `guild_war_seamless_system.cpp`: Handles a kill that occurs during a seamless war.
+*   `[SEQUENCE: MVP5-42]` `guild_war_seamless_system.cpp`: Ends a war and transitions it to the RESOLUTION phase.
+*   `[SEQUENCE: MVP5-43]` `guild_war_seamless_system.cpp`: Determines the victor of a war based on score.
+*   `[SEQUENCE: MVP5-44]` `guild_war_seamless_system.cpp`: Distributes rewards to war participants.
+*   `[SEQUENCE: MVP5-45]` `guild_war_seamless_system.cpp`: Distributes resources from controlled territories.
+*   `[SEQUENCE: MVP5-46]` `guild_war_seamless_system.cpp`: Checks if a guild is in an active war.
+*   `[SEQUENCE: MVP5-47]` `guild_war_seamless_system.cpp`: Checks if a player is in a contested war zone.
+*   `[SEQUENCE: MVP5-48]` `guild_war_seamless_system.cpp`: Checks if two players can attack each other under war rules.
+*   `[SEQUENCE: MVP5-49]` `guild_war_seamless_system.cpp`: Allows a guild to claim an unowned territory.
+*   `[SEQUENCE: MVP5-50]` `guild_war_seamless_system.cpp`: Gets the ID of the guild that controls a territory.
+*   `[SEQUENCE: MVP5-51]` `guild_war_seamless_system.cpp`: Notifies all members of a guild with a message.
+
+### PvP Systems (`pvp/`)
+*   `[SEQUENCE: MVP5-52]` `openworld_pvp_system.h`: Defines the system for managing open-world PvP, including zones, flagging, and objectives.
+*   `[SEQUENCE: MVP5-53]` `openworld_pvp_system.h`: Public API for managing PvP zones, player states, and factions.
+*   `[SEQUENCE: MVP5-54]` `openworld_pvp_system.h`: Private helper methods for internal PvP logic.
+*   `[SEQUENCE: MVP5-55]` `openworld_pvp_system.h`: Private member variables for system state and configuration.
+*   `[SEQUENCE: MVP5-56]` `openworld_pvp_system.cpp`: Implements the main update loop for the open-world PvP system.
+*   `[SEQUENCE: MVP5-57]` `openworld_pvp_system.cpp`: Creates a new PvP zone entity.
+*   `[SEQUENCE: MVP5-58]` `openworld_pvp_system.cpp`: Checks if a player is currently flagged for PvP.
+*   `[SEQUENCE: MVP5-59]` `openworld_pvp_system.cpp`: Checks if an attacker can legally attack a target.
+*   `[SEQUENCE: MVP5-60]` `openworld_pvp_system.cpp`: Sets the faction for a given player.
+*   `[SEQUENCE: MVP5-61]` `openworld_pvp_system.cpp`: Gets the faction of a given player.
+*   `[SEQUENCE: MVP5-62]` `openworld_pvp_system.cpp`: Checks if two factions are hostile to each other.
+*   `[SEQUENCE: MVP5-63]` `openworld_pvp_system.cpp`: Initiates a zone capture for a player.
+*   `[SEQUENCE: MVP5-64]` `openworld_pvp_system.cpp`: Updates which zone each player is currently in.
+*   `[SEQUENCE: MVP5-65]` `openworld_pvp_system.cpp`: Handles the event of a player entering a PvP zone.
+*   `[SEQUENCE: MVP5-66]` `openworld_pvp_system.cpp`: Handles the event of a player leaving a PvP zone.
+*   `[SEQUENCE: MVP5-67]` `openworld_pvp_system.cpp`: Updates the capture progress for all zones.
+*   `[SEQUENCE: MVP5-68]` `openworld_pvp_system.cpp`: Handles the event of a zone being captured.
+*   `[SEQUENCE: MVP5-69]` `openworld_pvp_system.cpp`: Handles a player killing another player in open-world PvP.
+*   `[SEQUENCE: MVP5-70]` `openworld_pvp_system.cpp`: Grants honor points for a kill, considering diminishing returns.
+*   `[SEQUENCE: MVP5-71]` `openworld_pvp_system.cpp`: Updates the PvP flags for all players.
+*   `[SEQUENCE: MVP5-72]` `openworld_pvp_system.cpp`: Handles a player capturing a specific objective within a zone.
+*   `[SEQUENCE: MVP5-73]` `openworld_pvp_system.cpp`: Handles the event of an objective being captured.
+*   `[SEQUENCE: MVP5-74]` `openworld_pvp_system.cpp`: Grants rewards for capturing an objective.
+*   `[SEQUENCE: MVP5-75]` `openworld_pvp_system.cpp`: Updates a player's kill streak.
+*   `[SEQUENCE: MVP5-76]` `openworld_pvp_system.cpp`: Checks if a player is in a specific zone.
+*   `[SEQUENCE: MVP5-77]` `openworld_pvp_system.cpp`: Gets the zone a player is currently in.
+*   `[SEQUENCE: MVP5-78]` `openworld_pvp_system.cpp`: Adds a new objective to a PvP zone.
+*   `[SEQUENCE: MVP5-79]` `openworld_pvp_system.cpp`: Enables or disables PvP in a zone.
+*   `[SEQUENCE: MVP5-80]` `openworld_pvp_system.cpp`: Gets a list of all players currently flagged for PvP.
+*   `[SEQUENCE: MVP5-81]` `openworld_pvp_system.cpp`: Stops a player from capturing a zone.
+*   `[SEQUENCE: MVP5-82]` `openworld_pvp_system.cpp`: Gets the current capture progress of a zone.
+*   `[SEQUENCE: MVP5-83]` `openworld_pvp_system.cpp`: Handles a player assisting in a kill.
+*   `[SEQUENCE: MVP5-84]` `arena_system.h`: Placeholder for a future arena system.
+*   `[SEQUENCE: MVP5-85]` `arena_system.cpp`: Placeholder implementation for the ArenaSystem update loop.
+
+---
+
+## Manager and Handler Integration
+
+A significant part of this MVP was integrating non-ECS manager classes and creating new packet handlers for them.
+
+### PvP Manager (`ecs-realm-server/src/game/systems/`)
+*   `[SEQUENCE: MVP5-86]` `pvp_manager.h`: Manager for handling player-versus-player interactions like duels.
+*   `[SEQUENCE: MVP5-87]` `pvp_manager.h`: Public API for the PvP Manager.
+*   `[SEQUENCE: MVP5-88]` `pvp_manager.cpp`: Handles a duel request from one player to another.
+*   `[SEQUENCE: MVP5-89]` `pvp_manager.cpp`: Updates internal PvP states, such as duel timeouts.
+
+### Created Guild Manager (`ecs-realm-server/src/game/social/`)
+*   `[SEQUENCE: MVP5-90]` `guild.h`: Defines a member of a guild.
+*   `[SEQUENCE: MVP5-91]` `guild.h`: Defines a Guild.
+*   `[SEQUENCE: MVP5-92]` `guild_manager.h`: Manages all guilds in the game world.
+*   `[SEQUENCE: MVP5-93]` `guild_manager.cpp`: Implements the GuildManager singleton and its methods.
+
+### Created Packet Handlers (`ecs-realm-server/src/network/`)
+*   `[SEQUENCE: MVP5-94]` `guild_handler.h`: Handles all guild-related packets.
+*   `[SEQUENCE: MVP5-95]` `guild_handler.cpp`: Implements the GuildHandler.
+*   `[SEQUENCE: MVP5-96]` `pvp_handler.h`: Handles all PvP-related packets.
+*   `[SEQUENCE: MVP5-97]` `pvp_handler.cpp`: Implements the PvpHandler.
+
+### Session and Server Integration
+*   `[SEQUENCE: MVP5-98]` `session_manager.h`: Methods for mapping sessions to player IDs, essential for handlers.
+*   `[SEQUENCE: MVP5-99]` `session_manager.cpp`: Implementation for mapping sessions to player IDs.
+*   `[SEQUENCE: MVP5-100]` `main.cpp`: Main game loop to update game systems.
+
+---
+
+## Build System (`ecs-realm-server/CMakeLists.txt`)
+
+*   `[SEQUENCE: MVP5-101]` Adds Guild and PvP packet handlers to the core library.
+*   `[SEQUENCE: MVP5-102]` Adds Guild and PvP systems to the game library.
+*   `[SEQUENCE: MVP5-103]` Adds Guild and PvP system unit tests to the test executable.
+
+---
+
+## Unit Tests (`ecs-realm-server/tests/unit/`)
+
+*   `[SEQUENCE: MVP5-104]` `test_guild_system.cpp`: Tests the creation of a new guild.
+*   `[SEQUENCE: MVP5-105]` `test_guild_system.cpp`: Tests inviting a player to a guild.
+*   `[SEQUENCE: MVP5-106]` `test_guild_system.cpp`: Tests a player accepting a guild invite.
+*   `[SEQUENCE: MVP5-107]` `test_guild_system.cpp`: Tests a player leaving a guild.
+*   `[SEQUENCE: MVP5-108]` `test_pvp_system.cpp`: Tests the PvP manager system.
+*   `[SEQUENCE: MVP5-109]` `test_pvp_system.cpp`: Tests the PvP manager update loop.
+
+---
+
+## Build Verification
 
 After completing all the refactoring and implementation tasks for MVP 5, a full build and test cycle was performed to ensure the stability and correctness of the codebase.
 
@@ -62,27 +182,29 @@ The build process for MVP 5 follows the same procedure as MVP 4:
 *   **Execution Command**: `cd ecs-realm-server && conan install . && mkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../conan_toolchain.cmake && make -j && ./unit_tests`
 *   **Build Result**: **Success (100%)**
     *   All libraries and executables, including the new handlers and tests, were built successfully.
-    *   All 33 unit tests passed, confirming that the guild and PvP features are working as expected.
+    *   All unit tests passed, confirming that the guild and PvP features are working as expected.
 
 ### Conclusion
 
 The successful build and test run confirms that the goals of MVP 5 have been met. The guild and PvP systems have been successfully integrated, and the project is now ready to move on to the next MVP.
 
-### [SEQUENCE: MVP5-31] 기술 면접 대비 심층 분석 (In-depth Analysis for Technical Interviews)
+---
 
-#### 1. 아키텍처 결정: 왜 순수 ECS가 아닌 '매니저 시스템'을 도입했는가?
-*   **문제 인식:** 길드나 PvP 시스템의 핵심 로직은 ECS의 주된 장점인 '매 프레임 대량의 데이터를 순차적으로 처리'하는 방식과는 다소 거리가 있습니다. '길드 생성', '결투 신청', '전쟁 선포'와 같은 기능들은 비교적 드물게 발생하며, 복잡한 비즈니스 규칙과 여러 데이터(플레이어 정보, 길드 정보, 랭킹 등)에 대한 동시적인 접근을 요구하는 '상태 관리' 중심의 작업입니다.
-*   **기술적 트레이드오프 (Pragmatism over Dogma):**
-    *   **순수 ECS 접근법의 한계:** 이 모든 로직을 순수 ECS 시스템으로 구현하려면, 상태 기계를 흉내 내는 수많은 '태그 컴포넌트'(e.g., `GuildCreationRequestComponent`, `GuildCreationPendingComponent`)와 이를 처리하는 여러 개의 작은 시스템이 필요합니다. 이는 전체적인 로직의 흐름을 파악하기 어렵게 만들고, 오히려 코드를 더 복잡하게 만들 수 있습니다.
-    *   **실용주의적 접근:** 따라서, 이 MVP에서는 **"아키텍처 원칙을 맹목적으로 따르기보다, 문제의 성격에 맞는 가장 적합한 도구를 사용한다"**는 실용주의적 결정을 내렸습니다. 이는 제한된 시간 안에 안정적인 기능을 구현해야 하는 현업에서의 개발 방식을 반영한 것이며, 기술적 순수성보다 프로젝트의 목표 달성을 우선하는 성숙한 태도를 보여줍니다.
-*   **하이브리드 아키텍처 (The Hybrid Architecture):**
-    *   **데이터는 ECS에:** 개별 플레이어와 직접적으로 관련된 상태(e.g., `GuildComponent`, `PvPStatsComponent`)는 ECS의 컴포넌트로 관리하여 데이터 일관성을 유지합니다.
-    *   **복잡한 로직은 Manager에:** 길드 생성/가입/탈퇴, 매치메이킹, 랭킹 관리 등 복잡한 비즈니스 로직은 `GuildManager`, `PvPManager`와 같은 매니저 클래스에 위임하여 중앙에서 관리합니다.
-    *   **둘을 잇는 다리 (The Bridge):** `GuildHandler`, `PvPHandler`가 네트워크로부터 패킷을 받아, 적절한 매니저의 함수를 호출하는 '어댑터' 역할을 수행합니다.
+## In-depth Analysis for Technical Interviews
 
-#### 2. 구현 시 어려웠던 점
-*   **책임의 경계 설정:** 이 하이브리드 방식에서 가장 어려운 점은 '어디까지를 ECS 시스템이 처리하고, 어디부터를 매니저가 처리할 것인가'에 대한 명확한 경계를 설정하는 것이었습니다. 예를 들어, 'PvP 지역에 들어갔을 때 PvP 상태 활성화'는 `OpenWorldPvPSystem`이 처리하고, '결투 신청 및 수락'과 같은 상호작용은 `PvPManager`가 처리하도록 역할을 분리했습니다. 이 경계가 모호해지면 코드를 이해하고 유지보수하기 어려워집니다.
-*   **테스트의 복잡성:** 순수 ECS 시스템은 테스트가 비교적 간단하지만, 매니저 클래스는 내부적으로 많은 상태를 가지므로 테스트하기가 더 까다롭습니다. `GuildManager`를 테스트하기 위해, 길드를 생성하고, 여러 플레이어를 가입시키고, 특정 플레이어를 추방하는 등 복잡한 시나리오를 유닛 테스트로 작성해야 했습니다.
+#### 1. Architectural Decision: Why a Hybrid "Manager System" Approach?
+*   **Problem Recognition:** The core logic for systems like Guilds or PvP matchmaking doesn't fit the main strength of ECS, which is processing large amounts of data sequentially every frame. Features like "Create Guild," "Send Duel Request," or "Declare War" are relatively infrequent, state-management-centric tasks that require simultaneous access to various data sources (player info, guild data, rankings).
+*   **Pragmatism over Dogma:**
+    *   **Limits of a Pure ECS Approach:** Implementing this logic in a pure ECS style would require numerous "tag components" to mimic a state machine (e.g., `GuildCreationRequestComponent`, `GuildCreationPendingComponent`) and many small systems to process them. This could make the overall logic flow harder to understand and potentially more complex.
+    *   **Pragmatic Solution:** Therefore, this MVP makes the pragmatic decision to **"use the right tool for the job rather than blindly following an architectural principle."** This reflects a real-world development approach where delivering stable features on a schedule is paramount, demonstrating a mature focus on project goals over technical purity.
+*   **The Hybrid Architecture:**
+    *   **Data in ECS:** State directly related to individual players (e.g., `GuildComponent`, `PvPStatsComponent`) is managed as components in the ECS to maintain data consistency.
+    *   **Complex Logic in Managers:** Complex business logic like guild creation/joining/leaving, matchmaking, and ranking management is delegated to manager classes (`GuildManager`, `PvPManager`) for centralized control.
+    *   **The Bridge:** `GuildHandler` and `PvPHandler` act as adapters, receiving packets from the network and calling the appropriate functions on the manager singletons.
 
-#### 3. 만약 다시 만든다면 (Future Improvements)
-*   **매니저의 소유권 명확화 (Clarifying Ownership):** 현재 매니저들은 사실상 싱글톤으로 구현되어 있어 전역적인 접근이 가능합니다. 이는 편리하지만 테스트와 의존성 관리에 어려움을 줍니다. 만약 다시 설계한다면, 이 매니저 객체들을 `World` 클래스나 별도의 `ServiceLocator`가 소유하도록 만들 것입니다. 그리고 시스템이나 핸들러가 매니저를 필요로 할 때, `world->GetManager<GuildManager>()`와 같이 명시적인 인터페이스를 통해 의존성을 주입받는(Dependency Injection) 방식을 사용할 것입니다. 이는 전역 상태를 제거하고, 각 모듈의 의존 관계를 명확하게 만들어 시스템을 훨씬 더 견고하고 테스트하기 쉽게 만들어 줄 것입니다.
+#### 2. Implementation Challenges
+*   **Defining Responsibilities:** The most difficult part of this hybrid approach was setting clear boundaries for what the ECS systems should handle versus what the managers should handle. For example, activating a PvP state upon entering a PvP zone is handled by `OpenWorldPvPSystem`, while interactions like duel requests and acceptances are handled by `PvPManager`. If this boundary becomes blurred, the code becomes difficult to understand and maintain.
+*   **Testing Complexity:** While pure ECS systems are relatively simple to test, manager classes, with their significant internal state, are more challenging. Testing `GuildManager` required writing unit tests for complex scenarios like creating a guild, inviting multiple players, and expelling a specific player.
+
+#### 3. Future Improvements
+*   **Clarifying Ownership:** The current managers are effectively singletons, allowing global access. While convenient, this creates challenges for testing and dependency management. If redesigned, these manager objects would be owned by the `World` class or a separate `ServiceLocator`. Systems or handlers needing a manager would then receive it via explicit dependency injection (e.g., `world->GetManager<GuildManager>()`). This would eliminate global state and make the system more robust and testable by clearly defining the dependencies of each module.

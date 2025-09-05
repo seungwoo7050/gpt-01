@@ -12,7 +12,7 @@ void SessionManager::Register(const std::shared_ptr<Session>& session) {
     m_sessions[session->GetSessionId()] = session;
 }
 
-// [SEQUENCE: MVP6-20] Modified to also clean up UDP endpoint mappings.
+// [SEQUENCE: MVP6-24] When a session is unregistered, its UDP endpoint mapping must also be removed to prevent stale entries.
 void SessionManager::Unregister(uint32_t session_id) {
     std::unique_lock lock(m_mutex);
     auto it = m_sessions.find(session_id);
@@ -63,7 +63,17 @@ uint64_t SessionManager::GetPlayerIdForSession(uint32_t session_id) const {
     return (it != m_session_to_player_id.end()) ? it->second : 0;
 }
 
-// [SEQUENCE: MVP6-16] Methods for UDP endpoint management.
+std::shared_ptr<Session> SessionManager::GetSessionByPlayerId(uint64_t player_id) const {
+    std::shared_lock lock(m_mutex);
+    for (const auto& pair : m_session_to_player_id) {
+        if (pair.second == player_id) {
+            return GetSession(pair.first);
+        }
+    }
+    return nullptr;
+}
+
+// [SEQUENCE: MVP6-22] Associates a UDP endpoint with a session ID after a successful handshake.
 void SessionManager::RegisterUdpEndpoint(uint32_t session_id, const boost::asio::ip::udp::endpoint& endpoint) {
     std::unique_lock lock(m_mutex);
     auto it = m_sessions.find(session_id);
@@ -73,21 +83,12 @@ void SessionManager::RegisterUdpEndpoint(uint32_t session_id, const boost::asio:
     }
 }
 
+// [SEQUENCE: MVP6-23] Finds a session based on its UDP endpoint.
 std::shared_ptr<Session> SessionManager::GetSessionByUdpEndpoint(const boost::asio::ip::udp::endpoint& endpoint) const {
     std::shared_lock lock(m_mutex);
     auto it = m_udp_endpoint_to_session_id.find(endpoint);
     if (it != m_udp_endpoint_to_session_id.end()) {
         return GetSession(it->second);
-    }
-    return nullptr;
-}
-
-std::shared_ptr<Session> SessionManager::GetSessionByPlayerId(uint64_t player_id) const {
-    std::shared_lock lock(m_mutex);
-    for (const auto& pair : m_session_to_player_id) {
-        if (pair.second == player_id) {
-            return GetSession(pair.first);
-        }
     }
     return nullptr;
 }

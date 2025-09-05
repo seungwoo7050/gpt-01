@@ -4,16 +4,14 @@
 
 namespace mmorpg::game::systems {
 
-// [SEQUENCE: MVP9-62] PvP Manager for handling player versus player interactions
+// [SEQUENCE: MVP5-86] Manager for handling player-versus-player interactions like duels.
 class PvpManager : public core::ecs::System {
 public:
-    PvpManager() : System("PvpManager") {}
+    PvpManager() = default;
 
-    // [SEQUENCE: MVP9-63] Handle a duel request
+    // [SEQUENCE: MVP5-87] Public API for the PvP Manager.
     void HandleDuelRequest(core::ecs::EntityId requester, core::ecs::EntityId target);
-
-    // [SEQUENCE: MVP9-64] Update PvP states
-    void Update(float delta_time) override;
+    void Update(float delta_time);
 };
 
 } // namespace mmorpg::game::systems

@@ -33,7 +33,6 @@ enum class SessionState {
     Disconnected
 };
 
-// [SEQUENCE: MVP1-18] Represents a single client connection
 class Session : public std::enable_shared_from_this<Session> {
 public:
     Session(tcp::socket socket, boost::asio::ssl::context& context, uint32_t session_id, std::shared_ptr<IPacketHandler> handler);
@@ -48,13 +47,11 @@ public:
     SessionState GetState() const { return m_state; }
     bool IsAuthenticated() const { return m_isAuthenticated; }
     std::string GetRemoteAddress() const;
-
     void SetAuthenticated(bool authenticated) { m_isAuthenticated = authenticated; }
     void Authenticate();
-
     void SetPlayerId(uint64_t player_id);
 
-    // [SEQUENCE: MVP6-18] Methods for UDP endpoint management.
+    // [SEQUENCE: MVP6-26] Methods for UDP endpoint management within the session.
     void SetUdpEndpoint(const udp::endpoint& endpoint);
     std::optional<udp::endpoint> GetUdpEndpoint() const;
 
@@ -78,7 +75,7 @@ private:
     std::atomic<bool> m_isAuthenticated;
     uint64_t m_player_id = 0;
 
-    // [SEQUENCE: MVP6-19] Stores the associated UDP endpoint for this session.
+    // [SEQUENCE: MVP6-25] Stores the associated UDP endpoint for this session after a successful handshake.
     std::optional<udp::endpoint> m_udp_endpoint;
 };
 

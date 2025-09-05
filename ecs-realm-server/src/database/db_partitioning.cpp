@@ -2,8 +2,9 @@
 
 namespace mmorpg::database {
 
-// --- PartitionedTable Implementation ---
+// [SEQUENCE: MVP7-41] Implements the logic for partitioning and managing tables.
 
+// --- PartitionedTable Implementation ---
 std::string PartitionedTable::GetPartitionForValue(int64_t value) {
     // This is placeholder logic. A real implementation would use the defined
     // strategy and metadata to determine the correct partition name.
@@ -13,13 +14,10 @@ std::string PartitionedTable::GetPartitionForValue(int64_t value) {
         // Example: partition by ranges of 1,000,000
         return m_table_name + "_p" + std::to_string(value / 1000000);
     }
-    // Other strategies would have different logic.
     return m_table_name; // Default to the main table
 }
 
-
 // --- PartitionManager Implementation ---
-
 PartitionManager& PartitionManager::Instance() {
     static PartitionManager instance;
     return instance;

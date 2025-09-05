@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
-#include "game/social/guild_system.h"
+#include "game/social/guild_manager.h"
 
+// [SEQUENCE: MVP5-104] Tests the creation of a new guild.
 TEST(GuildSystemTest, CreateGuild) {
     auto& guild_manager = mmorpg::game::social::GuildManager::Instance();
     std::vector<uint64_t> signers = {2, 3, 4, 5};
@@ -10,6 +11,7 @@ TEST(GuildSystemTest, CreateGuild) {
     ASSERT_EQ(guild->GetMemberCount(), 5);
 }
 
+// [SEQUENCE: MVP5-105] Tests inviting a player to a guild.
 TEST(GuildSystemTest, InviteToGuild) {
     auto& guild_manager = mmorpg::game::social::GuildManager::Instance();
     std::vector<uint64_t> signers = {12, 13, 14, 15};
@@ -20,6 +22,7 @@ TEST(GuildSystemTest, InviteToGuild) {
     ASSERT_TRUE(success);
 }
 
+// [SEQUENCE: MVP5-106] Tests a player accepting a guild invite.
 TEST(GuildSystemTest, AcceptGuildInvite) {
     auto& guild_manager = mmorpg::game::social::GuildManager::Instance();
     std::vector<uint64_t> signers = {22, 23, 24, 25};
@@ -36,6 +39,7 @@ TEST(GuildSystemTest, AcceptGuildInvite) {
     ASSERT_EQ(new_member->character_name, "Newbie");
 }
 
+// [SEQUENCE: MVP5-107] Tests a player leaving a guild.
 TEST(GuildSystemTest, LeaveGuild) {
     auto& guild_manager = mmorpg::game::social::GuildManager::Instance();
     std::vector<uint64_t> signers = {32, 33, 34, 35};

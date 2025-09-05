@@ -9,7 +9,8 @@ namespace mmorpg::database {
 
 class ConnectionPool;
 
-// [SEQUENCE: MVP7-31] Manages routing queries to a primary or read replica databases.
+// [SEQUENCE: MVP7-36] Manages routing queries to a primary (write) or read replica databases.
+// This is a key component for implementing a read/write splitting architecture.
 class ReadReplicaManager {
 public:
     static ReadReplicaManager& Instance();

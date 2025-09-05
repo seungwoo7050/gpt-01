@@ -1,9 +1,8 @@
-// [SEQUENCE: MVP1-26] packet.proto: 모든 메시지를 감싸는 최상위 Packet 래퍼를 정의합니다.
+// [SEQUENCE: MVP1-9] Defines the top-level Packet wrapper for all network messages.
 syntax = "proto3";
 
 package mmorpg.proto;
 
-// [SEQUENCE: MVP1-41] packet.proto: 모든 메시지를 감싸는 최상위 Packet 래퍼를 정의합니다. 여기에는 메시지 타입, 크기, 순서 번호 등의 메타데이터가 포함됩니다.
 enum PacketType {
     PACKET_UNKNOWN = 0;
     

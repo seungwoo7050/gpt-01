@@ -12,15 +12,14 @@
 
 namespace mmorpg::game::systems::combat {
 
-// [SEQUENCE: MVP4-11] Combat Systems (`src/game/systems/combat/`)
-// [SEQUENCE: MVP4-12] Traditional target-based combat system
+// [SEQUENCE: MVP4-7] Defines the system for handling traditional, target-based combat mechanics.
 class TargetedCombatSystem : public core::ecs::optimized::System {
 public:
     TargetedCombatSystem() = default;
-        ~TargetedCombatSystem() override;
-    
-        void Update(float delta_time) override;
+    ~TargetedCombatSystem() override;
 
+    // [SEQUENCE: MVP4-8] Public API for managing combat state, skills, and targets.
+    void Update(float delta_time) override;
     void SetSpatialSystem(mmorpg::game::systems::GridSpatialSystem* system) { spatial_system_ = system; }
     
     bool SetTarget(core::ecs::EntityId attacker, core::ecs::EntityId target);
@@ -42,6 +41,7 @@ public:
     void OnDeath(core::ecs::EntityId entity);
 
 private:
+    // [SEQUENCE: MVP4-9] Private helper methods for internal combat logic.
     float CalculateDamage(const components::CombatStatsComponent& attacker_stats,
                          const components::CombatStatsComponent& defender_stats,
                          float base_damage, bool is_physical);
@@ -58,6 +58,7 @@ private:
     void UpdateTargetValidation(float delta_time);
     void CleanupInvalidTargets();
 
+    // [SEQUENCE: MVP4-10] Private member variables for system state and configuration.
     class GridSpatialSystem* spatial_system_ = nullptr;
     
     struct CombatConfig {

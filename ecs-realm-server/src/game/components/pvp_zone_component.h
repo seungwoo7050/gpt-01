@@ -1,4 +1,3 @@
-// [SEQUENCE: MVP5-8] A new component, extracted from match_component.h, to define a PvP-enabled zone in the world.
 #pragma once
 
 #include "core/ecs/types.h"
@@ -8,6 +7,7 @@
 
 namespace mmorpg::game::components {
 
+// [SEQUENCE: MVP5-4] Defines a PvP-enabled zone in the world, including its rules and objectives.
 struct PvPZoneComponent {
     uint32_t zone_id;
     std::string zone_name;

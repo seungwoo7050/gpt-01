@@ -10,6 +10,8 @@
 
 namespace mmorpg::network {
 
+// [SEQUENCE: MVP6-9] The main server class that accepts incoming TCP connections, now with SSL support.
+// It holds the SSL context required by all sessions.
 class TcpServer : public std::enable_shared_from_this<TcpServer> {
 public:
     TcpServer(boost::asio::io_context& io_context,

@@ -5,6 +5,7 @@
 
 namespace mmorpg::game::systems {
 
+// [SEQUENCE: MVP3-92] Implements the constructor, initializing the underlying OctreeWorld.
 OctreeSpatialSystem::OctreeSpatialSystem() {
     // Create octree with 3D world configuration
     world::octree::OctreeWorld::Config config;
@@ -21,14 +22,19 @@ OctreeSpatialSystem::OctreeSpatialSystem() {
                  config.world_max.x, config.world_max.y, config.world_max.z);
 }
 
+// [SEQUENCE: MVP3-93] Implements the system lifecycle methods (currently empty).
+void OctreeSpatialSystem::OnSystemInit() {}
+void OctreeSpatialSystem::OnSystemShutdown() {}
+
+// [SEQUENCE: MVP3-94] Implements PostUpdate to process entity movements and update the octree.
 void OctreeSpatialSystem::PostUpdate([[maybe_unused]] float delta_time) {
-    if (!world_) return;
+    if (!m_world) return;
     
     size_t updates_processed = 0;
     size_t forced_updates = 0;
     
-    for (const auto& entity : entities_) {
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    for (const auto& entity : m_entities) {
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
         const core::utils::Vector3& current_pos = transform.position;
         
         auto& spatial_data = entity_spatial_data_[entity];
@@ -57,11 +63,12 @@ void OctreeSpatialSystem::PostUpdate([[maybe_unused]] float delta_time) {
     }
 }
 
+// [SEQUENCE: MVP3-95] Implements OnEntityCreated to add new entities to the octree.
 void OctreeSpatialSystem::OnEntityCreated(core::ecs::EntityId entity) {
-    if (!world_) return;
+    if (!m_world) return;
 
-    if (world_->HasComponent<components::TransformComponent>(entity)) {
-        auto& transform = world_->GetComponent<components::TransformComponent>(entity);
+    if (m_world->HasComponent<components::TransformComponent>(entity)) {
+        auto& transform = m_world->GetComponent<components::TransformComponent>(entity);
         octree_world_->AddEntity(entity, transform.position);
         
         EntitySpatialData data;
@@ -75,12 +82,14 @@ void OctreeSpatialSystem::OnEntityCreated(core::ecs::EntityId entity) {
     }
 }
 
+// [SEQUENCE: MVP3-96] Implements OnEntityDestroyed to remove entities from the octree.
 void OctreeSpatialSystem::OnEntityDestroyed(core::ecs::EntityId entity) {
     octree_world_->RemoveEntity(entity);
     entity_spatial_data_.erase(entity);
     spdlog::debug("Removed entity {} from octree", entity);
 }
 
+// [SEQUENCE: MVP3-97] Implements GetEntitiesInRadius, delegating the query to the OctreeWorld.
 std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInRadius(
     const core::utils::Vector3& center, float radius) const {
     
@@ -91,6 +100,7 @@ std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInRadius(
     return octree_world_->GetEntitiesInRadius(center, radius);
 }
 
+// [SEQUENCE: MVP3-98] Implements GetEntitiesInBox, delegating the query to the OctreeWorld.
 std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInBox(
     const core::utils::Vector3& min, const core::utils::Vector3& max) const {
     
@@ -101,12 +111,13 @@ std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInBox(
     return octree_world_->GetEntitiesInBox(min, max);
 }
 
+// [SEQUENCE: MVP3-99] Implements GetEntitiesInView for observer-based queries.
 std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInView(
     core::ecs::EntityId observer, float view_distance) const {
     
-    if (!world_) return {};
+    if (!m_world) return {};
 
-    auto& observer_transform = world_->GetComponent<components::TransformComponent>(observer);
+    auto& observer_transform = m_world->GetComponent<components::TransformComponent>(observer);
     auto visible = GetEntitiesInRadius(observer_transform.position, view_distance);
     
     visible.erase(
@@ -117,6 +128,7 @@ std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesInView(
     return visible;
 }
 
+// [SEQUENCE: MVP3-100] Implements GetEntitiesAbove for vertical queries.
 std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesAbove(
     const core::utils::Vector3& position, float height) const {
     
@@ -133,6 +145,7 @@ std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesAbove(
     return GetEntitiesInBox(box_min, box_max);
 }
 
+// [SEQUENCE: MVP3-101] Implements GetEntitiesBelow for vertical queries.
 std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesBelow(
     const core::utils::Vector3& position, float depth) const {
     
@@ -149,6 +162,7 @@ std::vector<core::ecs::EntityId> OctreeSpatialSystem::GetEntitiesBelow(
     return GetEntitiesInBox(box_min, box_max);
 }
 
+// [SEQUENCE: MVP3-102] Implements GetOctreeStats to retrieve statistics from the OctreeWorld.
 void OctreeSpatialSystem::GetOctreeStats(size_t& total_nodes, size_t& leaf_nodes,
                                         size_t& entities, size_t& depth) const {
     if (octree_world_) {

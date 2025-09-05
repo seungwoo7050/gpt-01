@@ -1,18 +1,12 @@
-# [SEQUENCE: MVP8-6] Kubernetes ConfigMap for externalizing server configuration.
+# [SEQUENCE: MVP8-11] Kubernetes ConfigMap for externalizing server configuration.
+# This allows changing values like log levels or database hosts without rebuilding the container image.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mmorpg-server-config # This name is referenced in deployment.yaml
 data:
-  # These values can be changed without rebuilding the container image.
   LOG_LEVEL: "info"
   ENABLE_METRICS: "true"
-  # Database connection details
-  DB_HOST: "postgres-service" # Assumes a postgres service named 'postgres-service'
+  DB_HOST: "postgres-service"
   DB_NAME: "gamedb"
-  # Secrets like passwords should be handled via Kubernetes Secrets, not ConfigMaps.
-  # DB_USER: "gameserver"
-  # DB_PASSWORD: "..."
-
-  # Redis connection details
-  REDIS_URL: "redis://redis-service:6379/0" # Assumes a redis service named 'redis-service'
+  REDIS_URL: "redis://redis-service:6379/0"

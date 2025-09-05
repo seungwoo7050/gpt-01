@@ -10,15 +10,14 @@
 
 namespace mmorpg::game::systems::pvp {
 
-// [SEQUENCE: 1] Open world PvP with zones and objectives
-// [SEQUENCE: MVP5-14]
+// [SEQUENCE: MVP5-52] Defines the system for managing open-world PvP, including zones, flagging, and objectives.
 class OpenWorldPvPSystem : public core::ecs::optimized::System {
 public:
     OpenWorldPvPSystem() = default;
     
     void Update(float delta_time) override;
     
-    // [SEQUENCE: 5] Zone management
+    // [SEQUENCE: MVP5-53] Public API for managing PvP zones, player states, and factions.
     core::ecs::EntityId CreatePvPZone(const std::string& name,
                                      const core::utils::Vector3& min,
                                      const core::utils::Vector3& max);
@@ -26,85 +25,71 @@ public:
     bool SetZonePvPEnabled(core::ecs::EntityId zone, bool enabled);
     core::ecs::EntityId GetPlayerZone(core::ecs::EntityId player) const;
     
-    // [SEQUENCE: 6] PvP state queries
     bool IsPlayerPvPFlagged(core::ecs::EntityId player) const;
     bool CanAttack(core::ecs::EntityId attacker, core::ecs::EntityId target) const;
     std::vector<core::ecs::EntityId> GetPvPEnabledPlayers() const;
     
-    // [SEQUENCE: 7] Faction warfare
     void SetPlayerFaction(core::ecs::EntityId player, uint32_t faction_id);
     uint32_t GetPlayerFaction(core::ecs::EntityId player) const;
     bool AreFactionsHostile(uint32_t faction1, uint32_t faction2) const;
     
-    // [SEQUENCE: 8] Territory control
     bool StartCapture(core::ecs::EntityId player, core::ecs::EntityId zone);
     bool StopCapture(core::ecs::EntityId player, core::ecs::EntityId zone);
     float GetCaptureProgress(core::ecs::EntityId zone) const;
     
-    // [SEQUENCE: 9] Objective management
     void AddObjective(core::ecs::EntityId zone, uint32_t objective_id,
                      const core::utils::Vector3& position);
     bool CaptureObjective(core::ecs::EntityId player, core::ecs::EntityId zone,
                          uint32_t objective_id);
     
-    // [SEQUENCE: 10] Combat events
     void OnPlayerKilledPlayer(core::ecs::EntityId killer, core::ecs::EntityId victim);
     void OnPlayerAssist(core::ecs::EntityId assister, core::ecs::EntityId victim);
     
 private:
-    // [SEQUENCE: 12] Zone boundaries
-    struct ZoneBounds {
-        core::utils::Vector3 min;
-        core::utils::Vector3 max;
-    };
-    
-    // [SEQUENCE: 13] Player states
-    std::unordered_map<core::ecs::EntityId, ZoneBounds> zone_bounds_;
-    
-    // [SEQUENCE: 14] Active zones
-    std::vector<core::ecs::EntityId> pvp_zones_;
-    std::unordered_map<uint32_t, std::unordered_set<uint32_t>> hostile_factions_;
-    
-    // [SEQUENCE: 15] Zone updates
+    // [SEQUENCE: MVP5-54] Private helper methods for internal PvP logic.
     void UpdatePlayerZones(float delta_time);
     void UpdateZoneCaptures(float delta_time);
     void UpdatePvPFlags(float delta_time);
     
-    // [SEQUENCE: 16] Player zone tracking
     void OnPlayerEnterZone(core::ecs::EntityId player, core::ecs::EntityId zone);
     void OnPlayerLeaveZone(core::ecs::EntityId player, core::ecs::EntityId zone);
     bool IsPlayerInZone(core::ecs::EntityId player, core::ecs::EntityId zone) const;
     
-    // [SEQUENCE: 17] Capture mechanics
     void UpdateCaptureProgress(core::ecs::EntityId zone, float delta_time);
     void OnZoneCaptured(core::ecs::EntityId zone, uint32_t faction_id);
     void OnObjectiveCaptured(core::ecs::EntityId zone, uint32_t objective_id,
                             uint32_t faction_id);
     
-    // [SEQUENCE: 18] PvP rewards
     void GrantHonorKill(core::ecs::EntityId killer, core::ecs::EntityId victim);
     void GrantObjectiveReward(core::ecs::EntityId player, uint32_t objective_type);
     void UpdateKillStreak(core::ecs::EntityId player);
+
+    // [SEQUENCE: MVP5-55] Private member variables for system state and configuration.
+    struct ZoneBounds {
+        core::utils::Vector3 min;
+        core::utils::Vector3 max;
+    };
     
-    // [SEQUENCE: 19] Configuration
+    std::unordered_map<core::ecs::EntityId, ZoneBounds> zone_bounds_;
+    
+    std::vector<core::ecs::EntityId> pvp_zones_;
+    std::unordered_map<uint32_t, std::unordered_set<uint32_t>> hostile_factions_;
+    
     struct OpenWorldConfig {
         float pvp_flag_duration = 300.0f;      // 5 minutes
         float zone_update_interval = 1.0f;      // Check zones every second
         float capture_tick_rate = 1.0f;         // Progress per second
         float capture_radius_check = 20.0f;     // Must be within radius
         
-        // Honor rewards
         uint32_t honor_per_kill = 50;
         uint32_t honor_per_assist = 25;
         uint32_t honor_per_objective = 100;
         uint32_t honor_diminishing_returns = 5; // Same target worth less
         
-        // Faction bonuses
         float faction_damage_bonus = 0.05f;     // 5% damage vs hostile
         float territory_buff_bonus = 0.1f;      // 10% stats in owned territory
     } config_;
     
-    // [SEQUENCE: 20] Statistics
     struct WorldPvPStats {
         uint32_t total_kills = 0;
         uint32_t zones_flipped = 0;
@@ -113,10 +98,8 @@ private:
         std::unordered_map<uint32_t, uint32_t> faction_territories;
     } stats_;
     
-    // [SEQUENCE: 21] Spatial integration
     class SpatialIndexingSystem* spatial_system_ = nullptr;
     
-    // [SEQUENCE: 22] Kill tracking (diminishing returns)
     struct KillRecord {
         uint32_t kill_count = 0;
         std::chrono::steady_clock::time_point last_kill_time;
@@ -127,7 +110,6 @@ private:
         std::size_t operator () (const std::pair<T1, T2>& p) const {
             auto h1 = std::hash<T1>{}(p.first);
             auto h2 = std::hash<T2>{}(p.second);
-            // Simple hash combine
             return h1 ^ (h2 << 1);
         }
     };

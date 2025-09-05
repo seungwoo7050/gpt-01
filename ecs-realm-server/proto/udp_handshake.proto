@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package mmorpg.proto;
 
-// [SEQUENCE: MVP6-28] Sent by the client over UDP to associate its UDP endpoint with its TCP session.
-// [SEQUENCE: MVP9-5] Changed to use player_id to match the LoginResponse.
+// [SEQUENCE: MVP6-18] Sent by the client over UDP to associate its UDP endpoint with its authenticated TCP session.
 message UdpHandshake {
   uint64 player_id = 1;
 }

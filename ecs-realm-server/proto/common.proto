@@ -1,4 +1,4 @@
-// [SEQUENCE: MVP1-28] common.proto: 공통 데이터 구조를 정의합니다.
+// [SEQUENCE: MVP1-6] Defines common data structures like Vector3 used throughout the server.
 syntax = "proto3";
 
 package mmorpg.proto;
