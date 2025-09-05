@@ -19,21 +19,15 @@ This phase establishes the workspace structure. The original legacy project must
 1.  **Create Reconstruction Root:** Create a new top-level directory for the reconstruction effort.
 
 2.  **Create Subdirectories:** Inside the new root directory, create two subdirectories:
-    - `[project-name]/`: This will house the new, clean, and evolving source code. Initially, it can be empty or contain a basic project setup (e.g., `.gitignore`).
-    - `devhistory/`: This will house all historical and process-related documentation.
+    ```
+    Reconstruction_Project/
+    ├── legacy_project/         (Read-only reference)
+    ├── [project-name]/         (The new, clean codebase will be built here)
+    └── devhistory/
+        └── Project_Rule.md (This document)
+    ```
 
-3.  **Place Legacy Code:** Place the original, untouched legacy project folder alongside these new directories for reference.
-
-4.  **Initialize Rules:** Place this document (`Universal_DevHistory_Rule.md`) inside the `devhistory/` directory. It will govern the entire reconstruction process.
-
-**Example Initial Structure:**
-```
-Reconstruction_Project/
-├── legacy_project/         (Read-only reference)
-├── my_new_project/         (The new, clean codebase will be built here)
-└── devhistory/
-    └── Universal_DevHistory_Rule.md
-```
+3.  **Initialize Rules:** Place this document inside the `devhistory/` directory.
 
 ---
 
@@ -42,67 +36,56 @@ Reconstruction_Project/
 This iterative cycle is the heart of the process. It is repeated for each MVP, from 1 to N.
 
 ### 3.1. Goal Identification (MVP-N)
-
 - **Action:** Analyze the legacy `DEVELOPMENT_JOURNEY.md` document to understand the intended scope of the current MVP.
 - **Task:** Define a single, clear, and concise goal for the MVP (e.g., "Implement a data-oriented ECS framework," "Secure the network layer with TLS").
-- **Adaptation Rule:** If a `DEVELOPMENT_JOURNEY.md` does not exist, infer the MVP's scope by analyzing file names, code comments, and the logical dependencies within the legacy code. If the scope is still unclear, consult with the project lead.
 
 ### 3.2. Code & Asset Discovery
-
-- **Action:** Using file search tools (`glob`, `search_file_content`), locate all files and code snippets from the **legacy project** that are relevant to the MVP's goal. This includes source code, configuration files, scripts, etc.
+- **Action:** Using file search tools (`glob`, `search_file_content`), locate all files and code snippets from the **legacy project** that are relevant to the MVP's goal.
 - **Task:** Compile a list of all relevant legacy assets that will be reconstructed or referenced.
 
 ### 3.3. Logical Sequencing Plan
-
 - **Action:** Analyze the discovered legacy assets and their dependencies.
-- **Task:** Define and document a logical, step-by-step implementation plan. The plan should build from the ground up: 
-    1.  Build System & Dependencies
-    2.  Data Structures & Components
-    3.  Core Logic & Systems
-    4.  API / Manager Integration
-    5.  Application Entry Point Integration
-    6.  Tests
+- **Task:** Define and document a logical, step-by-step implementation plan.
 
-### 3.4. Code Refactoring & Synchronization
-
+### 3.4. Execution: Code Reconstruction & Verification
 This is the primary implementation step. All work is done within the new `[project-name]/` directory.
 
-- **The Golden Rule:** All legacy sequence comments (`// [SEQUENCE: 123]`) within the scope of the current MVP must be **removed**. They are replaced by a new, clean, and continuous sequence of comments starting from 1 for each MVP (e.g., `// [SEQUENCE: MVP-N-1]`, `// [SEQUENCE: MVP-N-2]`).
+- **Sequence Annotation Principles:**
+    - **Initial Annotation:** When encountering code with only legacy numeric comments (`// [SEQUENCE: 123]`), the old comments are **removed** and **replaced** with the new `// [SEQUENCE: MVP-N-X]` format.
+    - **Historical Annotation:** When encountering code that **already has** a comment from a previous MVP (e.g., `// [SEQUENCE: MVP-A-B]`), the old comment **must be preserved**. The new `// [SEQUENCE: MVP-N-X]` comment for the current work should be **added directly below it**. This creates a chronological log of changes on that block of code.
 
-- **Code Improvement:** The goal is **not to simply copy** the legacy code. It must be improved.
-    - **Refactor:** Improve readability, efficiency, and maintainability.
-    - **Fix:** Correct logical bugs, race conditions, and memory leaks.
-    - **Modernize:** Apply modern language features and design patterns where appropriate.
-    - **Generate:** If essential code is missing, it must be created from scratch based on the context provided by other files and the MVP goal.
+- **Code Modification Principles:**
+    - **Improve, Don't Just Copy:** The goal is to improve the legacy code. This includes refactoring for clarity, fixing bugs, and applying modern design patterns.
+    - **Preserve, Don't Delete:** When a feature is deprecated or replaced, the old code should be **commented out** with an explanatory note rather than being deleted. This preserves context.
 
-- **Test-Driven Development (TDD):** The reliability of the legacy code is zero. Therefore, trust is built through testing.
-    - For each unit of logic, a corresponding unit test should be written.
-    - Where possible, write a failing test first that defines the desired behavior, and then write the implementation code to make the test pass.
+- **The Principle of Trust through Testing (TDD):**
+    - Since the legacy code has no tests, its correctness is unproven. Trust is established via testing.
+    - For every significant unit of logic, a corresponding **unit test must be written**.
+    - The preferred workflow is to first write a **failing test** that precisely defines the requirements, then write the implementation code to make that test pass.
 
 ### 3.5. `DevHistory` Document Regeneration
-
 - **Action:** Once the code for MVP-N is complete, tested, and re-sequenced, create the `devhistory/DevHistory_MVP_N.md` document **from scratch**.
-- **Task:** This document must be based **only on the new, verified code**. 
-    - The sequence list must be 100% synchronized with the new `[SEQUENCE: MVP-N-X]` comments in the code.
-    - The document must include an **Introduction** explaining the "why" of the MVP and its goals.
-    - It must include an **In-depth Analysis** section explaining key architectural decisions and trade-offs, suitable for technical review.
+- **Task:** This document must be based **only on the new, verified code**. It must contain three key sections in order:
+    1.  **Introduction:** A high-level overview explaining the "why" of the MVP and its goals.
+    2.  **In-depth Analysis for Technical Interviews:** A detailed section explaining architectural choices, technology trade-offs, challenges faced, and potential **Production Considerations** or future improvements.
+    3.  **Sequence List:** The complete, ordered list of all `[SEQUENCE: MVP-N-X]` markers for the MVP.
 
 ### 3.6. Final Verification (Cumulative Build)
-
-This is the most critical step for ensuring project stability.
-
-- **Action:** Perform a full, **cumulative build** of the entire project, including all code from MVP 0 up to the current MVP-N.
-- **Task:**
-    1.  Resolve all dependency issues (`conan install`).
-    2.  Configure the build system (`cmake`).
-    3.  Compile all targets (`make`).
-    4.  Run **all** unit tests from all completed MVPs.
-- **Documentation:** The entire verification process, including any errors encountered and the steps taken to fix them, must be documented in the **"Build Verification"** section of the `DevHistory_MVP_N.md` file. A successful build and test run officially concludes the MVP.
+- **Action:** Each MVP is officially completed only after a successful cumulative build and test run.
+- **Task:** Perform a full, **cumulative build** of the entire project up to the current MVP. Run **all unit tests** from all completed MVPs to guarantee no regressions. This entire process, including any errors encountered and their resolutions, must be documented in a final **"Build Verification"** section in the `DevHistory_MVP_N.md` file.
 
 ---
 
-## 4. General Principles
+## 4. General Principles & Procedures
 
-- **Embrace Iterative Debugging:** Expect the legacy code and build system to be broken. The workflow is designed to systematically find and fix these issues at each MVP stage.
-- **Minimize Direct `replace` Usage:** For multi-line code changes, prefer reading the file, modifying the content in memory, and writing the entire file back (`read_file` -> `write_file`). Use `replace` only for small, targeted, single-line changes to avoid syntax errors.
-- **Preserve History:** Once a `DevHistory_MVP_X.md` document is finalized and the MVP is complete, it should be considered immutable. Future changes to a feature are captured in a subsequent MVP, not by modifying past documents.
+### 4.1. Build Error Resolution Procedure
+When a build fails, address it systematically:
+1.  **Analyze:** Read the compiler/linker error message carefully to identify the root cause.
+2.  **Isolate:** If necessary, try to reproduce the error in a minimal example to narrow down the problem.
+3.  **Check Dependencies:** Review `conanfile.txt` and `CMakeLists.txt` (or `build.gradle`, etc.) to ensure libraries are correctly configured and linked.
+4.  **Solve Incrementally:** Fix one error at a time and attempt to rebuild.
+
+### 4.2. Adaptation to Legacy State
+- **If a `DEVELOPMENT_JOURNEY.md` is missing:** The scope of an MVP must be inferred from file names, code comments, and logical dependencies.
+- **If sequence comments are missing:** A logical sequence must be created from scratch based on an analysis of the code.
+- **If code is missing:** The code must be generated from scratch based on the context of the surrounding application and the stated goal of the MVP.

@@ -2,7 +2,7 @@
 
 ## 1. Primary Objective & Guiding Philosophy
 
-This document defines the Standard Operating Procedure (SOP) for reconstructing the `korean-enterprise-template-claude` legacy project into a new, high-value portfolio asset named **`Kotlin-Enterprise-Foundry`**. 
+This document defines the Standard Operating Procedure (SOP) for reconstructing the `korean-enterprise-template-claude` legacy project into a new, high-value portfolio asset named **`Kotlin-Enterprise-Foundry`**.
 
 The **Primary Objective** is to methodically transform an undocumented and unreliable legacy codebase into a suite of four distinct, production-quality applications. This is achieved by building a verifiable, step-by-step development history for each application path.
 
@@ -18,25 +18,25 @@ The **Primary Objective** is to methodically transform an undocumented and unrel
 
 ## 2. Phase 0: Project Initialization & Workspace Setup
 
-This phase establishes the workspace. The original legacy project is a **read-only reference** and must not be modified.
+This phase establishes the workspace. The original legacy project must be treated as a **read-only reference** and should not be modified.
 
 1.  **Create Project Root:** Create a new top-level directory named `Kotlin-Enterprise-Foundry-Reconstruction`.
 
 2.  **Establish Directory Structure:** Inside the root, create the following subdirectories:
     ```
     Kotlin-Enterprise-Foundry-Reconstruction/
-    ├── legacy_project/         # The original, untouched legacy codebase.
-    ├── output/                 # The final, clean codebases for each of the 4 deliverables will be saved here.
+    ├── legacy_project/         # The original, untouched legacy codebase (read-only).
+    ├── output/                 # The 4 final, clean codebases will be saved here as snapshots.
     └── devhistory/             # All documentation, including this rulebook, will reside here.
     ```
 
-3.  **Initialize Rules:** Place this document in the `devhistory/` directory as `Project_Rule.md`.
+3.  **Initialize Rules:** Place this document inside the `devhistory/` directory as `Project_Rule.md`.
 
 ---
 
 ## 3. The Four Reconstruction Paths (The "What")
 
-This project will produce four independent, fully documented, and tested application snapshots. The workflow will address each of these paths, using the others as context or a foundation.
+This project will produce four independent, fully documented, and tested application snapshots. The workflow will address each of these paths.
 
 1.  **Path 1: The Core Template (MVP 1-4)**
     - **Goal:** Reconstruct and document the creation of a generic, extensible web application template based on Hexagonal Architecture.
@@ -44,7 +44,7 @@ This project will produce four independent, fully documented, and tested applica
     - **Docs Output:** `devhistory/01_Core_Template/`
 
 2.  **Path 2: The MSA Transformation (MVP 4.5)**
-    - **Goal:** Document the refactoring of the Core Template into a Microservices Architecture, based on the code in the legacy project's root.
+    - **Goal:** Document the refactoring of the Core Template into a Microservices Architecture.
     - **Code Output:** `output/kotlin-msa-mvp4.5/`
     - **Docs Output:** `devhistory/02_MSA_Transformation/`
 
@@ -69,42 +69,48 @@ Each MVP within each of the four paths must strictly follow this iterative proce
 - **Task:** Define and confirm a single, clear, and concise goal for the MVP.
 
 ### 4.2. Legacy Asset Analysis
-- **Action:** Using file search tools, locate all files and code snippets from the read-only legacy project that are relevant to the MVP's goal.
-- **Task:** Compile a list of all legacy assets that will be reconstructed or referenced.
+- **Action:** Using file search tools, locate all files from the read-only legacy project that are relevant to the MVP's goal.
+- **Task:** Compile a list of all relevant legacy assets that will be reconstructed or referenced.
 
 ### 4.3. Implementation & Refactoring Strategy
 - **Action:** Analyze the discovered assets and their dependencies.
-- **Task:** Define a logical, step-by-step implementation plan. The plan must build from the ground up (e.g., Dependencies -> Domain Entities -> Repositories -> Services -> Controllers -> Integration).
+- **Task:** Define a logical, step-by-step implementation plan.
 
 ### 4.4. Execution: Code Reconstruction & Verification
-This is the primary implementation step, performed in the corresponding `output/` subdirectory.
+- **Sequence Annotation Principles:**
+    - **Initial Annotation:** When encountering code with only legacy numeric comments (`// [SEQUENCE: 123]`), the old comments are **removed** and **replaced** with the new `// [SEQUENCE: MVP-N-X]` format.
+    - **Historical Annotation:** When encountering code that **already has** a comment from a previous MVP (e.g., `// [SEQUENCE: MVP-A-B]`), the old comment **must be preserved**. The new `// [SEQUENCE: MVP-N-X]` comment for the current work should be **added directly below it**.
 
-- **The Golden Rule of Resequencing:** All legacy sequence comments (`// [SEQUENCE: 123]`) within the scope of the current MVP **must be removed**. They are replaced by a new, clean, and continuous sequence of comments (e.g., `// [SEQUENCE: MVP-N-1]`).
-
-- **The Principle of Improvement:** Legacy code is **not to be trusted or copied blindly**. It must be improved:
-    - **Refactor:** Improve code to be clean, readable, and maintainable, adhering to modern language idioms.
-    - **Fix:** Correct all bugs, logical errors, and potential performance issues.
-    - **Generate:** If code is missing, it must be created from scratch to meet the MVP's goal.
+- **Code Modification Principles:**
+    - **Improve, Don't Just Copy:** Refactor legacy code for clarity, correctness, and to apply modern design patterns.
+    - **Preserve, Don't Delete:** When a feature is deprecated, the old code should be **commented out** with an explanatory note rather than being deleted.
 
 - **The Principle of Trust through Testing (TDD):**
-    - Since the legacy code has no tests, its correctness is unproven. Trust is established via testing.
-    - For every significant unit of logic (e.g., a service method, a complex domain entity), a corresponding **unit test must be written**.
-    - The preferred workflow is to first write a **failing test** that precisely defines the requirements of the feature, then write the implementation code to make that test pass.
+    - For every significant unit of logic, a corresponding **unit test must be written**.
+    - The preferred workflow is to first write a **failing test** that defines the requirements, then write the implementation code to make that test pass.
 
-### 4.5. Documentation Regeneration
-- **Action:** Once the code for an MVP is complete, tested, and re-sequenced, the corresponding `DevHistory_MVP_N.md` document must be written **from scratch**.
-- **Task:** This document must be based **only on the new, verified code**. It must include an introduction (the "why"), a sequence list 100% synchronized with the code, and an "In-depth Analysis" section.
+### 4.5. `DevHistory` Document Regeneration
+- **Action:** After coding is complete, create the `devhistory/path/DevHistory_MVP_N.md` document **from scratch**.
+- **Task:** This document must be based **only on the new, verified code**. It must contain three key sections in order:
+    1.  **Introduction:** Explaining the "why" of the MVP.
+    2.  **In-depth Analysis for Technical Interviews:** Explaining architectural choices, trade-offs, and **Production Considerations**.
+    3.  **Sequence List:** The complete list of all `[SEQUENCE: MVP-N-X]` markers.
 
 ### 4.6. Cumulative Build & Verification
 - **Action:** Each MVP is officially completed only after a successful cumulative build and test run.
-- **Task:** For the current development path (e.g., Core Template), perform a full build of **all code from MVP 1 to the current MVP**. Run **all unit tests** from all completed MVPs in that path to guarantee no regressions have been introduced. This entire process, including any errors encountered and their resolutions, must be documented in the "Build Verification" section of the `DevHistory` document.
+- **Task:** Perform a full, **cumulative build** of the current path. Run **all unit tests** from all completed MVPs in that path. Document this process, including errors and fixes, in a final **"Build Verification"** section of the `DevHistory` document.
 
 ---
 
-## 5. Universal Adaptation Rules
+## 5. General Principles & Procedures
 
-This SOP must be adapted to the realities of the legacy codebase.
+### 5.1. Build Error Resolution Procedure
+1.  **Analyze:** Read the compiler/linker error message carefully.
+2.  **Isolate:** Try to reproduce the error in a minimal example.
+3.  **Check Dependencies:** Review build files (`build.gradle.kts`, `CMakeLists.txt`, etc.) to ensure libraries are correctly configured.
+4.  **Solve Incrementally:** Fix one error at a time and attempt to rebuild.
 
-- **If a `DEVELOPMENT_JOURNEY.md` is missing or incomplete:** The scope of an MVP must be inferred from file names, code comments, and logical dependencies. The proposed scope must be confirmed before proceeding.
-- **If sequence comments are missing:** The primary task becomes one of architectural discovery. A logical sequence must be created from scratch based on an analysis of the code.
-- **If code is missing:** The code must be generated from scratch based on the context of the surrounding application and the stated goal of the MVP.
+### 5.2. Adaptation to Legacy State
+- **If a `DEVELOPMENT_JOURNEY.md` is missing:** Infer the MVP scope from file names and code comments.
+- **If sequence comments are missing:** Create a logical sequence from scratch based on code analysis.
+- **If code is missing:** Generate the code from scratch based on the MVP goal.
